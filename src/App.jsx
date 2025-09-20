@@ -13,7 +13,7 @@ import { useUIStore } from "./store";
 import Header from "./components/layout/Header";
 
 // Pages
-import Welcome from "./pages/Onboarding/Welcome";
+import Welcome from "./";
 import Login from "./pages/Onboarding/Login";
 import SignUp from "./pages/Onboarding/SignUp";
 import ForgotPassword from "./pages/Onboarding/ForgotPassword";
