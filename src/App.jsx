@@ -6,17 +6,16 @@ import {
   useLocation,
 } from "react-router-dom";
 
-// ✅ Named import from store
 import { useUIStore } from "./store";
 
 // Layout
 import Header from "./components/layout/Header";
 
 // Pages
-import Welcome from "./pages/Onboarding/Welcome";
-import Login from "./pages/Onboarding/Login";
-import SignUp from "./pages/Onboarding/SignUp";
-import ForgotPassword from "./pages/Onboarding/ForgotPassword";
+import Welcome from "./pages/onboarding/Welcome";
+import Login from "./pages/onboarding/Login";
+import SignUp from "./pages/onboarding/SignUp";
+import ForgotPassword from "./pages/onboarding/ForgotPassword";
 import Home from "./pages/Home";
 import Journal from "./pages/Journal";
 import Explore from "./pages/Explore";
@@ -28,8 +27,6 @@ import Reminders from "./pages/Reminders";
 import PrayerWalls from "./pages/PrayerWalls";
 import Mission from "./pages/Mission";
 import About from "./pages/About";
-
-// Extra placeholder pages for navigation
 import GuidedPrayer from "./pages/GuidedPrayer";
 import BrowsePrayers from "./pages/BrowsePrayers";
 import BibleVerse from "./pages/BibleVerse";
@@ -41,13 +38,11 @@ function AppContent() {
   const { theme } = useUIStore();
   const location = useLocation();
 
-  // paths where header and bottom nav should be hidden
   const authFreePaths = ["/", "/login", "/signup", "/forgot-password"];
-
   const isLoggedInView = !authFreePaths.includes(location.pathname);
 
   return (
-    <div className={`${theme === "dark" ? "dark" : ""}`}>
+    <div className={theme === "dark" ? "dark" : ""}>
       {isLoggedInView && <Header />}
       <div className="min-h-screen flex flex-col bg-cream dark:bg-primary text-primary dark:text-white font-sans">
         <main className="flex-1 pb-14 md:pb-0">
@@ -61,8 +56,6 @@ function AppContent() {
             <Route path="/explore" element={<Explore />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
-
-            {/* ✅ New routes */}
             <Route path="/guided-prayer" element={<GuidedPrayer />} />
             <Route path="/browse-prayers" element={<BrowsePrayers />} />
             <Route path="/bible-verse" element={<BibleVerse />} />
@@ -72,12 +65,9 @@ function AppContent() {
             <Route path="/prayer-wall" element={<PrayerWalls />} />
             <Route path="/about" element={<About />} />
             <Route path="/mission" element={<Mission />} />
-
-            {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
 
-          {/* ✅ Toaster */}
           <Toaster position="top-right" reverseOrder={false} />
         </main>
       </div>
