@@ -36,15 +36,19 @@ const Home = () => {
           <div className="relative p-8 lg:p-12 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 text-white">
             <div className="flex-1 max-w-2xl">
               <h1 className="text-2xl lg:text-3xl font-semibold mb-4 leading-tight text-yellow-50">
-                Welcome to Pray the Bible
+                Welcome to Pray in Verses
               </h1>
               <p className="text-base lg:text-lg leading-relaxed text-blue-100 font-normal">
-                Deepen your faith with Scripture-centered prayers and daily inspiration rooted in God's eternal Word.
+                Turn every verse into prayers
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <div className="text-sm font-medium text-yellow-200 mb-2">Today's Verse</div>
-              <div className="text-white font-medium">{verseOfDay.reference}</div>
+              <div className="text-sm font-medium text-yellow-200 mb-2">
+                Today's Verse
+              </div>
+              <div className="text-white font-medium">
+                {verseOfDay.reference}
+              </div>
             </div>
           </div>
         </section>
@@ -100,7 +104,9 @@ const Home = () => {
               Build Your Prayer Life on Scripture
             </h2>
             <p className="text-lg leading-relaxed text-blue-100 mb-6 font-normal">
-              Every prayer begins with God's Word. Let Scripture guide your conversations with the Divine and transform your spiritual journey.
+              Every prayer begins with God's Word. Let Scripture guide your
+              conversations with the Divine and transform your spiritual
+              journey.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button className="px-6 py-3 bg-yellow-500 text-blue-900 rounded-lg font-medium hover:bg-yellow-400 transition-colors duration-300 shadow-lg">
@@ -120,23 +126,29 @@ const Home = () => {
               <div className="text-green-600 font-bold text-lg">📖</div>
             </div>
             <div className="text-2xl font-bold text-gray-900 mb-1">500+</div>
-            <div className="text-sm text-gray-600 font-medium">Scripture Prayers</div>
+            <div className="text-sm text-gray-600 font-medium">
+              Scripture Prayers
+            </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <div className="text-blue-600 font-bold text-lg">🙏</div>
             </div>
             <div className="text-2xl font-bold text-gray-900 mb-1">10K+</div>
-            <div className="text-sm text-gray-600 font-medium">Prayers Offered</div>
+            <div className="text-sm text-gray-600 font-medium">
+              Prayers Offered
+            </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <div className="text-yellow-600 font-bold text-lg">✨</div>
             </div>
             <div className="text-2xl font-bold text-gray-900 mb-1">2K+</div>
-            <div className="text-sm text-gray-600 font-medium">Lives Touched</div>
+            <div className="text-sm text-gray-600 font-medium">
+              Lives Touched
+            </div>
           </div>
         </section>
       </main>
