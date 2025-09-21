@@ -14,7 +14,7 @@ import Header from "./components/layout/Header";
 // Pages
 import Welcome from "./pages/onboarding/Welcome";
 import Login from "./pages/onboarding/Login";
-import SignUp from "./pages/onboarding/SignUp";
+import SignUp from "./pages/onboarding/Signup";
 import ForgotPassword from "./pages/onboarding/ForgotPassword";
 import Home from "./pages/Home";
 import Journal from "./pages/Journal";
@@ -49,7 +49,7 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Welcome />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/home" element={<Home />} />
             <Route path="/journal" element={<Journal />} />

@@ -6,7 +6,7 @@ import { useAuthStore } from "../../store";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 
-const SignUp = () => {
+const Signup = () => {
   const signup = useAuthStore((s) => s.signup);
   const navigate = useNavigate();
 
@@ -170,4 +170,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default Signup;
