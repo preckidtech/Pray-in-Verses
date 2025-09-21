@@ -1,17 +1,42 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
-import image1 from "../../assets/images/suggest/christian-woman-reading-bible-in-an-ancient-cathol-2023-05-04-23-20-42-utc.JPG";
+import image1 from "../../assets/images/suggest/christian-woman-reading-bible-in-an-ancient-cathol-2023-05-04-23-20-42-utc.jpg";
 import image2 from "../../assets/images/suggest/diverse-religious-shoot-2023-11-27-05-31-41-utc.jpg";
 import image3 from "../../assets/images/suggest/cropped-shot-of-african-american-man-praying-with-2021-08-30-01-46-12-utc.jpg";
 import image4 from "../../assets/images/suggest/diverse-religious-shoot-2023-11-27-05-31-41-utc.jpg";
 import image5 from "../../assets/images/suggest/two-lovers-studying-the-bible-it-is-god-s-love-for-2022-06-18-20-18-08-utc.jpg";
 
 const defaultList = [
-  { reference: "Healing", text: "Fear not, for I am with you...", image: image1, progress: 40 },
-  { reference: "Strength", text: "Come to me, all who labor...", image: image2, progress: 70 },
-  { reference: "Family", text: "Peace I leave with you...", image: image3, progress: 20 },
-  { reference: "Peace", text: "Be still and know...", image: image4, progress: 90 },
-  { reference: "Nation", text: "All things work together...", image: image5, progress: 55 },
+  {
+    reference: "Healing",
+    text: "Fear not, for I am with you...",
+    image: image1,
+    progress: 40,
+  },
+  {
+    reference: "Strength",
+    text: "Come to me, all who labor...",
+    image: image2,
+    progress: 70,
+  },
+  {
+    reference: "Family",
+    text: "Peace I leave with you...",
+    image: image3,
+    progress: 20,
+  },
+  {
+    reference: "Peace",
+    text: "Be still and know...",
+    image: image4,
+    progress: 90,
+  },
+  {
+    reference: "Nation",
+    text: "All things work together...",
+    image: image5,
+    progress: 55,
+  },
 ];
 
 const SuggestedVerses = ({ items = [] }) => {
@@ -42,7 +67,7 @@ const SuggestedVerses = ({ items = [] }) => {
       autoPlayRef.current = setInterval(() => {
         setIsTransitioning(true);
         setStartIdx((prev) => (prev + 1) % list.length);
-        
+
         // Reset transition state after animation completes
         setTimeout(() => setIsTransitioning(false), 500);
       }, 4500); // 4.5s interval for better UX - not too fast, not too slow
@@ -109,7 +134,7 @@ const SuggestedVerses = ({ items = [] }) => {
   }
 
   return (
-    <div 
+    <div
       className="relative w-full"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -122,7 +147,10 @@ const SuggestedVerses = ({ items = [] }) => {
           style={{ transform: `translateX(0%)` }}
         >
           {visible.map((v, i) => (
-            <div key={`${startIdx}-${i}`} className={`flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-4`}>
+            <div
+              key={`${startIdx}-${i}`}
+              className={`flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-4`}
+            >
               <div className="bg-gray-50 shadow-md rounded-lg p-4 flex flex-col hover:shadow-lg transition-shadow duration-300">
                 <div className="flex">
                   <img
@@ -133,15 +161,17 @@ const SuggestedVerses = ({ items = [] }) => {
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start">
-                        <h4 className="font-semibold text-gray-900">{v.reference}</h4>
-                        <button 
-                          onClick={() => handleSave(v)} 
+                        <h4 className="font-semibold text-gray-900">
+                          {v.reference}
+                        </h4>
+                        <button
+                          onClick={() => handleSave(v)}
                           aria-label="save"
                           className="group"
                         >
-                          <Bookmark 
-                            size={18} 
-                            className="text-gray-500 group-hover:text-blue-600 transition-colors duration-200" 
+                          <Bookmark
+                            size={18}
+                            className="text-gray-500 group-hover:text-blue-600 transition-colors duration-200"
                           />
                         </button>
                       </div>
@@ -149,12 +179,14 @@ const SuggestedVerses = ({ items = [] }) => {
                     </div>
                     <div className="mt-3">
                       <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out" 
-                          style={{ width: `${v.progress}%` }} 
+                        <div
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out"
+                          style={{ width: `${v.progress}%` }}
                         />
                       </div>
-                      <span className="text-xs text-gray-500 mt-1 block">{v.progress}% Complete</span>
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        {v.progress}% Complete
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -188,7 +220,7 @@ const SuggestedVerses = ({ items = [] }) => {
               <div
                 key={i}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  i === startIdx ? 'bg-blue-500 scale-125' : 'bg-gray-300'
+                  i === startIdx ? "bg-blue-500 scale-125" : "bg-gray-300"
                 }`}
               />
             ))}
