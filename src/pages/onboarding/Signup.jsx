@@ -96,7 +96,9 @@ const Signup = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-white px-4">
       <div className="bg-white p-6 rounded-lg shadow-soft w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Sign Up</h2>
+        <img src={logo} alt="pray in verse" className="m-auto h-20 w-20 object-cover object-center mb-5"/>
+
+        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input
             label="Name"
