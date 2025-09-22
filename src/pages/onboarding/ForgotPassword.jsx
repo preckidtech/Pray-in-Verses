@@ -8,6 +8,7 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+  // 🚀 Prevent body scroll when this page is active
   useEffect(() => {
     document.body.classList.add("no-scroll");
     return () => document.body.classList.remove("no-scroll");
@@ -41,8 +42,8 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-white px-4">
-      <div className="bg-white p-6 rounded-2xl shadow-soft w-full max-w-md">
+    <div className="h-screen flex items-center justify-center bg-white px-3 sm:px-4">
+      <div className="bg-white p-6 rounded-2xl shadow-soft w-full max-w-md max-h-[95vh] flex flex-col justify-center">
         <h2 className="text-2xl font-bold mb-6 text-center">Forgot Password</h2>
 
         {step === 1 && (
