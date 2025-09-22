@@ -44,7 +44,7 @@ function AppContent() {
   return (
     <div className={theme === "dark" ? "dark" : ""}>
       {isLoggedInView && <Header />}
-      <div className="min-h-screen flex flex-col bg-cream dark:bg-primary text-primary dark:text-white font-sans">
+      <div className="min-h-screen flex flex-col bg-white dark:bg-primary text-primary dark:text-white font-sans">
         <main className="flex-1 pb-14 md:pb-0">
           <Routes>
             <Route path="/" element={<Welcome />} />
