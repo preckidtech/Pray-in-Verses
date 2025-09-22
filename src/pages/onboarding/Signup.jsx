@@ -5,6 +5,7 @@ import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import logo from "../../assets/images/praythebible.png"
 
 const Signup = () => {
   const signup = useAuthStore((s) => s.signup);
@@ -93,8 +94,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-cream px-4">
-      <div className="bg-white p-6 rounded-2xl shadow-soft w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-white px-4">
+      <div className="bg-white p-6 rounded-lg shadow-soft w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6">Sign Up</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input

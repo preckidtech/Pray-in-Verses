@@ -5,6 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
+import logo from "../../assets/images/praythebible.png"
 
 const Login = () => {
   const loginAction = useAuthStore((s) => s.login);
@@ -94,9 +95,14 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-cream px-4">
-      <div className="bg-white p-6 rounded-2xl shadow-soft w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+    <div className="flex items-center justify-center min-h-screen bg-white px-4">
+      <div className="bg-white p-6 rounded-xl shadow-soft w-full max-w-md">
+        {/* logo */}
+        <img src={logo} alt="pray in verses" className="h-20 w-20 mb-5 object-cover object-top m-auto"/>
+        {/* title */}
+        <h2 className="text-lg font-bold mb-6 text-center">
+          Welcome to Pray in Verses
+        </h2>
 
         <form className="space-y-4" onSubmit={handleSubmit} noValidate>
           <div>
@@ -115,7 +121,10 @@ const Login = () => {
           </div>
 
           <div className="relative">
-            <label htmlFor="password" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium mb-1"
+            >
               Password
             </label>
             <input
@@ -137,18 +146,28 @@ const Login = () => {
             </button>
           </div>
 
-          <Button type="submit" variant="primary" className="w-full py-3 text-lg">
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full py-3 text-lg"
+          >
             Login
           </Button>
         </form>
 
         <div className="mt-4 text-center text-sm text-gray-600">
-          <Link to="/forgot-password" className="text-primary font-semibold hover:underline block mb-2">
+          <Link
+            to="/forgot-password"
+            className="text-primary font-semibold hover:underline block mb-2"
+          >
             Forgot Password?
           </Link>
           <p>
             Don’t have an account?{" "}
-            <Link to="/signup" className="text-primary font-semibold hover:underline">
+            <Link
+              to="/signup"
+              className="text-primary font-semibold hover:underline"
+            >
               Sign up here
             </Link>
           </p>
