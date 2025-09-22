@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { toast } from "react-hot-toast";
@@ -7,6 +7,11 @@ const ForgotPassword = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
+  useEffect(() => {
+    document.body.classList.add("no-scroll");
+    return () => document.body.classList.remove("no-scroll");
+  }, []);
 
   const handleVerifyEmail = (e) => {
     e.preventDefault();
@@ -36,9 +41,9 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white  px-4">
+    <div className="h-screen flex items-center justify-center bg-white px-4">
       <div className="bg-white p-6 rounded-2xl shadow-soft w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Forgot Password</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Forgot Password</h2>
 
         {step === 1 && (
           <form className="space-y-4" onSubmit={handleVerifyEmail}>

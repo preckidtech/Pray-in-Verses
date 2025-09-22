@@ -1,5 +1,4 @@
-// src/pages/Onboarding/Login.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
@@ -13,6 +12,14 @@ const Login = () => {
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    // Prevent body scroll on this page
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +46,6 @@ const Login = () => {
       return;
     }
 
-    // safe parse
     let users = [];
     try {
       const raw = localStorage.getItem("users");
@@ -60,34 +66,27 @@ const Login = () => {
     const user = users[idx];
     const hashedInput = await hashPassword(password);
 
-    // if stored password looks hashed, compare hashes
     if (isHexSha256(user.password)) {
       if (user.password !== hashedInput) {
         toast.error("Incorrect password");
         return;
       }
     } else {
-      // stored password is plain text - allow login and migrate to hashed
       if (user.password !== password) {
         toast.error("Incorrect password");
         return;
       }
-      // migrate: replace stored plain password with hashed version
       users[idx] = { ...user, password: hashedInput };
       localStorage.setItem("users", JSON.stringify(users));
     }
 
-    // Login success
     const safeUser = { ...users[idx] };
-    // optionally remove password before sending to store
     delete safeUser.password;
 
     if (typeof loginAction === "function") {
       try {
         loginAction(safeUser);
-      } catch {
-        // ignore store errors
-      }
+      } catch {}
     }
 
     toast.success(`Welcome back, ${user.name || "User"}!`);
@@ -95,98 +94,92 @@ const Login = () => {
   };
 
   return (
-    <div className="m-auto">
-      <div className="h-full flex items-center justify-center bg-white px-3 sm:px-4">
-        <div className="bg-white rounded-xl shadow-soft w-full max-w-md max-h-[90vh] overflow-y-auto">
-          <div className="p-4 sm:p-6">
-            {/* logo */}
-            <img
-              src={logo}
-              alt="pray in verses"
-              className="h-14 w-14 sm:h-16 sm:w-16 mb-3 sm:mb-4 object-cover object-top m-auto"
-            />
+    <div className="h-screen flex items-center justify-center bg-white px-3 sm:px-4">
+      <div className="bg-white rounded-xl shadow-soft w-full max-w-md flex flex-col justify-center p-6">
+        <img
+          src={logo}
+          alt="pray in verses"
+          className="h-14 w-14 sm:h-16 sm:w-16 mb-4 object-cover object-top m-auto"
+        />
 
-            {/* title */}
-            <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-center">
-              Welcome to Pray in Verses
-            </h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">
+          Welcome to Pray in Verses
+        </h2>
 
-            <form
-              className="space-y-3 sm:space-y-4"
-              onSubmit={handleSubmit}
-              noValidate
+        <form
+          className="space-y-4"
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium mb-1"
             >
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full border rounded-lg px-3 py-2 text-sm sm:text-base outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div className="relative">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full border rounded-lg px-3 py-2 pr-10 text-sm sm:text-base outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-2 top-9 p-1 text-gray-600"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full py-2 sm:py-3 text-base sm:text-lg"
-              >
-                Login
-              </Button>
-            </form>
-
-            <div className="mt-3 sm:mt-4 text-center text-xs sm:text-sm text-gray-600">
-              <Link
-                to="/forgot-password"
-                className="text-primary font-semibold hover:underline block mb-2"
-              >
-                Forgot Password?
-              </Link>
-              <p>
-                Don't have an account?{" "}
-                <Link
-                  to="/signup"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  Sign up here
-                </Link>
-              </p>
-            </div>
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-3 py-2 text-sm sm:text-base outline-none focus:ring-2 focus:ring-primary"
+            />
           </div>
+
+          <div className="relative">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium mb-1"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-3 py-2 pr-10 text-sm sm:text-base outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              className="absolute right-2 top-9 p-1 text-gray-600"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full py-3 text-base sm:text-lg"
+          >
+            Login
+          </Button>
+        </form>
+
+        <div className="mt-4 text-center text-sm text-gray-600">
+          <Link
+            to="/forgot-password"
+            className="text-primary font-semibold hover:underline block mb-2"
+          >
+            Forgot Password?
+          </Link>
+          <p>
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign up here
+            </Link>
+          </p>
         </div>
       </div>
     </div>

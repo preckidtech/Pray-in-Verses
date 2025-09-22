@@ -23,3 +23,13 @@ body {
   overflow: hidden;
   height: 100vh;
 }
+
+.page-centered {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;      /* Vertically center */
+  justify-content: center;  /* Horizontally center */
+  background: linear-gradient(to bottom right, #3b82f6, #9333ea); /* from-primary to-secondary */
+  overflow: hidden; /* Prevent scroll */
+  padding: 1rem; /* Safe spacing on small screens */
+}

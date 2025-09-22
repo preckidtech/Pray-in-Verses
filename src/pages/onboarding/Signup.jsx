@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import logo from "../../assets/images/praythebible.png"
+import logo from "../../assets/images/praythebible.png";
 
 const Signup = () => {
   const signup = useAuthStore((s) => s.signup);
@@ -19,6 +19,14 @@ const Signup = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    // Prevent body scroll on this page
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -38,7 +46,6 @@ const Signup = () => {
       return false;
     }
 
-    // Password must contain 8+ chars, uppercase, lowercase, number, special char
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
     if (!passwordRegex.test(password)) {
@@ -56,7 +63,6 @@ const Signup = () => {
     return true;
   };
 
-  // 🔐 Hash password using SHA-256
   const hashPassword = async (password) => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -82,7 +88,7 @@ const Signup = () => {
     const newUser = {
       name: form.name,
       email: form.email,
-      password: hashedPassword, // 🔐 Save only hashed password
+      password: hashedPassword,
     };
 
     users.push(newUser);
@@ -94,83 +100,84 @@ const Signup = () => {
   };
 
   return (
-    <div className="h-full overflow-hidden flex items-center justify-center bg-white px-3 sm:px-4">
-      <div className="bg-white grid align-middle rounded-lg shadow-soft w-full max-w-md max-h-[95vh] ">
-        <div className="p-4 sm:p-6">
-          <img src={logo} alt="pray in verse" className="m-auto h-12 w-12 sm:h-16 sm:w-16 object-cover object-center mb-3 sm:mb-4"/>
+    <div className="h-screen flex items-center justify-center bg-white px-3 sm:px-4">
+      <div className="bg-white rounded-lg shadow-soft w-full max-w-md flex flex-col justify-center p-6">
+        <img
+          src={logo}
+          alt="pray in verse"
+          className="m-auto h-12 w-12 sm:h-16 sm:w-16 object-cover mb-4"
+        />
 
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Sign Up</h2>
-          
-          <form className="space-y-3 sm:space-y-4" onSubmit={handleSubmit}>
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">
+          Sign Up
+        </h2>
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <Input
+            label="Name"
+            name="name"
+            type="text"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            label="Email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+
+          <div className="relative">
             <Input
-              label="Name"
-              name="name"
-              type="text"
-              value={form.name}
+              label="Password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
               onChange={handleChange}
               required
             />
-            <Input
-              label="Email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-
-            {/* Password with eye toggle */}
-            <div className="relative">
-              <Input
-                label="Password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
-              <span
-                className="absolute right-3 top-9 cursor-pointer text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </span>
-            </div>
-
-            {/* Confirm Password with eye toggle */}
-            <div className="relative">
-              <Input
-                label="Confirm Password"
-                name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                value={form.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-              <span
-                className="absolute right-3 top-9 cursor-pointer text-gray-500"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </span>
-            </div>
-
-            <Button type="submit" variant="primary" className="w-full py-2 sm:py-3">
-              Sign Up
-            </Button>
-          </form>
-
-          {/* Login redirect */}
-          <p className="text-center text-xs sm:text-sm text-gray-600 mt-3 sm:mt-4">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-primary font-semibold hover:underline"
+            <span
+              className="absolute right-3 top-9 cursor-pointer text-gray-500"
+              onClick={() => setShowPassword(!showPassword)}
             >
-              Login here
-            </Link>
-          </p>
-        </div>
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </span>
+          </div>
+
+          <div className="relative">
+            <Input
+              label="Confirm Password"
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              value={form.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+            <span
+              className="absolute right-3 top-9 cursor-pointer text-gray-500"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </span>
+          </div>
+
+          <Button type="submit" variant="primary" className="w-full py-3">
+            Sign Up
+          </Button>
+        </form>
+
+        <p className="text-center text-sm text-gray-600 mt-4">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-primary font-semibold hover:underline"
+          >
+            Login here
+          </Link>
+        </p>
       </div>
     </div>
   );
