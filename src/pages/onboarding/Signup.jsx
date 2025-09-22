@@ -94,7 +94,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white px-4">
+    <div className="flex items-center justify-center min-h-screen max-h-screen bg-white px-4">
       <div className="bg-white p-6 rounded-lg shadow-soft w-full max-w-md">
         <img src={logo} alt="pray in verse" className="m-auto h-20 w-20 object-cover object-center mb-5"/>
 
