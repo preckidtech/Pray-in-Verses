@@ -7,8 +7,14 @@ body {
   @apply bg-cream text-primary font-sans antialiased;
 }
 
-html,
-body {
+/* .login,
+.signup,
+.welcome {
   height: 100%;
   overflow: hidden;
-}
+} */
+
+/* html body {
+  height: 100%;
+  overflow: hidden;
+} */

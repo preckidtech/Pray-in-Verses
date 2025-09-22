@@ -4,13 +4,13 @@ import logo from "../../assets/images/whiteLogo.png";
 
 const Welcome = () => {
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center px-6 md:px-16">
-      <div className="grid md:grid-cols-2 gap-0 max-w-6xl w-full rounded-2xl shadow-2xl overflow-hidden">
-        {/* Left info section - Hidden on mobile, visible on md+ */}
+    <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center px-4 md:px-16">
+      <div className="grid md:grid-cols-2 w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden h-full md:h-auto">
+        {/* Left info section - Hidden on mobile */}
         <div className="hidden md:flex items-center justify-center bg-gray-100 text-gray-800 p-10">
-          <div className="max-w-md text-center md:text-left">
-            <h2 className="text-3xl font-bold mb-4">ABOUT PRAY IN VERSES</h2>
-            <p className="text-sm text-justify leading-relaxed opacity-80">
+          <div className="max-w-md text-left space-y-4">
+            <h2 className="text-3xl font-bold">ABOUT PRAY IN VERSES</h2>
+            <p className="text-sm leading-relaxed opacity-80 text-justify">
               Pray in Verses is a unique devotional platform designed to help
               you connect deeply with God's Word through prayer. Instead of
               rushing through chapters or skimming familiar passages, this
@@ -24,12 +24,14 @@ const Welcome = () => {
         </div>
 
         {/* Right signup/login section */}
-        <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-white py-8 px-6 min-h-[500px] h-full">
-          <img src={logo} alt="logo" className="w-32 mb-4" />
-          <h1 className="text-4xl font-bold mb-2">Pray in Verses</h1>
-          <p className="text-lg opacity-90">Turn every verse into prayers</p>
+        <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-white py-6 px-4 h-full">
+          <img src={logo} alt="logo" className="w-28 md:w-32 mb-4" />
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Pray in Verses</h1>
+          <p className="text-base md:text-lg opacity-90 text-center">
+            Turn every verse into prayers
+          </p>
 
-          <div className="flex flex-col space-y-4 mt-10 w-full max-w-sm">
+          <div className="flex flex-col space-y-4 mt-8 w-full max-w-sm">
             <Link to="/signup">
               <Button
                 variant="primary"
