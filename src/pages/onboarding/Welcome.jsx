@@ -34,7 +34,7 @@ const Welcome = () => {
 
         {/* Right signup/login section */}
         <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-white px-6 py-8 flex-1">
-          <img src={logo} alt="logo" className="w-24 md:w-32 mb-4" />
+          <img src={logo} alt="logo" className="w-32 md:w-32 " />
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Pray in Verses</h1>
           <p className="text-base md:text-lg opacity-90 text-center">
             Turn every verse into prayers
