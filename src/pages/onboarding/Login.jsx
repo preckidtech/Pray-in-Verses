@@ -5,7 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
-import logo from "../../assets/images/praythebible.png"
+import logo from "../../assets/images/praythebible.png";
 
 const Login = () => {
   const loginAction = useAuthStore((s) => s.login);
@@ -39,7 +39,6 @@ const Login = () => {
       return;
     }
 
-    // safe parse
     let users = [];
     try {
       const raw = localStorage.getItem("users");
@@ -60,34 +59,27 @@ const Login = () => {
     const user = users[idx];
     const hashedInput = await hashPassword(password);
 
-    // if stored password looks hashed, compare hashes
     if (isHexSha256(user.password)) {
       if (user.password !== hashedInput) {
         toast.error("Incorrect password");
         return;
       }
     } else {
-      // stored password is plain text - allow login and migrate to hashed
       if (user.password !== password) {
         toast.error("Incorrect password");
         return;
       }
-      // migrate: replace stored plain password with hashed version
       users[idx] = { ...user, password: hashedInput };
       localStorage.setItem("users", JSON.stringify(users));
     }
 
-    // Login success
     const safeUser = { ...users[idx] };
-    // optionally remove password before sending to store
     delete safeUser.password;
 
     if (typeof loginAction === "function") {
       try {
         loginAction(safeUser);
-      } catch {
-        // ignore store errors
-      }
+      } catch {}
     }
 
     toast.success(`Welcome back, ${user.name || "User"}!`);
@@ -95,12 +87,15 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white px-4">
-      <div className="bg-white p-6 rounded-xl shadow-soft w-full max-w-md">
-        {/* logo */}
-        <img src={logo} alt="pray in verses" className="h-20 w-20 mb-5 object-cover object-top m-auto"/>
-        {/* title */}
-        <h2 className="text-lg font-bold mb-6 text-center">
+    <div className="h-screen w-screen flex items-center justify-center bg-white overflow-hidden px-4">
+      <div className="bg-white rounded-xl shadow-soft w-full max-w-md p-6">
+        <img
+          src={logo}
+          alt="pray in verses"
+          className="h-14 w-14 sm:h-16 sm:w-16 mb-4 object-cover object-top m-auto"
+        />
+
+        <h2 className="text-lg sm:text-xl font-bold mb-6 text-center">
           Welcome to Pray in Verses
         </h2>
 
@@ -116,15 +111,12 @@ const Login = () => {
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary"
+              className="w-full border rounded-lg px-3 py-2 text-sm sm:text-base outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           <div className="relative">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium mb-1"
-            >
+            <label htmlFor="password" className="block text-sm font-medium mb-1">
               Password
             </label>
             <input
@@ -134,7 +126,7 @@ const Login = () => {
               value={form.password}
               onChange={handleChange}
               required
-              className="w-full border rounded-lg px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-primary"
+              className="w-full border rounded-lg px-3 py-2 pr-10 text-sm sm:text-base outline-none focus:ring-2 focus:ring-primary"
             />
             <button
               type="button"
@@ -142,14 +134,14 @@ const Login = () => {
               className="absolute right-2 top-9 p-1 text-gray-600"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
 
           <Button
             type="submit"
             variant="primary"
-            className="w-full py-3 text-lg"
+            className="w-full py-3 text-base sm:text-lg"
           >
             Login
           </Button>
@@ -163,7 +155,7 @@ const Login = () => {
             Forgot Password?
           </Link>
           <p>
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link
               to="/signup"
               className="text-primary font-semibold hover:underline"
