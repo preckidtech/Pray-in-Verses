@@ -6,3 +6,9 @@ html,
 body {
   @apply bg-cream text-primary font-sans antialiased;
 }
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
