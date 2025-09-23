@@ -5,93 +5,94 @@ import logo from "../../assets/images/whiteLogo.png";
 
 const Welcome = () => {
   useEffect(() => {
-    // Lock scroll only for this page
+    // Lock scroll and ensure full height
     document.body.classList.add("no-scroll");
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
+    
+    // Set CSS custom property for true viewport height
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
     
     return () => {
       document.body.classList.remove("no-scroll");
       document.documentElement.style.overflow = 'auto';
       document.body.style.overflow = 'auto';
+      document.documentElement.style.height = 'auto';
+      document.body.style.height = 'auto';
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
     };
   }, []);
 
   return (
-    <>
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .mobile-container {
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-          }
-          .mobile-content {
-            padding: 1rem;
-            gap: 1.5rem;
-          }
-          .mobile-logo {
-            width: 4rem;
-            height: 4rem;
-          }
-          .mobile-title {
-            font-size: 1.5rem;
-            line-height: 1.2;
-          }
-          .mobile-subtitle {
-            font-size: 0.875rem;
-          }
-          .mobile-button {
-            padding: 0.625rem 0;
-            font-size: 0.875rem;
-          }
-          .mobile-button-spacing {
-            gap: 0.75rem;
-          }
-        }
-      `}</style>
-      
-      <div className="mobile-container h-screen w-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center px-4 md:px-16 overflow-hidden">
-        <div className="grid md:grid-cols-2 w-full max-w-6xl rounded-none md:rounded-2xl md:shadow-2xl overflow-hidden h-full md:h-auto">
-          {/* Left info section - Hidden on mobile */}
-          <div className="hidden md:flex items-center justify-center bg-gray-100 text-gray-800 p-10">
-            <div className="max-w-md text-left space-y-4">
-              <h2 className="text-3xl font-bold">ABOUT PRAY IN VERSES</h2>
-              <p className="text-sm leading-relaxed opacity-80 text-justify">
-                Pray in Verses is a unique devotional platform designed to help
-                you connect deeply with God's Word through prayer. Instead of
-                rushing through chapters or skimming familiar passages, this
-                resource guides you to pray scripture itself — one verse at a
-                time. Each verse becomes not just something to read, but something
-                to internalize, declare, and live out. Our goal is to bridge the
-                gap between Bible study and prayer life by turning every verse
-                into prayer.
-              </p>
-            </div>
+    <div 
+      className="w-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center overflow-hidden"
+      style={{ 
+        height: '100vh',
+        height: 'calc(var(--vh, 1vh) * 100)',
+        minHeight: '100vh',
+        minHeight: 'calc(var(--vh, 1vh) * 100)'
+      }}
+    >
+      <div className="grid md:grid-cols-2 w-full max-w-6xl rounded-none md:rounded-2xl md:shadow-2xl overflow-hidden h-full md:h-auto md:my-auto">
+        {/* Left info section - Hidden on mobile */}
+        <div className="hidden md:flex items-center justify-center bg-gray-100 text-gray-800 p-10">
+          <div className="max-w-md text-left space-y-4">
+            <h2 className="text-3xl font-bold">ABOUT PRAY IN VERSES</h2>
+            <p className="text-sm leading-relaxed opacity-80 text-justify">
+              Pray in Verses is a unique devotional platform designed to help
+              you connect deeply with God's Word through prayer. Instead of
+              rushing through chapters or skimming familiar passages, this
+              resource guides you to pray scripture itself — one verse at a
+              time. Each verse becomes not just something to read, but something
+              to internalize, declare, and live out. Our goal is to bridge the
+              gap between Bible study and prayer life by turning every verse
+              into prayer.
+            </p>
           </div>
+        </div>
 
-          {/* Right signup/login section */}
-          <div className="mobile-content flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-white px-6 py-8 md:px-6 md:py-8 flex-1">
-            <img 
-              src={logo} 
-              alt="logo" 
-              className="mobile-logo w-32 md:w-32 object-contain flex-shrink-0" 
-            />
+        {/* Right signup/login section */}
+        <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-white h-full min-h-full px-6 py-8 md:px-6 md:py-8">
+          <div className="flex flex-col items-center justify-center w-full max-w-sm h-full">
             
-            <div className="text-center flex-shrink-0">
-              <h1 className="mobile-title text-4xl md:text-4xl font-bold mb-2">
+            {/* Spacer for top */}
+            <div className="flex-1 md:hidden min-h-[2rem]"></div>
+            
+            {/* Logo */}
+            <div className="flex-shrink-0 mb-6 md:mb-0">
+              <img 
+                src={logo} 
+                alt="logo" 
+                className="w-20 md:w-32 h-20 md:h-32 object-contain mx-auto" 
+              />
+            </div>
+            
+            {/* Title section */}
+            <div className="text-center mb-8 md:mb-2 flex-shrink-0">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 leading-tight">
                 Pray in Verses
               </h1>
-              <p className="mobile-subtitle text-lg md:text-lg opacity-90">
+              <p className="text-base md:text-lg opacity-90 leading-tight">
                 Turn every verse into prayers
               </p>
             </div>
 
-            <div className="mobile-button-spacing flex flex-col space-y-4 md:space-y-4 w-full max-w-sm flex-shrink-0">
+            {/* Buttons section */}
+            <div className="flex flex-col w-full space-y-4 md:space-y-4 flex-shrink-0 mb-8 md:mb-0">
               <Link to="/signup">
                 <Button
                   variant="primary"
-                  className="mobile-button w-full py-3 md:py-3 text-lg md:text-lg rounded-xl"
+                  className="w-full py-3 md:py-3 text-lg md:text-lg rounded-xl font-medium"
                 >
                   Sign Up
                 </Button>
@@ -99,7 +100,7 @@ const Welcome = () => {
               <Link to="/login">
                 <Button
                   variant="tertiary"
-                  className="mobile-button w-full py-3 md:py-3 text-lg md:text-lg rounded-xl"
+                  className="w-full py-3 md:py-3 text-lg md:text-lg rounded-xl font-medium"
                 >
                   Login
                 </Button>
@@ -107,16 +108,20 @@ const Welcome = () => {
               <Link to="/home">
                 <Button
                   variant="ghost"
-                  className="mobile-button w-full py-3 md:py-3 text-lg md:text-lg rounded-xl"
+                  className="w-full py-3 md:py-3 text-lg md:text-lg rounded-xl font-medium"
                 >
                   Continue as Guest
                 </Button>
               </Link>
             </div>
+
+            {/* Spacer for bottom */}
+            <div className="flex-1 md:hidden min-h-[2rem]"></div>
+            
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
