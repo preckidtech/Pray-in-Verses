@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { toast } from "react-hot-toast";
-import logo from "../../assets/images/prayinverse.png";
+import logo from "../../assets/images/prayinverse2.png";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
@@ -70,7 +70,7 @@ const ForgotPassword = () => {
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col justify-center p-6">
         {/* Logo on top */}
         <div className="flex justify-center mb-4">
-          <img src={logo} alt="logo" className="h-16 w-16 sm:h-20 sm:w-20 object-contain" />
+          <img src={logo} alt="logo" className="h-32 w-32 sm:h-32 sm:w-32 object-contain" />
         </div>
 
         <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Forgot Password</h2>

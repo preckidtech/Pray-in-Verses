@@ -72,7 +72,7 @@ const Welcome = () => {
               <img
                 src={logo}
                 alt="logo"
-                className="w-24 md:w-32 md:mb-4 h-24 md:h-32 object-contain mx-auto"
+                className="w-28 md:w-32 md:mb-4 h-28 md:h-32 object-contain mx-auto"
               />
             </div>
 
