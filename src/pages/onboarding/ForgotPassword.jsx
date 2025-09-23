@@ -2,35 +2,38 @@ import { useEffect, useState } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { toast } from "react-hot-toast";
+import logo from "../../assets/images/prayinverse.png";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  // ✅ Same viewport fix as Welcome
+  // ✅ Lock scroll & true viewport
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    const setVh = () => {
+    document.documentElement.style.overflow = "hidden";
+
+    const setVH = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty("--vh", `${vh}px`);
     };
-    setVh();
-    window.addEventListener("resize", setVh);
-    window.addEventListener("orientationchange", setVh);
+    setVH();
+    window.addEventListener("resize", setVH);
+    window.addEventListener("orientationchange", setVH);
 
     return () => {
       document.body.style.overflow = "auto";
-      document.documentElement.style.removeProperty("--vh");
-      window.removeEventListener("resize", setVh);
-      window.removeEventListener("orientationchange", setVh);
+      document.documentElement.style.overflow = "auto";
+      window.removeEventListener("resize", setVH);
+      window.removeEventListener("orientationchange", setVH);
     };
   }, []);
 
   const handleVerifyEmail = (e) => {
     e.preventDefault();
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userExists = users.find((u) => u.email === email);
+    const userExists = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
 
     if (!userExists) {
       toast.error("No account found with this email");
@@ -50,9 +53,7 @@ const ForgotPassword = () => {
     const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
     let users = JSON.parse(localStorage.getItem("users")) || [];
-    users = users.map((u) =>
-      u.email === email ? { ...u, password: hashedPassword } : u
-    );
+    users = users.map((u) => (u.email.toLowerCase() === email.toLowerCase() ? { ...u, password: hashedPassword } : u));
     localStorage.setItem("users", JSON.stringify(users));
 
     toast.success("Password reset successfully. You can now log in.");
@@ -62,9 +63,17 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-[calc(var(--vh,1vh)*100)] flex items-center justify-center bg-white px-3 sm:px-4">
-      <div className="bg-white p-6 rounded-2xl shadow-soft w-full max-w-md flex flex-col justify-center">
-        <h2 className="text-2xl font-bold mb-6 text-center">Forgot Password</h2>
+    <div
+      className="w-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary overflow-hidden px-4 sm:px-6"
+      style={{ height: "calc(var(--vh,1vh)*100)" }}
+    >
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col justify-center p-6">
+        {/* Logo on top */}
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="logo" className="h-16 w-16 sm:h-20 sm:w-20 object-contain" />
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Forgot Password</h2>
 
         {step === 1 && (
           <form className="space-y-4" onSubmit={handleVerifyEmail}>
@@ -75,7 +84,7 @@ const ForgotPassword = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <Button type="submit" variant="primary" className="w-full">
+            <Button type="submit" variant="primary" className="w-full py-3">
               Verify Email
             </Button>
           </form>
@@ -90,14 +99,14 @@ const ForgotPassword = () => {
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
-            <Button type="submit" variant="primary" className="w-full">
+            <Button type="submit" variant="primary" className="w-full py-3">
               Reset Password
             </Button>
           </form>
         )}
 
         <div className="text-center mt-4">
-          <a href="/login" className="text-sm text-primary hover:underline">
+          <a href="/login" className="text-primary font-semibold hover:underline text-sm">
             Back to Login
           </a>
         </div>
