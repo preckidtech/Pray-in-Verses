@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../components/ui/Button";
-import logo from "../../assets/images/whiteLogo.png";
+import logo from "../../assets/images/prayinverse.png";
 
 const Welcome = () => {
   useEffect(() => {
@@ -73,7 +73,7 @@ const Welcome = () => {
               <img 
                 src={logo} 
                 alt="logo" 
-                className="w-20 md:w-32 h-20 md:h-32 object-contain mx-auto" 
+                className="w-24 md:w-32 md:mb-4 h-24 md:h-32 object-contain mx-auto" 
               />
             </div>
             

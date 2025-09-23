@@ -5,7 +5,7 @@ import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import logo from "../../assets/images/praythebible.png";
+import logo from "../../assets/images/prayinverse.png";
 
 const Signup = () => {
   const signup = useAuthStore((s) => s.signup);

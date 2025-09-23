@@ -4,7 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
-import logo from "../../assets/images/praythebible.png";
+import logo from "../../assets/images/prayinverse.png";
 
 const Login = () => {
   const loginAction = useAuthStore((s) => s.login);
