@@ -7,40 +7,40 @@ const Welcome = () => {
   useEffect(() => {
     // Lock scroll and ensure full height
     document.body.classList.add("no-scroll");
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.height = '100%';
-    document.body.style.height = '100%';
-    
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.height = "100%";
+    document.body.style.height = "100%";
+
     // Set CSS custom property for true viewport height
     const setVH = () => {
       const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
     };
-    
+
     setVH();
-    window.addEventListener('resize', setVH);
-    window.addEventListener('orientationchange', setVH);
-    
+    window.addEventListener("resize", setVH);
+    window.addEventListener("orientationchange", setVH);
+
     return () => {
       document.body.classList.remove("no-scroll");
-      document.documentElement.style.overflow = 'auto';
-      document.body.style.overflow = 'auto';
-      document.documentElement.style.height = 'auto';
-      document.body.style.height = 'auto';
-      window.removeEventListener('resize', setVH);
-      window.removeEventListener('orientationchange', setVH);
+      document.documentElement.style.overflow = "auto";
+      document.body.style.overflow = "auto";
+      document.documentElement.style.height = "auto";
+      document.body.style.height = "auto";
+      window.removeEventListener("resize", setVH);
+      window.removeEventListener("orientationchange", setVH);
     };
   }, []);
 
   return (
-    <div 
+    <div
       className="w-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center overflow-hidden"
-      style={{ 
-        height: '100vh',
-        height: 'calc(var(--vh, 1vh) * 100)',
-        minHeight: '100vh',
-        minHeight: 'calc(var(--vh, 1vh) * 100)'
+      style={{
+        height: "100vh",
+        height: "calc(var(--vh, 1vh) * 100)",
+        minHeight: "100vh",
+        minHeight: "calc(var(--vh, 1vh) * 100)",
       }}
     >
       <div className="grid md:grid-cols-2 w-full max-w-6xl rounded-none md:rounded-2xl md:shadow-2xl overflow-hidden h-full md:h-auto md:my-auto">
@@ -64,19 +64,18 @@ const Welcome = () => {
         {/* Right signup/login section */}
         <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary text-white h-full min-h-full px-6 py-8 md:px-6 md:py-8">
           <div className="flex flex-col items-center justify-center w-full max-w-sm h-full">
-            
             {/* Spacer for top */}
             <div className="flex-1 md:hidden min-h-[2rem]"></div>
-            
+
             {/* Logo */}
             <div className="flex-shrink-0 mb-6 md:mb-0">
-              <img 
-                src={logo} 
-                alt="logo" 
-                className="w-24 md:w-32 md:mb-4 h-24 md:h-32 object-contain mx-auto" 
+              <img
+                src={logo}
+                alt="logo"
+                className="w-24 md:w-32 md:mb-4 h-24 md:h-32 object-contain mx-auto"
               />
             </div>
-            
+
             {/* Title section */}
             <div className="text-center mb-8 md:mb-2 flex-shrink-0">
               <h1 className="text-3xl md:text-4xl font-bold mb-2 leading-tight">
@@ -117,7 +116,6 @@ const Welcome = () => {
 
             {/* Spacer for bottom */}
             <div className="flex-1 md:hidden min-h-[2rem]"></div>
-            
           </div>
         </div>
       </div>

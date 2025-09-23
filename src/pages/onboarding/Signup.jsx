@@ -5,7 +5,7 @@ import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import logo from "../../assets/images/prayinverse.png";
+import logo from "../../assets/images/praythebible.png";
 
 const Signup = () => {
   const signup = useAuthStore((s) => s.signup);
@@ -20,11 +20,22 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // ✅ Same fix as Welcome
   useEffect(() => {
-    // Prevent body scroll on this page
     document.body.style.overflow = "hidden";
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    };
+    setVh();
+    window.addEventListener("resize", setVh);
+    window.addEventListener("orientationchange", setVh);
+
     return () => {
       document.body.style.overflow = "auto";
+      document.documentElement.style.removeProperty("--vh");
+      window.removeEventListener("resize", setVh);
+      window.removeEventListener("orientationchange", setVh);
     };
   }, []);
 
@@ -100,7 +111,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-white px-3 sm:px-4">
+    <div className="min-h-[calc(var(--vh,1vh)*100)] flex items-center justify-center bg-white px-3 sm:px-4">
       <div className="bg-white rounded-lg shadow-soft w-full max-w-md flex flex-col justify-center p-6">
         <img
           src={logo}

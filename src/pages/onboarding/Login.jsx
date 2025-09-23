@@ -4,7 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import Button from "../../components/ui/Button";
 import { useAuthStore } from "../../store";
-import logo from "../../assets/images/prayinverse.png";
+import logo from "../../assets/images/praythebible.png";
 
 const Login = () => {
   const loginAction = useAuthStore((s) => s.login);
@@ -13,11 +13,22 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
 
+  // ✅ same fix as Welcome
   useEffect(() => {
-    // Prevent body scroll on this page
     document.body.style.overflow = "hidden";
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    };
+    setVh();
+    window.addEventListener("resize", setVh);
+    window.addEventListener("orientationchange", setVh);
+
     return () => {
       document.body.style.overflow = "auto";
+      document.documentElement.style.removeProperty("--vh");
+      window.removeEventListener("resize", setVh);
+      window.removeEventListener("orientationchange", setVh);
     };
   }, []);
 
@@ -94,28 +105,20 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-white px-3 sm:px-4">
+    <div className="min-h-[calc(var(--vh,1vh)*100)] flex items-center justify-center bg-white px-3 sm:px-4">
       <div className="bg-white rounded-xl shadow-soft w-full max-w-md flex flex-col justify-center p-6">
         <img
           src={logo}
           alt="pray in verses"
           className="h-14 w-14 sm:h-16 sm:w-16 mb-4 object-cover object-top m-auto"
         />
-
         <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">
           Welcome to Pray in Verses
         </h2>
 
-        <form
-          className="space-y-4"
-          onSubmit={handleSubmit}
-          noValidate
-        >
+        <form className="space-y-4" onSubmit={handleSubmit} noValidate>
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium mb-1"
-            >
+            <label htmlFor="email" className="block text-sm font-medium mb-1">
               Email
             </label>
             <input
@@ -158,7 +161,7 @@ const Login = () => {
           <Button
             type="submit"
             variant="primary"
-            className="w-full py-3 text-base sm:text-lg"
+            className="w-full py-2 sm:py-3 text-base sm:text-lg"
           >
             Login
           </Button>
