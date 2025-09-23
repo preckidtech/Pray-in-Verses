@@ -15,7 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import {prayers} from "../../data/prayers";
+import { prayers } from "../../data/prayers";
 
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -111,29 +111,60 @@ export default function Header() {
 
   const sidebarItems = [
     { id: "dashboard", title: "Dashboard", icon: Home, path: "/home" },
-    { id: "about", title: "About", icon: Info, path: "#about", hasDropdown: true },
-    { id: "browse-prayers", title: "Browse Prayers", icon: BookMarked, path: "/browse-prayers" },
+    {
+      id: "about",
+      title: "About",
+      icon: Info,
+      path: "#about",
+      hasDropdown: true,
+    },
+    {
+      id: "browse-prayers",
+      title: "Browse Prayers",
+      icon: BookMarked,
+      path: "/browse-prayers",
+    },
     { id: "journal", title: "My Journal", icon: BookOpen, path: "/journal" },
-    { id: "prayer-wall", title: "Prayer Wall", icon: Users, path: "/prayer-wall" },
-    { id: "reminder", title: "Prayer Reminder", icon: Clock, path: "/reminders" },
-    { id: "saved-prayers", title: "Saved Prayer", icon: BookmarkCheck, path: "/saved-prayers" },
-    { id: "answered-prayers", title: "Answered Prayer", icon: BookmarkCheck, path: "/answered-prayers" },
+    {
+      id: "prayer-wall",
+      title: "Prayer Wall",
+      icon: Users,
+      path: "/prayer-wall",
+    },
+    {
+      id: "reminder",
+      title: "Prayer Reminder",
+      icon: Clock,
+      path: "/reminders",
+    },
+    {
+      id: "saved-prayers",
+      title: "Saved Prayer",
+      icon: BookmarkCheck,
+      path: "/saved-prayers",
+    },
+    {
+      id: "answered-prayers",
+      title: "Answered Prayer",
+      icon: BookmarkCheck,
+      path: "/answered-prayers",
+    },
     { id: "profile", title: "Profile", icon: User, path: "/profile" },
   ];
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 fixed top-0 left-0 w-full z-50 flex justify-between items-center">
+      <header className="bg-[#2c3E91] shadow-sm border-b border-gray-200 px-4 py-3 fixed top-0 left-0 w-full z-50 flex justify-between items-center">
         {/* Left: Logo & Menu */}
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setSidebarOpen((s) => !s)}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
+            className="lg:hidden p-2 rounded-md hover:bg-white text-[#FCCF3A] transition-colors duration-200"
             aria-label="Toggle sidebar"
           >
             <Menu className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Pray in Verses</h1>
+          <h1 className="text-xl font-bold text-[#FCCF3A]">Pray in Verses</h1>
         </div>
 
         {/* Middle: Search */}
@@ -184,7 +215,7 @@ export default function Header() {
             onClick={() => setNotifOpen((n) => !n)}
             className="p-2 rounded-full hover:bg-gray-100 relative transition-colors duration-200"
           >
-            <Bell className="w-6 h-6 text-gray-600" />
+            <Bell className="w-6 h-6 text-white" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
                 {unreadCount}
@@ -255,8 +286,8 @@ export default function Header() {
           <Link to="/profile" className="relative group">
             <div className="w-10 h-10 rounded-full overflow-hidden hover:shadow-lg transition-shadow duration-200 border-2 border-transparent hover:border-blue-200">
               {profileImage ? (
-                <img 
-                  src={profileImage} 
+                <img
+                  src={profileImage}
                   alt={userName}
                   className="w-full h-full object-cover"
                 />
@@ -266,7 +297,7 @@ export default function Header() {
                 </div>
               )}
             </div>
-            
+
             {/* Tooltip */}
             <div className="absolute right-0 top-12 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
               {userName}
@@ -277,32 +308,35 @@ export default function Header() {
 
       {/* Sidebar */}
       <aside
-        className={`bg-white shadow-md border-r border-gray-200 h-screen fixed top-16 left-0 z-40 transform lg:translate-x-0 ${
+        className={`bg-[#2c3E91] shadow-md border-r border-gray-200 h-screen fixed top-16 left-0 z-40 transform lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 w-40 flex flex-col justify-between`}
+        } transition-transform duration-300 w-56 flex flex-col justify-between`}
       >
         <nav className="mt-6 flex-1 relative">
           <ul className="flex flex-col items-center space-y-4">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
-              const isActive = item.path !== "#" && location.pathname === item.path;
+              const isActive =
+                item.path !== "#" && location.pathname === item.path;
 
               if (item.hasDropdown) {
                 return (
                   <li key={item.id} className="w-full relative">
                     <button
                       onClick={() => setAboutOpen((prev) => !prev)}
-                      className={`w-full flex gap-2 pl-2 items-center py-1 transition-all duration-200 hover:bg-gray-50 rounded-md group ${
+                      className={`w-full flex gap-2 pl-2 items-center py-1 transition-all duration-200 hover:bg-[#FCCF3A] rounded-md group ${
                         aboutOpen || isActive
-                          ? "text-blue-600 font-semibold"
-                          : "text-gray-700"
+                          ? "text-white font-semibold"
+                          : "text-white"
                       }`}
                     >
-                      <div className="bg-black rounded-full p-2 text-white group-hover:bg-gray-800 transition-colors duration-200">
+                      <div className="bg rounded-full p-2 text-white group-hover:bg-[#FCCF3A] transition-colors duration-200">
                         <Icon size={14} />
                       </div>
                       <div className="flex items-center justify-between flex-1">
-                        <span className="text-xs text-center">{item.title}</span>
+                        <span className="text-xs text-center">
+                          {item.title}
+                        </span>
                         <ChevronDown
                           size={12}
                           className={`transition-transform duration-200 ${
@@ -313,10 +347,10 @@ export default function Header() {
                     </button>
 
                     {aboutOpen && (
-                      <div className="absolute left-full top-0 ml-2 bg-white shadow-lg rounded-lg border border-gray-200 py-2 min-w-[140px] z-50 animate-in slide-in-from-left-2 duration-200">
+                      <div className="absolute left-full top-0 ml-2  bg-white shadow-lg rounded-lg border border-gray-200 py-2 min-w-[140px] z-50 animate-in slide-in-from-left-2 duration-200">
                         <Link
                           to="/about"
-                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-blue-600 transition-colors duration-200"
                           onClick={() => setAboutOpen(false)}
                         >
                           About PIV
@@ -338,15 +372,17 @@ export default function Header() {
                 <li key={item.id} className="w-full">
                   <Link
                     to={item.path}
-                    className={`w-full flex gap-2 pl-2 items-center py-1 transition-all duration-200 hover:bg-gray-50 rounded-md group ${
+                    className={`w-full flex gap-2 pl-2 items-center py-1 transition-all duration-200 hover:bg-[#FCCF3A] rounded-md group ${
                       isActive
-                        ? "text-blue-600 font-semibold bg-blue-50"
-                        : "text-gray-700"
+                        ? "text-white font-semibold bg-[#FCCF3A]"
+                        : "text-white"
                     }`}
                   >
                     <div
                       className={`rounded-full p-2 text-white transition-colors duration-200 ${
-                        isActive ? "bg-blue-600" : "bg-black group-hover:bg-gray-800"
+                        isActive
+                          ? "bg-[#3FCBFF]"
+                          : "bg-pink-[#ABBC6B] group-hover:bg-gray-800"
                       }`}
                     >
                       <Icon size={14} />

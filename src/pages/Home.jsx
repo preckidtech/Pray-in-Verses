@@ -17,7 +17,7 @@ const Home = () => {
   return (
     <div className="flex bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen pt-20 font-['Poppins']">
       {/* Sidebar Spacer */}
-      <div className="hidden lg:block w-40"></div>
+      <div className="hidden lg:block w-56"></div>
 
       {/* Main Content */}
       <main className="flex-1 space-y-8 px-4 lg:px-6 pb-10 max-w-7xl">

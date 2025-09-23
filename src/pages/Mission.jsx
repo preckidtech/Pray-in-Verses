@@ -92,7 +92,7 @@ export default function Mission() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 lg:ml-40 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 lg:ml-[224px] pt-20 pb-12">
       <div className="max-w-6xl mx-auto px-6">
         {/* Hero Section */}
         <div className="text-center mb-12">

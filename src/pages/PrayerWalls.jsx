@@ -201,7 +201,7 @@ const PrayerWalls = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-40">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
       <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="text-center mb-8">

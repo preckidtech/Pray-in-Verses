@@ -18,7 +18,7 @@ const AnsweredPrayers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-[224px] px-4 pb-8">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="container mx-auto px-4 py-6">
         {/* Title */}
