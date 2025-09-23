@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "../../components/ui/Button";
-import { useAuthStore } from "../../store";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import Button from "../../components/ui/Button";
+import { useAuthStore } from "../../store";
 import logo from "../../assets/images/prayinverse.png";
 
 const Signup = () => {
@@ -19,7 +19,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // ✅ Mobile-proof: lock scroll and true viewport
+  // Lock scroll & true viewport
   useEffect(() => {
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
@@ -40,37 +40,23 @@ const Signup = () => {
     };
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const validateForm = () => {
     const { name, email, password, confirmPassword } = form;
-
-    if (!name.trim()) {
-      toast.error("Name is required");
-      return false;
-    }
+    if (!name.trim()) return toast.error("Name is required"), false;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Enter a valid email address");
-      return false;
-    }
+    if (!emailRegex.test(email)) return toast.error("Enter a valid email address"), false;
 
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      toast.error(
-        "Password must be 8+ characters and include uppercase, lowercase, number, and special character"
-      );
-      return false;
-    }
+    if (!passwordRegex.test(password))
+      return toast.error(
+        "Password must be 8+ characters with uppercase, lowercase, number, and special character"
+      ), false;
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return false;
-    }
+    if (password !== confirmPassword) return toast.error("Passwords do not match"), false;
 
     return true;
   };
@@ -79,9 +65,7 @@ const Signup = () => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
   };
 
   const handleSubmit = async (e) => {
@@ -90,10 +74,7 @@ const Signup = () => {
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const exists = users.find((u) => u.email.toLowerCase() === form.email.toLowerCase());
-    if (exists) {
-      toast.error("User already exists with this email");
-      return;
-    }
+    if (exists) return toast.error("User already exists with this email");
 
     const hashedPassword = await hashPassword(form.password);
     const newUser = { name: form.name, email: form.email, password: hashedPassword };
@@ -108,17 +89,19 @@ const Signup = () => {
 
   return (
     <div
-      className="w-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary overflow-hidden"
+      className="w-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary overflow-hidden px-4 sm:px-6"
       style={{ height: "calc(var(--vh,1vh)*100)" }}
     >
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 flex flex-col justify-center flex-1">
-        <img
-          src={logo}
-          alt="pray in verse"
-          className="m-auto h-16 w-16 mb-4 object-contain"
-        />
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up to Pray in Verses</h2>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col justify-center p-6">
+        {/* Logo on top */}
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="logo" className="h-16 w-16 sm:h-20 sm:w-20 object-contain" />
+        </div>
 
+        {/* Title */}
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Sign Up to Pray in Verses</h2>
+
+        {/* Form */}
         <form className="w-full space-y-4" onSubmit={handleSubmit}>
           <input
             type="text"

@@ -9,11 +9,12 @@ import logo from "../../assets/images/prayinverse.png";
 const Login = () => {
   const loginAction = useAuthStore((s) => s.login);
   const navigate = useNavigate();
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
 
+  // ✅ Lock scroll & true viewport
   useEffect(() => {
-    // Prevent scrolling
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
 
@@ -71,13 +72,21 @@ const Login = () => {
 
   return (
     <div
-      className="w-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary overflow-hidden"
+      className="w-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary overflow-hidden px-4 sm:px-6"
       style={{ height: "calc(var(--vh,1vh)*100)" }}
     >
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 flex flex-col justify-center flex-1">
-        <img src={logo} alt="logo" className="h-16 w-16 mb-4 object-contain mx-auto" />
-        <h2 className="text-2xl font-bold mb-6 text-center">Login to Pray in Verses</h2>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col justify-center p-6">
+        {/* Logo on top */}
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="logo" className="h-16 w-16 sm:h-20 sm:w-20 object-contain" />
+        </div>
 
+        {/* Title */}
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
+          Login to Pray in Verses
+        </h2>
+
+        {/* Form */}
         <form className="w-full space-y-4" onSubmit={handleSubmit}>
           <input
             type="email"
@@ -88,7 +97,6 @@ const Login = () => {
             required
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary outline-none"
           />
-
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
