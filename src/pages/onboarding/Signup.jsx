@@ -99,7 +99,7 @@ const Signup = () => {
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Sign Up to Pray in Verses</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Sign Up</h2>
 
         {/* Form */}
         <form className="w-full space-y-4" onSubmit={handleSubmit}>

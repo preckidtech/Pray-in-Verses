@@ -83,7 +83,7 @@ const Login = () => {
 
         {/* Title */}
         <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
-          Login to Pray in Verses
+          Login
         </h2>
 
         {/* Form */}
