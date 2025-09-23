@@ -8,7 +8,7 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  // ✅ Same fix as Welcome
+  // ✅ Same viewport fix as Welcome
   useEffect(() => {
     document.body.style.overflow = "hidden";
     const setVh = () => {
@@ -41,13 +41,20 @@ const ForgotPassword = () => {
     setStep(2);
   };
 
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
+    const encoder = new TextEncoder();
+    const data = encoder.encode(newPassword);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
     let users = JSON.parse(localStorage.getItem("users")) || [];
     users = users.map((u) =>
-      u.email === email ? { ...u, password: newPassword } : u
+      u.email === email ? { ...u, password: hashedPassword } : u
     );
     localStorage.setItem("users", JSON.stringify(users));
+
     toast.success("Password reset successfully. You can now log in.");
     setStep(1);
     setEmail("");
