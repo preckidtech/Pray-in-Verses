@@ -153,9 +153,9 @@ const BrowsePrayers = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24 lg:pl-[224px] px-4 pb-8">
-      <div className="container px-2 py-6">
+      <div className="container px-2 md:px-6 lg:px-6 py-6">
         <div className="text-center mb-8">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
+          <h1 className="text-2xl md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
             <BookOpen className="w-10 h-10 text-blue-600" />
             Browse Prayers
           </h1>

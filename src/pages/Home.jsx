@@ -4,7 +4,6 @@ import Button from "../components/ui/Button";
 import FeaturedVerseCards from "../components/ui/FeaturedVerseCards";
 import QuickActionsGrid from "../components/ui/QuickActionsGrid";
 import SuggestedVerses from "../components/ui/SuggestedVerses";
-import PrayerStreakCard from "../components/ui/PrayerStreakCard";
 
 import welcomeBg from "../assets/images/home/hero/a-group-of-young-christians-holding-hands-in-praye-2025-03-26-18-07-58-utc.jpg";
 
@@ -20,7 +19,7 @@ const Home = () => {
       <div className="hidden lg:block w-56"></div>
 
       {/* Main Content */}
-      <main className="flex-1 space-y-8 px-4 lg:px-6 pb-10 max-w-7xl">
+      <main className="flex-1 space-y-10 px-4 lg:px-6 pb-10 max-w-7xl">
         {/* Welcome Section */}
         <section
           className="relative rounded-xl overflow-hidden shadow-lg border border-gray-100"

@@ -165,7 +165,7 @@ export default function Header() {
           >
             <Menu className="w-6 h-6" />
           </button>
-          <img src={logo} alt="prayinverse" className="h-10"/>
+          {/* <img src={logo} alt="prayinverse" className="h-10"/> */}
           <h1 className="text-xl font-bold text-[#FCCF3A]">Pray in Verses</h1>
         </div>
 
