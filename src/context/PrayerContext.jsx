@@ -22,38 +22,39 @@ export const usePrayers = () => {
 export const PrayersProvider = ({ children }) => {
   const [prayers, setPrayers] = useState([]);
 
+  // Load prayers initially
+  const loadPrayers = () => {
+    const allPrayers = getPrayers();
+    setPrayers(allPrayers);
+  };
+
   useEffect(() => {
-    setPrayers(getPrayers());
+    loadPrayers();
   }, []);
 
   const addPrayer = (data) => {
-    const updated = addPrayerData(data);
-    setPrayers(updated); // automatically updates BrowsePrayers
-    return updated;
+    addPrayerData(data); // save data in storage/database
+    loadPrayers(); // reload to update global state
   };
 
   const editPrayer = (id, data) => {
-    const updated = editPrayerData(id, data);
-    setPrayers(updated);
-    return updated;
+    editPrayerData(id, data);
+    loadPrayers();
   };
 
   const deletePrayer = (id) => {
-    const updated = deletePrayerData(id);
-    setPrayers(updated);
-    return updated;
+    deletePrayerData(id);
+    loadPrayers();
   };
 
   const toggleSaved = (id) => {
-    const updated = toggleSavedData(id);
-    setPrayers(updated);
-    return updated;
+    toggleSavedData(id);
+    loadPrayers();
   };
 
   const toggleAnswered = (id) => {
-    const updated = toggleAnsweredData(id);
-    setPrayers(updated);
-    return updated;
+    toggleAnsweredData(id);
+    loadPrayers();
   };
 
   return (
