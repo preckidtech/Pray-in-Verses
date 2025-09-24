@@ -153,7 +153,7 @@ const BrowsePrayers = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24 lg:pl-[224px] px-4 pb-8">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container px-2 py-6">
         <div className="text-center mb-8">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
             <BookOpen className="w-10 h-10 text-blue-600" />
@@ -168,7 +168,7 @@ const BrowsePrayers = () => {
         {!selectedTestament && !searchQuery && (
           <>
             {/* Old Testament */}
-            <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <div className="mt-8 bg-white rounded-lg shadow-lg p-2">
               <h3 className="text-xl font-bold text-amber-800 mb-4 flex items-center gap-2">
                 <Book className="w-6 h-6" />
                 Old Testament
@@ -184,7 +184,9 @@ const BrowsePrayers = () => {
                   .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, "-")}`}
+                      to={`/book/${book.name
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
                       className="flex items-center justify-between p-3 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
                     >
                       <span className="font-medium text-gray-900">
@@ -199,7 +201,7 @@ const BrowsePrayers = () => {
             </div>
 
             {/* New Testament */}
-            <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
+            <div className="mt-6 bg-white rounded-lg shadow-lg p-2">
               <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
                 <Book className="w-6 h-6" />
                 New Testament
@@ -214,7 +216,9 @@ const BrowsePrayers = () => {
                   .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, "-")}`}
+                      to={`/book/${book.name
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
                       className="flex items-center justify-between p-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       <span className="font-medium text-gray-900">

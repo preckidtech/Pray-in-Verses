@@ -1,7 +1,7 @@
 // context/PrayerContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
 import {
-  getPrayers,
+  getPrayers as getPrayersData,
   addPrayer as addPrayerData,
   editPrayer as editPrayerData,
   deletePrayer as deletePrayerData,
@@ -22,39 +22,42 @@ export const usePrayers = () => {
 export const PrayersProvider = ({ children }) => {
   const [prayers, setPrayers] = useState([]);
 
-  // Load prayers initially
-  const loadPrayers = () => {
-    const allPrayers = getPrayers();
-    setPrayers(allPrayers);
-  };
-
   useEffect(() => {
-    loadPrayers();
+    setPrayers(getPrayersData());
   }, []);
 
+  const refreshPrayers = () => {
+    setPrayers(getPrayersData());
+  };
+
   const addPrayer = (data) => {
-    addPrayerData(data); // save data in storage/database
-    loadPrayers(); // reload to update global state
+    const updated = addPrayerData(data);
+    setPrayers(updated);
+    return updated;
   };
 
   const editPrayer = (id, data) => {
-    editPrayerData(id, data);
-    loadPrayers();
+    const updated = editPrayerData(id, data);
+    setPrayers(updated);
+    return updated;
   };
 
   const deletePrayer = (id) => {
-    deletePrayerData(id);
-    loadPrayers();
+    const updated = deletePrayerData(id);
+    setPrayers(updated);
+    return updated;
   };
 
   const toggleSaved = (id) => {
-    toggleSavedData(id);
-    loadPrayers();
+    const updated = toggleSavedData(id);
+    setPrayers(updated);
+    return updated;
   };
 
   const toggleAnswered = (id) => {
-    toggleAnsweredData(id);
-    loadPrayers();
+    const updated = toggleAnsweredData(id);
+    setPrayers(updated);
+    return updated;
   };
 
   return (
@@ -66,6 +69,7 @@ export const PrayersProvider = ({ children }) => {
         deletePrayer,
         toggleSaved,
         toggleAnswered,
+        refreshPrayers,
       }}
     >
       {children}
