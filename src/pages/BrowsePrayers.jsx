@@ -144,8 +144,8 @@ const BrowsePrayers = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
-            <BookOpen className="w-10 h-10 text-blue-600" />
+          <h1 className="text-lg md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
+            <BookOpen className="w-10 h-10  text-blue-600" />
             Browse Prayers
           </h1>
           <p className="text-gray-600 text-lg">
