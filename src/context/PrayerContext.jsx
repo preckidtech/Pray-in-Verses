@@ -1,0 +1,68 @@
+// context/PrayerContext.js
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  getPrayers,
+  addPrayer as addPrayerData,
+  editPrayer as editPrayerData,
+  deletePrayer as deletePrayerData,
+  toggleSaved as toggleSavedData,
+  toggleAnswered as toggleAnsweredData,
+} from "../data/prayers";
+
+const PrayerContext = createContext();
+
+export const usePrayers = () => {
+  const context = useContext(PrayerContext);
+  if (!context) {
+    throw new Error("usePrayers must be used within a PrayersProvider");
+  }
+  return context;
+};
+
+export const PrayersProvider = ({ children }) => {
+  const [prayers, setPrayers] = useState([]);
+
+  useEffect(() => {
+    setPrayers(getPrayers());
+  }, []);
+
+  const addPrayer = (data) => {
+    const updated = addPrayerData(data);
+    setPrayers(updated);
+  };
+
+  const editPrayer = (id, data) => {
+    const updated = editPrayerData(id, data);
+    setPrayers(updated);
+  };
+
+  const deletePrayer = (id) => {
+    const updated = deletePrayerData(id);
+    setPrayers(updated);
+  };
+
+  const toggleSaved = (id) => {
+    const updated = toggleSavedData(id);
+    setPrayers(updated);
+  };
+
+  const toggleAnswered = (id) => {
+    const updated = toggleAnsweredData(id);
+    setPrayers(updated);
+  };
+
+  return (
+    <PrayerContext.Provider
+      value={{
+        prayers,
+        addPrayer,
+        editPrayer,
+        deletePrayer,
+        toggleSaved,
+        toggleAnswered,
+      }}
+    >
+      {children}
+    </PrayerContext.Provider>
+  );
+};

@@ -1,160 +1,103 @@
-// src/data/prayers.js
+const STORAGE_KEY = "prayers";
 
-export const prayers = [
-  {
-    id: 1,
-    title: "Prayer for Inner Peace",
-    content: "Lord, grant me serenity to accept things I cannot change...",
-    category: "Peace",
-    tags: ["New Testament"],
-    verse: "Philippians 4:7",
-    author: "Classic Prayer",
-    likes: 234,
-    saves: 89,
-    timeAgo: "2 hours ago",
-  },
-  {
-    id: 2,
-    title: "Healing Prayer for Family",
-    content: "Heavenly Father, I come before You asking for healing...",
-    category: "Healing",
-    tags: ["Old Testament"],
-    verse: "Jeremiah 17:14",
-    author: "Community Prayer",
-    likes: 156,
-    saves: 67,
-    timeAgo: "5 hours ago",
-  },
-  {
-    id: 3,
-    title: "Morning Gratitude Prayer",
-    content: "Thank You, Lord, for this new day...",
-    category: "Gratitude",
-    tags: ["Old Testament"],
-    verse: "Psalm 118:24",
-    author: "Daily Devotions",
-    likes: 289,
-    saves: 145,
-    timeAgo: "1 day ago",
-  },
-  {
-    id: 4,
-    title: "Prayer for Wisdom",
-    content: "Lord, grant me wisdom and understanding to make the right choices...",
-    category: "Wisdom",
-    tags: ["New Testament"],
-    verse: "James 1:5",
-    author: "Classic Prayer",
-    likes: 178,
-    saves: 88,
-    timeAgo: "3 hours ago",
-  },
-  {
-    id: 5,
-    title: "Prayer for Strength",
-    content: "Father, give me strength to endure trials and remain steadfast...",
-    category: "Strength",
-    tags: ["Old Testament"],
-    verse: "Isaiah 40:31",
-    author: "Faith Devotional",
-    likes: 312,
-    saves: 120,
-    timeAgo: "7 hours ago",
-  },
-  {
-    id: 6,
-    title: "Prayer for Guidance",
-    content: "Lord, guide my steps and light my path according to Your word...",
-    category: "Guidance",
-    tags: ["New Testament"],
-    verse: "John 16:13",
-    author: "Daily Light",
-    likes: 202,
-    saves: 97,
-    timeAgo: "12 hours ago",
-  },
-  {
-    id: 7,
-    title: "Prayer for Deliverance",
-    content: "Almighty God, deliver me from evil and protect me from harm...",
-    category: "Deliverance",
-    tags: ["Old Testament"],
-    verse: "Psalm 34:17",
-    author: "Community Prayer",
-    likes: 250,
-    saves: 130,
-    timeAgo: "1 day ago",
-  },
-  {
-    id: 8,
-    title: "Prayer of Faith",
-    content: "Lord, help me walk in faith and not by sight...",
-    category: "Faith",
-    tags: ["New Testament"],
-    verse: "2 Corinthians 5:7",
-    author: "Faith Builders",
-    likes: 310,
-    saves: 142,
-    timeAgo: "2 days ago",
-  },
-  {
-    id: 9,
-    title: "Evening Prayer of Rest",
-    content: "Lord, as I lay down, grant me peace and protection through the night...",
-    category: "Rest",
-    tags: ["Old Testament"],
-    verse: "Psalm 4:8",
-    author: "Night Devotion",
-    likes: 180,
-    saves: 76,
-    timeAgo: "2 days ago",
-  },
-  {
-    id: 10,
-    title: "Prayer for Forgiveness",
-    content: "Merciful Father, forgive my sins and cleanse me from all unrighteousness...",
-    category: "Forgiveness",
-    tags: ["Old Testament"],
-    verse: "Psalm 51:10",
-    author: "Repentance Guide",
-    likes: 290,
-    saves: 155,
-    timeAgo: "3 days ago",
-  },
-  {
-    id: 11,
-    title: "Prayer of Thanksgiving",
-    content: "Lord, I give thanks for Your unending love and blessings...",
-    category: "Gratitude",
-    tags: ["New Testament"],
-    verse: "1 Thessalonians 5:18",
-    author: "Daily Gratitude",
-    likes: 330,
-    saves: 160,
-    timeAgo: "4 days ago",
-  },
-  {
-    id: 12,
-    title: "Prayer for Protection",
-    content: "Lord, surround me and my loved ones with Your divine protection...",
-    category: "Protection",
-    tags: ["Old Testament"],
-    verse: "Psalm 91:11",
-    author: "Classic Prayer",
-    likes: 410,
-    saves: 200,
-    timeAgo: "5 days ago",
-  },
-  {
-    id: 13,
-    title: "Prayer for Hope",
-    content: "Lord, renew my hope and remind me of Your promises...",
-    category: "Hope",
-    tags: ["Old Testament"],
-    verse: "Jeremiah 29:11",
-    author: "Hope Devotions",
-    likes: 270,
-    saves: 115,
-    timeAgo: "6 days ago",
-  },
-];
+export const loadPrayers = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    console.error("Error loading prayers:", e);
+    return [];
+  }
+};
+
+const savePrayers = (prayers) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prayers));
+  } catch (e) {
+    console.error("Error saving prayers:", e);
+  }
+};
+
+export const getPrayers = () => loadPrayers();
+
+export const addPrayer = (prayerData) => {
+  const prayers = loadPrayers();
+
+  const prayer = {
+    id: Date.now(),
+    book: prayerData.book,
+    chapter: prayerData.chapter,
+    verse: prayerData.verse,
+    title: prayerData.title,
+    contents: prayerData.contents || [],
+    insights: prayerData.insights || [],
+    saved: false,
+    answered: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  prayers.push(prayer);
+  savePrayers(prayers);
+  return prayers;
+};
+
+export const editPrayer = (id, updatedData) => {
+  const prayers = loadPrayers();
+  const updated = prayers.map((p) =>
+    p.id === id ? { ...p, ...updatedData } : p
+  );
+  savePrayers(updated);
+  return updated;
+};
+
+export const deletePrayer = (id) => {
+  const prayers = loadPrayers();
+  const updated = prayers.filter((p) => p.id !== id);
+  savePrayers(updated);
+  return updated;
+};
+
+export const toggleSaved = (id) => {
+  const prayers = loadPrayers();
+  const updated = prayers.map((p) =>
+    p.id === id ? { ...p, saved: !p.saved } : p
+  );
+  savePrayers(updated);
+  return updated;
+};
+
+export const toggleAnswered = (id) => {
+  const prayers = loadPrayers();
+  const updated = prayers.map((p) =>
+    p.id === id ? { ...p, answered: !p.answered } : p
+  );
+  savePrayers(updated);
+  return updated;
+};
+
+export const getSavedPrayers = () =>
+  loadPrayers().filter((p) => p.saved);
+
+export const getAnsweredPrayers = () =>
+  loadPrayers().filter((p) => p.answered);
+
+export const getRecentPrayers = (limit = 5) =>
+  loadPrayers()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, limit);
+
+export const getPrayersByBook = (book) =>
+  loadPrayers().filter((p) => p.book === book);
+
+export const searchPrayers = (query) => {
+  query = query.toLowerCase();
+  return loadPrayers().filter(
+    (p) =>
+      p.book.toLowerCase().includes(query) ||
+      p.chapter.toString().includes(query) ||
+      p.verse.toString().includes(query) ||
+      p.title.toLowerCase().includes(query) ||
+      (p.contents?.join(" ") || "").toLowerCase().includes(query) ||
+      (p.insights?.join(" ") || "").toLowerCase().includes(query)
+  );
+};

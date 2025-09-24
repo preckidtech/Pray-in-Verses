@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { User, Mail, Edit2, Save, X, Camera, Shield, Bell, LogOut, Bookmark, CheckCircle, Heart } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
-import { prayers } from "../data/prayers";
+import { getPrayers } from "../data/prayers";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);

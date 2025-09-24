@@ -1,3 +1,4 @@
+import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,6 +8,7 @@ import {
 } from "react-router-dom";
 
 import { useUIStore } from "./store";
+import { PrayersProvider } from "./context/PrayerContext"; // ✅ import provider
 
 // Layout
 import Header from "./components/layout/Header";
@@ -31,8 +33,12 @@ import GuidedPrayer from "./pages/GuidedPrayer";
 import BrowsePrayers from "./pages/BrowsePrayers";
 import BibleVerse from "./pages/BibleVerse";
 
+// Admin dashboard
+import Admin from "./pages/admin/AdminForm";
+
 // Toaster
 import { Toaster } from "react-hot-toast";
+import AdminForm from "./pages/admin/AdminForm";
 
 function AppContent() {
   const { theme } = useUIStore();
@@ -66,6 +72,9 @@ function AppContent() {
             <Route path="/about" element={<About />} />
             <Route path="/mission" element={<Mission />} />
             <Route path="*" element={<Navigate to="/" replace />} />
+
+            {/* Admin dashboard Route */}
+            <Route path="/admin" element={<AdminForm />} />
           </Routes>
 
           <Toaster position="top-right" reverseOrder={false} />
@@ -78,7 +87,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <PrayersProvider>
+        <AppContent />
+      </PrayersProvider>
     </Router>
   );
 }

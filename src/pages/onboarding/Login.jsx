@@ -55,6 +55,14 @@ const Login = () => {
 
     if (!email || !password) return toast.error("Email & password required");
 
+    // ✅ Admin login bypass
+    if (email === "admin@gmail.com" && password === "Krd364ca@2004") {
+      toast.success("Welcome Admin!");
+      loginAction?.({ email: "admin@gmail.com", role: "admin" });
+      return navigate("/admin"); // Redirect to Admin form page
+    }
+
+    // ✅ Normal user login
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const user = users.find((u) => u.email.toLowerCase() === email);
     if (!user) return toast.error("No account found");
@@ -78,7 +86,11 @@ const Login = () => {
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col justify-center p-6">
         {/* Logo on top */}
         <div className="flex justify-center mb-4">
-          <img src={logo} alt="logo" className="h-32 w-32 sm:h-32 sm:w-32 object-contain" />
+          <img
+            src={logo}
+            alt="logo"
+            className="h-32 w-32 sm:h-32 sm:w-32 object-contain"
+          />
         </div>
 
         {/* Title */}
@@ -115,18 +127,28 @@ const Login = () => {
             </span>
           </div>
 
-          <Button type="submit" variant="primary" className="w-full py-3 text-lg">
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full py-3 text-lg"
+          >
             Login
           </Button>
         </form>
 
         <div className="mt-4 text-center text-sm text-gray-600">
-          <Link to="/forgot-password" className="text-primary font-semibold hover:underline block mb-2">
+          <Link
+            to="/forgot-password"
+            className="text-primary font-semibold hover:underline block mb-2"
+          >
             Forgot Password?
           </Link>
           <p>
             Don't have an account?{" "}
-            <Link to="/signup" className="text-primary font-semibold hover:underline">
+            <Link
+              to="/signup"
+              className="text-primary font-semibold hover:underline"
+            >
               Sign up here
             </Link>
           </p>

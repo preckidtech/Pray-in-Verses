@@ -15,7 +15,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { prayers } from "../../data/prayers";
+import { usePrayers } from "../../context/PrayerContext";
+import logo from "../../assets/images/prayinverse2.png"
 
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -164,6 +165,7 @@ export default function Header() {
           >
             <Menu className="w-6 h-6" />
           </button>
+          <img src={logo} alt="prayinverse" className="h-10"/>
           <h1 className="text-xl font-bold text-[#FCCF3A]">Pray in Verses</h1>
         </div>
 
