@@ -162,8 +162,8 @@ const BrowsePrayers = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
-            <BookOpen className="w-10 h-10  text-blue-600" />
-            Browse Prayers
+            <BookOpen className="w-8 h-8  text-blue-600" />
+          Browse Prayers
           </h1>
           <p className="text-gray-600 text-lg">
             Explore {totalPrayers} prayers across{" "}
