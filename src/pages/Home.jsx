@@ -21,7 +21,7 @@ const Home = () => {
 
       {/* Main Content */}
       <main className="flex-1 space-y-8 px-4 lg:px-6 pb-10 max-w-7xl">
-        {/* Welcome Section with background */}
+        {/* Welcome Section */}
         <section
           className="relative rounded-xl overflow-hidden shadow-lg border border-gray-100"
           style={{
@@ -30,9 +30,7 @@ const Home = () => {
             backgroundPosition: "center",
           }}
         >
-          {/* Overlay using brand colors */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-blue-800/60" />
-
           <div className="relative p-8 lg:p-12 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 text-white">
             <div className="flex-1 max-w-2xl">
               <h1 className="text-2xl lg:text-3xl font-semibold mb-4 leading-tight text-yellow-50">
@@ -52,11 +50,6 @@ const Home = () => {
             </div>
           </div>
         </section>
-
-        {/* Prayer Streak Mobile */}
-        <div className="lg:hidden">
-          <PrayerStreakCard />
-        </div>
 
         {/* Featured Verses */}
         <section className="space-y-4">
@@ -115,39 +108,6 @@ const Home = () => {
               <button className="px-6 py-3 border-2 border-blue-300 text-blue-100 rounded-lg font-medium hover:bg-blue-600 transition-colors duration-300">
                 Read Scripture
               </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <div className="text-green-600 font-bold text-lg">📖</div>
-            </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">500+</div>
-            <div className="text-sm text-gray-600 font-medium">
-              Scripture Prayers
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <div className="text-blue-600 font-bold text-lg">🙏</div>
-            </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">10K+</div>
-            <div className="text-sm text-gray-600 font-medium">
-              Prayers Offered
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <div className="text-yellow-600 font-bold text-lg">✨</div>
-            </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">2K+</div>
-            <div className="text-sm text-gray-600 font-medium">
-              Lives Touched
             </div>
           </div>
         </section>
