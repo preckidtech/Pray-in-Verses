@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Book, Search, Filter, ChevronRight, BookOpen, Heart, Clock } from "lucide-react";
+import {
+  Book,
+  Search,
+  Filter,
+  ChevronRight,
+  BookOpen,
+  Heart,
+  Clock,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePrayers } from "../context/PrayerContext";
-import { getPrayersByBook, searchPrayers, getRecentPrayers } from "../data/prayers";
+import {
+  getPrayersByBook,
+  searchPrayers,
+  getRecentPrayers,
+} from "../data/prayers";
 
 const bibleBooks = [
   // Old Testament
@@ -45,7 +57,7 @@ const bibleBooks = [
   { name: "Haggai", testament: "old", category: "Prophets" },
   { name: "Zechariah", testament: "old", category: "Prophets" },
   { name: "Malachi", testament: "old", category: "Prophets" },
-  
+
   // New Testament
   { name: "Matthew", testament: "new", category: "Gospels" },
   { name: "Mark", testament: "new", category: "Gospels" },
@@ -86,7 +98,7 @@ const BrowsePrayers = () => {
   // Get prayer counts by book
   const getPrayerCounts = () => {
     const counts = {};
-    prayers.forEach(prayer => {
+    prayers.forEach((prayer) => {
       counts[prayer.book] = (counts[prayer.book] || 0) + 1;
     });
     return counts;
@@ -99,31 +111,37 @@ const BrowsePrayers = () => {
     let filtered = bibleBooks;
 
     if (selectedTestament) {
-      filtered = filtered.filter(book => book.testament === selectedTestament);
-    }
-
-    if (selectedCategory) {
-      filtered = filtered.filter(book => book.category === selectedCategory);
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(book => 
-        book.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.category.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (book) => book.testament === selectedTestament
       );
     }
 
-    return filtered.map(book => ({
+    if (selectedCategory) {
+      filtered = filtered.filter((book) => book.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (book) =>
+          book.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          book.category.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered.map((book) => ({
       ...book,
-      prayerCount: prayerCounts[book.name] || 0
+      prayerCount: prayerCounts[book.name] || 0,
     }));
   };
 
   const filteredBooks = getFilteredBooks();
-  const totalPrayers = Object.values(prayerCounts).reduce((sum, count) => sum + count, 0);
+  const totalPrayers = Object.values(prayerCounts).reduce(
+    (sum, count) => sum + count,
+    0
+  );
 
   // Get unique categories
-  const categories = [...new Set(bibleBooks.map(book => book.category))];
+  const categories = [...new Set(bibleBooks.map((book) => book.category))];
 
   // Handle search
   useEffect(() => {
@@ -141,70 +159,45 @@ const BrowsePrayers = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-[224px] px-4 pb-8">
       <div className="container mx-auto px-4 py-6">
-        
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-lg md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
             <BookOpen className="w-10 h-10  text-blue-600" />
             Browse Prayers
           </h1>
           <p className="text-gray-600 text-lg">
-            Explore {totalPrayers} prayers across {Object.keys(prayerCounts).length} books of the Bible
+            Explore {totalPrayers} prayers across{" "}
+            {Object.keys(prayerCounts).length} books of the Bible
           </p>
         </div>
-
-        
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">{totalPrayers}</div>
-            <div className="text-gray-600">Total Prayers</div>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">
-              {Object.keys(prayerCounts).length}
-            </div>
-            <div className="text-gray-600">Books Available</div>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">
-              {prayers.filter(p => p.saved).length}
-            </div>
-            <div className="text-gray-600">Saved Prayers</div>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-6 text-center">
-            <div className="text-3xl font-bold text-yellow-600 mb-2">
-              {prayers.filter(p => p.answered).length}
-            </div>
-            <div className="text-gray-600">Answered Prayers</div>
-          </div>
-        </div>
-
 
         {/* Testament Sections for better organization */}
         {!selectedTestament && !searchQuery && (
           <>
             {/* Old Testament */}
-            <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+            <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-bold text-amber-800 mb-4 flex items-center gap-2">
                 <Book className="w-6 h-6" />
                 Old Testament
                 <span className="text-sm font-normal text-gray-600">
-                  ({filteredBooks.filter(b => b.testament === 'old').length} books)
+                  ({filteredBooks.filter((b) => b.testament === "old").length}{" "}
+                  books)
                 </span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {filteredBooks
-                  .filter(book => book.testament === 'old')
-                  .slice(0, 8)
-                  .map(book => (
+                  .filter((book) => book.testament === "old")
+                  .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, '-')}`}
+                      to={`/book/${book.name
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
                       className="flex items-center justify-between p-3 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
                     >
-                      <span className="font-medium text-gray-900">{book.name}</span>
+                      <span className="font-medium text-gray-900">
+                        {book.name}
+                      </span>
                       <span className="text-sm text-amber-600 font-semibold">
                         {book.prayerCount}
                       </span>
@@ -214,25 +207,29 @@ const BrowsePrayers = () => {
             </div>
 
             {/* New Testament */}
-            <div className="mt-6 bg-white rounded-2xl shadow-lg p-6">
+            <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
                 <Book className="w-6 h-6" />
                 New Testament
                 <span className="text-sm font-normal text-gray-600">
-                  ({filteredBooks.filter(b => b.testament === 'new').length} books)
+                  ({filteredBooks.filter((b) => b.testament === "new").length}{" "}
+                  books)
                 </span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {filteredBooks
-                  .filter(book => book.testament === 'new')
-                  .slice(0, 8)
-                  .map(book => (
+                  .filter((book) => book.testament === "new")
+                  .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, '-')}`}
+                      to={`/book/${book.name
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
                       className="flex items-center justify-between p-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
                     >
-                      <span className="font-medium text-gray-900">{book.name}</span>
+                      <span className="font-medium text-gray-900">
+                        {book.name}
+                      </span>
                       <span className="text-sm text-blue-600 font-semibold">
                         {book.prayerCount}
                       </span>
