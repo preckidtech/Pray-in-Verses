@@ -12,11 +12,17 @@ export default {
         cream: "#FFFEF0",       // So Cream
         crimson: "#BA1A1A",     // Crimson Red
         sky: "#3FCBFF",         // Sky Blue
-        
       },
       fontFamily: {
-        sans: ["Poppins", "sans-serif"],
-        serif: ["Georgia", "serif"],
+        primary: ["'Playfair Display'", "serif"], // Elegant, classical, spiritual
+        secondary: ["Roboto", "sans-serif"],      // Clean, readable, modern
+        sans: ["Open Sans", "sans-serif"],        // Alternative secondary font
+      },
+      fontSize: {
+        scripture: ["1.125rem", { lineHeight: "1.75rem" }], // Slightly larger scripture style
+      },
+      fontStyle: {
+        scripture: "italic",
       },
       borderRadius: {
         xl: "1rem",
