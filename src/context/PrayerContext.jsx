@@ -28,27 +28,32 @@ export const PrayersProvider = ({ children }) => {
 
   const addPrayer = (data) => {
     const updated = addPrayerData(data);
-    setPrayers(updated);
+    setPrayers(updated); // automatically updates BrowsePrayers
+    return updated;
   };
 
   const editPrayer = (id, data) => {
     const updated = editPrayerData(id, data);
     setPrayers(updated);
+    return updated;
   };
 
   const deletePrayer = (id) => {
     const updated = deletePrayerData(id);
     setPrayers(updated);
+    return updated;
   };
 
   const toggleSaved = (id) => {
     const updated = toggleSavedData(id);
     setPrayers(updated);
+    return updated;
   };
 
   const toggleAnswered = (id) => {
     const updated = toggleAnsweredData(id);
     setPrayers(updated);
+    return updated;
   };
 
   return (

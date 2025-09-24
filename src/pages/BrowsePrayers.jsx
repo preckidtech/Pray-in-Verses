@@ -89,13 +89,12 @@ const bibleBooks = [
 ];
 
 const BrowsePrayers = () => {
-  const { prayers } = usePrayers();
+  const { prayers } = usePrayers(); // Shared state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTestament, setSelectedTestament] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
-  // Get prayer counts by book
   const getPrayerCounts = () => {
     const counts = {};
     prayers.forEach((prayer) => {
@@ -106,7 +105,6 @@ const BrowsePrayers = () => {
 
   const prayerCounts = getPrayerCounts();
 
-  // Filter books based on search and filters
   const getFilteredBooks = () => {
     let filtered = bibleBooks;
 
@@ -140,10 +138,8 @@ const BrowsePrayers = () => {
     0
   );
 
-  // Get unique categories
   const categories = [...new Set(bibleBooks.map((book) => book.category))];
 
-  // Handle search
   useEffect(() => {
     if (searchQuery.length > 0) {
       const results = searchPrayers(searchQuery);
@@ -151,19 +147,17 @@ const BrowsePrayers = () => {
     } else {
       setSearchResults([]);
     }
-  }, [searchQuery]);
+  }, [searchQuery, prayers]); // <-- prayers dependency ensures updates
 
-  // Get recent prayers
   const recentPrayers = getRecentPrayers(5);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-[224px] px-4 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24 lg:pl-[224px] px-4 pb-8">
       <div className="container mx-auto px-4 py-6">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
-            <BookOpen className="w-8 h-8  text-blue-600" />
-          Browse Prayers
+            <BookOpen className="w-10 h-10 text-blue-600" />
+            Browse Prayers
           </h1>
           <p className="text-gray-600 text-lg">
             Explore {totalPrayers} prayers across{" "}
@@ -171,7 +165,6 @@ const BrowsePrayers = () => {
           </p>
         </div>
 
-        {/* Testament Sections for better organization */}
         {!selectedTestament && !searchQuery && (
           <>
             {/* Old Testament */}
@@ -184,15 +177,14 @@ const BrowsePrayers = () => {
                   books)
                 </span>
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {/* Updated grid for desktop and mobile */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                 {filteredBooks
                   .filter((book) => book.testament === "old")
                   .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
+                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, "-")}`}
                       className="flex items-center justify-between p-3 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
                     >
                       <span className="font-medium text-gray-900">
@@ -216,15 +208,13 @@ const BrowsePrayers = () => {
                   books)
                 </span>
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                 {filteredBooks
                   .filter((book) => book.testament === "new")
                   .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
+                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, "-")}`}
                       className="flex items-center justify-between p-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       <span className="font-medium text-gray-900">
