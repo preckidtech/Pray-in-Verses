@@ -164,12 +164,12 @@
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
         <div className="container mx-auto px-4 py-8">
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+          <div className="flex flex-col md:flex-row justify-between items-center  mb-8">
+            <div className="grid  align-middle text-center md:text-left mb-8">
+              <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 ">
                 My Prayer Journal
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-sm md:text-lg text-[#0C2E8A]">
                 Record your spiritual journey and God's faithfulness
               </p>
             </div>
