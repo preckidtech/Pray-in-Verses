@@ -421,7 +421,7 @@ const Reminder = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2 max-w-full">
                       <button
                         onClick={() => toggleReminder(reminder.id)}
                         className={`p-2 rounded-lg transition-all duration-200 ${
