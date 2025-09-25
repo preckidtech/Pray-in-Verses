@@ -164,10 +164,10 @@ const Reminder = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+            <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 ">
               Prayer Reminders
             </h1>
-            <p className="text-gray-600 text-lg">Set regular reminders for Scripture-based prayer time</p>
+            <p className="text-sm md:text-lg text-[#0C2E8A]">Set regular reminders for Scripture-based prayer time</p>
           </div>
           <button
             onClick={() => {
@@ -175,7 +175,7 @@ const Reminder = () => {
               setFormData({ title: '', time: '', days: [], sound: 'gentle-chime', prayer: '', icon: 'sun' });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+            className="flex items-center gap-2 px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
           >
             <Plus className="w-5 h-5" />
             New Reminder
@@ -184,35 +184,35 @@ const Reminder = () => {
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
             <div className="flex items-center">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Bell className="w-6 h-6 text-blue-700" />
+              <div className="p-3 bg-[#FCCF3A] rounded-lg">
+                <Bell className="w-6 h-6 text-[#0C2E8A]" />
               </div>
               <div className="ml-4">
-                <h3 className="text-2xl font-semibold text-gray-900">{activeReminders}</h3>
+                <h3 className="text-2xl font-semibold text-[#0C2E8A]">{activeReminders}</h3>
                 <p className="text-gray-600 font-medium">Active Reminders</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
             <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Clock className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-[#FCCF3A] rounded-lg">
+                <Clock className="w-6 h-6 text-[#0C2E8A]" />
               </div>
               <div className="ml-4">
-                <h3 className="text-2xl font-semibold text-gray-900">{reminders.length}</h3>
+                <h3 className="text-2xl font-semibold text-[#0C2E8A]">{reminders.length}</h3>
                 <p className="text-gray-600 font-medium">Total Reminders</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
             <div className="flex items-center">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <Calendar className="w-6 h-6 text-yellow-600" />
+              <div className="p-3 bg-[#FCCF3A] rounded-lg">
+                <Calendar className="w-6 h-6 text-[#0C2E8A]" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-[#0C2E8A]">
                   {upcomingReminder ? formatTime(upcomingReminder.time) : 'None'}
                 </h3>
                 <p className="text-gray-600 font-medium">Next Prayer</p>
@@ -222,8 +222,8 @@ const Reminder = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-          <h2 className="text-xl font-medium text-gray-900 mb-4">Quick Setup</h2>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+          <h2 className="text-xl font-medium text-[#0C2E8A] mb-4">Quick Setup</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
               { title: 'Morning Prayer', time: '07:00', icon: Sun, color: 'blue' },
@@ -265,20 +265,20 @@ const Reminder = () => {
             const IconComponent = getIconComponent(reminder.icon);
             
             return (
-              <div key={reminder.id} className={`bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 ${!reminder.isActive ? 'opacity-60' : ''}`}>
+              <div key={reminder.id} className={`bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 ${!reminder.isActive ? 'opacity-60' : ''}`}>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-4">
                       <div className={`p-3 rounded-lg ${
                         reminder.isActive 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'bg-gray-100 text-gray-400'
+                          ? 'bg-blue-100 text-[#0C2E8A]' 
+                          : 'bg-gray-100 text-[#ABBC6B]'
                       }`}>
                         <IconComponent className="w-6 h-6" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-medium text-gray-900">{reminder.title}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <h3 className="text-xl font-medium text-[#0C2E8A]">{reminder.title}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-[#ABBC6B]">
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-1" />
                             {formatTime(reminder.time)}
@@ -300,7 +300,7 @@ const Reminder = () => {
                         onClick={() => toggleReminder(reminder.id)}
                         className={`p-2 rounded-lg transition-all duration-200 ${
                           reminder.isActive
-                            ? 'text-green-600 bg-green-100 hover:bg-green-200'
+                            ? 'text-[#ABBC6B] bg-green-100 hover:bg-green-200'
                             : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
                         }`}
                         title={reminder.isActive ? 'Pause reminder' : 'Activate reminder'}
@@ -309,14 +309,14 @@ const Reminder = () => {
                       </button>
                       <button
                         onClick={() => handleEdit(reminder)}
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                        className="p-2 text-gray-500 hover:text-[#0C2E8A] hover:bg-blue-50 rounded-lg transition-all duration-200"
                         title="Edit reminder"
                       >
                         <Edit3 className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(reminder.id)}
-                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                        className="p-2 text-gray-500 hover:text-[#BA1A1A] hover:bg-red-50 rounded-lg transition-all duration-200"
                         title="Delete reminder"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -326,13 +326,13 @@ const Reminder = () => {
 
                   {reminder.prayer && (
                     <div className="bg-gradient-to-r from-blue-50 to-yellow-50 rounded-lg p-4 mb-4 border border-blue-100">
-                      <p className="text-gray-700 italic">{reminder.prayer}</p>
+                      <p className="text-[#3FCBF] italic">{reminder.prayer}</p>
                     </div>
                   )}
 
                   <div className="flex flex-wrap gap-2">
                     {reminder.days.map(day => (
-                      <span key={day} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-md">
+                      <span key={day} className="px-3 py-1 bg-[#FCCF3A] text-[#0C2E8A] text-sm rounded-md">
                         {day.slice(0, 3)}
                       </span>
                     ))}
@@ -363,7 +363,7 @@ const Reminder = () => {
         {/* Modal for Adding/Editing Reminder */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-6">
                   {editingReminder ? 'Edit Reminder' : 'New Prayer Reminder'}
