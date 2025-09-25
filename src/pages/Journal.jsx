@@ -176,7 +176,7 @@
             <button
               onClick={() => {
                 setEditingEntry(null);
-                setFormData({
+                setFormData({ 
                   title: "",
                   content: "",
                   mood: "Grateful",

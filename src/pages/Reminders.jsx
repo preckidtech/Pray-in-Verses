@@ -231,11 +231,11 @@ const Reminder = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl text-center md:text-2xl font-bold text-[#0C2E8A] mb-2 ">
+          <div className="grid  align-middle text-center md:text-left ">
+            <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 ">
               Prayer Reminders
             </h1>
-            <p className="text-sm text-center mb-4  md:text-lg text-[#0C2E8A]">
+            <p className="text-sm mb-4  md:text-lg text-[#0C2E8A]">
               Set regular reminders for Scripture-based prayer time
             </p>
           </div>
