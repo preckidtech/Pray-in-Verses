@@ -219,7 +219,7 @@ const PrayerWalls = () => {
                 placeholder="Search prayer requests..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
               />
             </div>
             <button
@@ -380,10 +380,10 @@ const PrayerWalls = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-gray-900">New Prayer Request</h2>
+                <h2 className="text-2xl font-semibold text-[#0C2E8A]">New Prayer Request</h2>
                 <button
                   onClick={() => setShowModal(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -402,7 +402,7 @@ const PrayerWalls = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
                     required
                   />
                 </div>
@@ -416,7 +416,7 @@ const PrayerWalls = () => {
                       setFormData({ ...formData, content: e.target.value })
                     }
                     rows="4"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent resize-none"
                     required
                   />
                 </div>
@@ -428,7 +428,7 @@ const PrayerWalls = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]focus:border-transparent"
                   >
                     {categories.filter(cat => cat !== "All").map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -444,7 +444,7 @@ const PrayerWalls = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, isUrgent: e.target.checked })
                       }
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="w-4 h-4 text-[#0C2E8A] focus:ring-[#0C2E8A] border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Mark as urgent</span>
                   </label>
@@ -459,7 +459,7 @@ const PrayerWalls = () => {
                           isAnonymous: e.target.checked,
                         })
                       }
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="w-4 h-4 text-[#0C2E8A] focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Post anonymously</span>
                   </label>
@@ -475,7 +475,7 @@ const PrayerWalls = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition font-medium"
+                    className="px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-blue-800 transition font-medium"
                   >
                     Submit Request
                   </button>
