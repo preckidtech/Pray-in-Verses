@@ -12,8 +12,8 @@ import { Link } from "react-router-dom";
 
 const actions = [
   { title: "Browse by Book", icon: BookOpen, path: "/browse-prayers" },
-  { title: "Daily Verse", icon: Calendar, path: "/" },
-  { title: "Pray Now", icon: Play, path: "/" },
+  // { title: "Daily Verse", icon: Calendar, path: "/" },
+  { title: "Pray Now", icon: Play, path: "/browse-prayers" },
   { title: "Prayer Reminders", icon: Bell, path: "/reminders" },
   { title: "My Journal", icon: Book, path: "/journal" },
   { title: "Saved Prayer", icon: Heart, path: "/saved-prayers" },

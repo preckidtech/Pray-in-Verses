@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  Book,
-  Search,
-  Filter,
-  ChevronRight,
-  BookOpen,
-  Heart,
-  Clock,
-} from "lucide-react";
+import { Book, Search, Filter, ChevronRight, BookOpen, Heart, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePrayers } from "../context/PrayerContext";
-import {
-  getPrayersByBook,
-  searchPrayers,
-  getRecentPrayers,
-} from "../data/prayers";
+import { getPrayersByBook, searchPrayers, getRecentPrayers } from "../data/prayers";
+
+// Brand palette
+// primary: #0C2E8A
+// secondary: #FCCF3A
+// olive: #ABBC6B
+// cream: #FFFEF0
+// crimson: #BA1A1A
+// sky: #3FCBFF
 
 const bibleBooks = [
   // Old Testament
@@ -89,7 +85,7 @@ const bibleBooks = [
 ];
 
 const BrowsePrayers = () => {
-  const { prayers } = usePrayers(); // Shared state
+  const { prayers } = usePrayers();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTestament, setSelectedTestament] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -97,7 +93,7 @@ const BrowsePrayers = () => {
 
   const getPrayerCounts = () => {
     const counts = {};
-    prayers.forEach((prayer) => {
+    (prayers || []).forEach((prayer) => {
       counts[prayer.book] = (counts[prayer.book] || 0) + 1;
     });
     return counts;
@@ -106,12 +102,10 @@ const BrowsePrayers = () => {
   const prayerCounts = getPrayerCounts();
 
   const getFilteredBooks = () => {
-    let filtered = bibleBooks;
+    let filtered = bibleBooks.slice();
 
     if (selectedTestament) {
-      filtered = filtered.filter(
-        (book) => book.testament === selectedTestament
-      );
+      filtered = filtered.filter((book) => book.testament === selectedTestament);
     }
 
     if (selectedCategory) {
@@ -119,10 +113,9 @@ const BrowsePrayers = () => {
     }
 
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (book) =>
-          book.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          book.category.toLowerCase().includes(searchQuery.toLowerCase())
+        (book) => book.name.toLowerCase().includes(q) || book.category.toLowerCase().includes(q)
       );
     }
 
@@ -133,12 +126,9 @@ const BrowsePrayers = () => {
   };
 
   const filteredBooks = getFilteredBooks();
-  const totalPrayers = Object.values(prayerCounts).reduce(
-    (sum, count) => sum + count,
-    0
-  );
+  const totalPrayers = Object.values(prayerCounts).reduce((sum, c) => sum + c, 0);
 
-  const categories = [...new Set(bibleBooks.map((book) => book.category))];
+  const categories = [...new Set(bibleBooks.map((b) => b.category))];
 
   useEffect(() => {
     if (searchQuery.length > 0) {
@@ -147,86 +137,72 @@ const BrowsePrayers = () => {
     } else {
       setSearchResults([]);
     }
-  }, [searchQuery, prayers]); // <-- prayers dependency ensures updates
+  }, [searchQuery, prayers]);
 
   const recentPrayers = getRecentPrayers(5);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24 lg:pl-[224px] px-4 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFEF0] to-[#3FCBFF] pt-24 lg:pl-[224px] px-4 pb-8">
       <div className="container px-2 md:px-6 lg:px-6 py-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
-            <BookOpen className="w-8 h-8 text-blue-600" />
+          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
+            <BookOpen className="w-8 h-8 text-[#FCCF3A]" />
             Browse Prayers
           </h1>
-          <p className="text-gray-600 text-lg">
-            Explore {totalPrayers} prayers across{" "}
-            {Object.keys(prayerCounts).length} books of the Bible
+          <p className="text-sm md:text-lg text-[#0C2E8A]">
+            Explore {totalPrayers} prayers across {Object.keys(prayerCounts).length} books of the Bible
           </p>
         </div>
 
         {!selectedTestament && !searchQuery && (
           <>
             {/* Old Testament */}
-            <div className="mt-8 bg-white rounded-lg shadow-lg p-2">
-              <h3 className="text-xl font-bold text-amber-800 mb-4 flex items-center gap-2">
-                <Book className="w-6 h-6" />
+            <div className="mt-8 bg-[#FFFEF0] rounded-lg shadow p-3 border-l-4 border-[#FCCF3A]">
+              <h3 className="text-xl font-bold text-[#0C2E8A] mb-4 flex items-center gap-2">
+                <Book className="w-6 h-6 text-[#FCCF3A]" />
                 Old Testament
-                <span className="text-sm font-normal text-gray-600">
-                  ({filteredBooks.filter((b) => b.testament === "old").length}{" "}
-                  books)
+                <span className="text-sm font-normal text-[#ABBC6B] ml-2">
+                  ({filteredBooks.filter((b) => b.testament === "old").length} books)
                 </span>
               </h3>
-              {/* Updated grid for desktop and mobile */}
+
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                 {filteredBooks
                   .filter((book) => book.testament === "old")
                   .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      className="flex items-center justify-between p-3 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
+                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="flex items-center justify-between p-3 border border-[#FCCF3A] rounded-lg hover:bg-[#FFFEF0] transition-colors"
                     >
-                      <span className="font-medium text-gray-900">
-                        {book.name}
-                      </span>
-                      <span className="text-sm text-amber-600 font-semibold">
-                        {book.prayerCount}
-                      </span>
+                      <span className="font-medium text-[#0C2E8A]">{book.name}</span>
+                      <span className="text-sm font-semibold text-[#BA1A1A]">{book.prayerCount}</span>
                     </Link>
                   ))}
               </div>
             </div>
 
             {/* New Testament */}
-            <div className="mt-6 bg-white rounded-lg shadow-lg p-2">
-              <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
-                <Book className="w-6 h-6" />
+            <div className="mt-6 bg-[#FFFEF0] rounded-lg shadow p-3 border-l-4 border-[#0C2E8A]">
+              <h3 className="text-xl font-bold text-[#0C2E8A] mb-4 flex items-center gap-2">
+                <Book className="w-6 h-6 text-[#0C2E8A]" />
                 New Testament
-                <span className="text-sm font-normal text-gray-600">
-                  ({filteredBooks.filter((b) => b.testament === "new").length}{" "}
-                  books)
+                <span className="text-sm font-normal text-[#ABBC6B] ml-2">
+                  ({filteredBooks.filter((b) => b.testament === "new").length} books)
                 </span>
               </h3>
+
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                 {filteredBooks
                   .filter((book) => book.testament === "new")
                   .map((book) => (
                     <Link
                       key={book.name}
-                      to={`/book/${book.name
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      className="flex items-center justify-between p-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                      to={`/book/${book.name.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="flex items-center justify-between p-3 border border-[#0C2E8A] rounded-lg hover:bg-[#3FCBFF]/10 transition-colors"
                     >
-                      <span className="font-medium text-gray-900">
-                        {book.name}
-                      </span>
-                      <span className="text-sm text-blue-600 font-semibold">
-                        {book.prayerCount}
-                      </span>
+                      <span className="font-medium text-[#0C2E8A]">{book.name}</span>
+                      <span className="text-sm font-semibold text-[#FCCF3A]">{book.prayerCount}</span>
                     </Link>
                   ))}
               </div>
