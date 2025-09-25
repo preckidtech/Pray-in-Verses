@@ -205,12 +205,12 @@ const PrayerWalls = () => {
       <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-3">Prayer Wall</h1>
-          <p className="text-lg text-gray-600">Share prayer requests and support fellow believers</p>
+          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">Prayer Wall</h1>
+          <p className="text-sm md:text-lg text-[#0C2E8A]">Share prayer requests and support fellow believers</p>
         </div>
 
         {/* Search and Add Button */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -223,7 +223,7 @@ const PrayerWalls = () => {
               />
             </div>
             <button
-              className="flex items-center gap-2 bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
+              className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
               onClick={() => setShowModal(true)}
             >
               <Plus className="w-5 h-5" /> Add Request
@@ -232,18 +232,18 @@ const PrayerWalls = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Category</label>
+              <label className="block text-sm font-medium text-[#0C2E8A] mb-2">Filter by Category</label>
               <div className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                       selectedCategory === cat
-                        ? "bg-blue-700 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-[#0C2E8A] text-white"
+                        : "bg-[#FCCF3A] text-[#0C2E8A] font-bold hover:bg-[#ABBC6B]"
                     }`}
                     onClick={() => setSelectedCategory(cat)}
                   >
@@ -257,7 +257,7 @@ const PrayerWalls = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent text-sm"
               >
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
@@ -273,17 +273,17 @@ const PrayerWalls = () => {
           {sortedRequests.map((req) => (
             <div
               key={req.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-shadow duration-300"
+              className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-shadow duration-300"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-700 text-white rounded-full flex items-center justify-center font-medium">
+                  <div className="w-10 h-10 bg-[#0C2E8A] text-white rounded-full flex items-center justify-center font-medium">
                     {req.avatar}
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900">{req.title}</h3>
+                    <h3 className="text-lg font-medium text-[#0C2E8A]">{req.title}</h3>
                     {req.isUrgent && (
-                      <span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full font-medium">
+                      <span className="inline-block px-2 py-1 bg-red-100 text-[#BA1A1A] text-xs rounded-full font-medium">
                         Urgent
                       </span>
                     )}
@@ -298,7 +298,7 @@ const PrayerWalls = () => {
               
               <p className="text-gray-600 mb-4 leading-relaxed">{req.content}</p>
               
-              <div className="flex items-center text-sm text-gray-500 gap-4 mb-4">
+              <div className="flex items-center text-sm text-[#3FCBFF] gap-4 mb-4">
                 <span className="flex items-center gap-1">
                   <Users className="w-4 h-4" /> {req.author}
                 </span>
@@ -312,8 +312,8 @@ const PrayerWalls = () => {
                   onClick={() => handlePray(req.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium ${
                     req.prayed 
-                      ? "bg-red-100 text-red-700 hover:bg-red-200" 
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-red-100 text-[#BA1A1A] hover:bg-red-200" 
+                      : "bg-gray-100 text-[#FFFEF0] hover:bg-gray-200"
                   }`}
                 >
                   <Heart className="w-4 h-4" /> {req.prayers} Prayed
@@ -346,11 +346,11 @@ const PrayerWalls = () => {
                       placeholder="Add a supportive comment..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
                     />
                     <button
                       onClick={() => handleAddComment(req.id)}
-                      className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
+                      className="bg-[#0C2E8A] text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
                     >
                       <Send className="w-4 h-4" />
                     </button>
