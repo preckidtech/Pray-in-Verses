@@ -4,6 +4,8 @@ import Button from "../components/ui/Button";
 import FeaturedVerseCards from "../components/ui/FeaturedVerseCards";
 import QuickActionsGrid from "../components/ui/QuickActionsGrid";
 import SuggestedVerses from "../components/ui/SuggestedVerses";
+import { Link } from "react-router-dom";
+
 
 import welcomeBg from "../assets/images/home/hero/a-group-of-young-christians-holding-hands-in-praye-2025-03-26-18-07-58-utc.jpg";
 
@@ -101,12 +103,13 @@ const Home = () => {
               journey.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button className="px-6 py-3 bg-yellow-500 text-blue-900 rounded-lg font-medium hover:bg-yellow-400 transition-colors duration-300 shadow-lg">
+              {/* ✅ Explore Prayers Link */}
+              <Link
+                to="/browse-prayers"
+                className="px-6 py-3 bg-yellow-500 text-blue-900 rounded-lg font-medium hover:bg-yellow-400 transition-colors duration-300 shadow-lg text-center"
+              >
                 Explore Prayers
-              </button>
-              <button className="px-6 py-3 border-2 border-blue-300 text-blue-100 rounded-lg font-medium hover:bg-blue-600 transition-colors duration-300">
-                Read Scripture
-              </button>
+              </Link>
             </div>
           </div>
         </section>
