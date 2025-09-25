@@ -15,7 +15,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { usePrayers } from "../../context/PrayerContext";
 import logo from "../../assets/images/prayinverse2.png";
 
 export default function Header() {
@@ -121,6 +120,18 @@ export default function Header() {
       title: "Saved Prayer",
       icon: BookmarkCheck,
       path: "/saved-prayers",
+    },
+    {
+      id: "history",
+      title: "History",
+      icon: Clock,
+      path: "/history",
+    },
+    {
+      id: "bookmarks",
+      title: "Bookmarks",
+      icon: BookMarked,
+      path: "/bookmarks",
     },
     {
       id: "answered-prayers",
@@ -251,13 +262,17 @@ export default function Header() {
       </header>
 
       {/* Sidebar */}
-      <aside
-        className={`bg-[#2c3E91] shadow-md border-r border-gray-200 h-screen fixed top-16 left-0 z-40 transform lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 w-56 flex flex-col justify-between`}
-      >
+     <aside
+  className={`bg-[#2c3E91] shadow-md w-56 h-screen fixed top-16 left-0 z-40 
+              border-r border-gray-200 overflow-y-auto scrollbar-thin 
+              scrollbar-thumb-gray-400 scrollbar-track-transparent 
+              transform lg:translate-x-0 
+              ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+              transition-transform duration-300 flex flex-col justify-between`}
+>
+
         <nav className="mt-6 flex-1 relative">
-          <ul className="flex flex-col items-center space-y-4">
+          <ul className="flex flex-col items-center space-y-4 pb-6">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const isActive =
@@ -265,41 +280,43 @@ export default function Header() {
 
               if (item.hasDropdown) {
                 return (
-                  <li key={item.id} className="w-full relative">
+                  <li key={item.id} className="w-full">
                     <button
                       onClick={() => setAboutOpen((prev) => !prev)}
-                      className={`w-full flex items-center justify-between gap-2 pl-3 pr-3 py-2 transition-all duration-200 hover:bg-[#FCCF3A] rounded-md ${
+                      className={`w-full flex items-center justify-between gap-2 px-3 py-2 transition-all duration-200 hover:bg-[#FCCF3A] rounded-md ${
                         aboutOpen || isActive
                           ? "text-white font-semibold"
                           : "text-white"
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <div className="rounded-full p-2 text-white group-hover:bg-[#FCCF3A]">
-                          <Icon size={14} />
-                        </div>
+                        <Icon size={14} />
                         <span className="text-xs">{item.title}</span>
                       </div>
-                      <ChevronDown size={14} className="ml-auto" />
+                      <ChevronDown size={14} />
                     </button>
 
                     {aboutOpen && (
-                      <div className="absolute left-full top-0 ml-2 bg-white shadow-lg rounded-lg border border-gray-200 py-2 min-w-[140px] z-50">
-                        <Link
-                          to="/about"
-                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                          onClick={() => setAboutOpen(false)}
-                        >
-                          About PIV
-                        </Link>
-                        <Link
-                          to="/mission"
-                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                          onClick={() => setAboutOpen(false)}
-                        >
-                          Mission
-                        </Link>
-                      </div>
+                      <ul className="ml-6 mt-2 space-y-2">
+                        <li>
+                          <Link
+                            to="/about"
+                            className="block px-2 py-1 text-xs text-white hover:bg-[#3C4FA3] rounded"
+                            onClick={() => setAboutOpen(false)}
+                          >
+                            About PIV
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            to="/mission"
+                            className="block px-2 py-1 text-xs text-white hover:bg-[#3C4FA3] rounded"
+                            onClick={() => setAboutOpen(false)}
+                          >
+                            Mission
+                          </Link>
+                        </li>
+                      </ul>
                     )}
                   </li>
                 );
@@ -309,17 +326,13 @@ export default function Header() {
                 <li key={item.id} className="w-full">
                   <Link
                     to={item.path}
-                    className={`w-full flex gap-2 pl-2 items-center py-1 transition-all duration-200 hover:bg-[#FCCF3A] rounded-md ${
-                      isActive ? "text-white font-semibold bg-[#FCCF3A]" : "text-white"
+                    className={`w-full flex gap-2 pl-3 items-center py-2 transition-all duration-200 hover:bg-[#FCCF3A] rounded-md ${
+                      isActive
+                        ? "text-white font-semibold bg-[#FCCF3A]"
+                        : "text-white"
                     }`}
                   >
-                    <div
-                      className={`rounded-full p-2 text-white transition-colors duration-200 ${
-                        isActive ? "bg-[#3FCBFF]" : "bg-pink-[#ABBC6B]"
-                      }`}
-                    >
-                      <Icon size={14} />
-                    </div>
+                    <Icon size={14} />
                     <span className="text-xs">{item.title}</span>
                   </Link>
                 </li>
