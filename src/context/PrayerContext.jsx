@@ -13,9 +13,7 @@ const PrayerContext = createContext();
 
 export const usePrayers = () => {
   const context = useContext(PrayerContext);
-  if (!context) {
-    throw new Error("usePrayers must be used within a PrayersProvider");
-  }
+  if (!context) throw new Error("usePrayers must be used within a PrayersProvider");
   return context;
 };
 
@@ -26,9 +24,7 @@ export const PrayersProvider = ({ children }) => {
     setPrayers(getPrayersData());
   }, []);
 
-  const refreshPrayers = () => {
-    setPrayers(getPrayersData());
-  };
+  const refreshPrayers = () => setPrayers(getPrayersData());
 
   const addPrayer = (data) => {
     const updated = addPrayerData(data);
