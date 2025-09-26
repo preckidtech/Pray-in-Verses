@@ -15,19 +15,18 @@ import {
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { getPrayers } from "../data/prayers";
-import { useAuthStore } from "../store";
 
 const Profile = () => {
-  const currentUser = useAuthStore((s) => s.currentUser);
-  const logout = useAuthStore((s) => s.logout);
   const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(
+    localStorage.getItem("profileImage") || null
+  );
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState({
-    name: "",
-    email: "",
-    joinDate: "",
+    name: localStorage.getItem("userName") || "John Smith",
+    email: localStorage.getItem("userEmail") || "john.smith@email.com",
+    joinDate: "January 2024",
     totalPrayers: 0,
     answeredPrayers: 0,
     savedPrayers: 0,
@@ -35,81 +34,34 @@ const Profile = () => {
     privateProfile: false,
   });
 
-  // Initialize profile with current user data and load saved image
-  useEffect(() => {
-    if (currentUser) {
-      // Get join date from user creation (you can modify this logic)
-      const joinDate = localStorage.getItem(`joinDate_${currentUser.email}`) || "January 2024";
-      
-      setProfile(prev => ({
-        ...prev,
-        name: currentUser.name,
-        email: currentUser.email,
-        joinDate: joinDate,
-      }));
-
-      // Load profile image specific to this user
-      const savedImage = localStorage.getItem(`profileImage_${currentUser.email}`);
-      setProfileImage(savedImage);
-    }
-  }, [currentUser]);
-
   // Update stats from localStorage and prayers data
   useEffect(() => {
-    if (currentUser) {
-      const userEmail = currentUser.email;
-      const savedPrayers = JSON.parse(localStorage.getItem(`savedPrayers_${userEmail}`)) || [];
-      const answeredPrayers = JSON.parse(localStorage.getItem(`answeredPrayers_${userEmail}`)) || [];
-      const prayers = getPrayers();
+    const savedPrayers = JSON.parse(localStorage.getItem("savedPrayers")) || [];
+    const answeredPrayers =
+      JSON.parse(localStorage.getItem("answeredPrayers")) || [];
+    const prayers = getPrayers(); // ✅ Fix: define prayers
 
-      setProfile((prev) => ({
-        ...prev,
-        totalPrayers: prayers.length,
-        answeredPrayers: answeredPrayers.length,
-        savedPrayers: savedPrayers.length,
-      }));
-    }
-  }, [currentUser]);
+    setProfile((prev) => ({
+      ...prev,
+      totalPrayers: prayers.length,
+      answeredPrayers: answeredPrayers.length,
+      savedPrayers: savedPrayers.length,
+    }));
+  }, []);
 
   const [editForm, setEditForm] = useState({
-    name: "",
-    email: "",
+    name: profile.name,
+    email: profile.email,
   });
 
-  // Update editForm when profile changes
-  useEffect(() => {
-    setEditForm({
-      name: profile.name,
-      email: profile.email,
-    });
-  }, [profile.name, profile.email]);
-
   const handleSave = () => {
-    if (!currentUser) return;
-
-    // Update profile state
     setProfile((prev) => ({
       ...prev,
       name: editForm.name,
       email: editForm.email,
     }));
-
-    // Update the user in the users array in localStorage
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userIndex = users.findIndex(u => u.email === currentUser.email);
-    if (userIndex !== -1) {
-      const updatedUser = {
-        ...users[userIndex],
-        name: editForm.name,
-        email: editForm.email,
-      };
-      users[userIndex] = updatedUser;
-      localStorage.setItem("users", JSON.stringify(users));
-      
-      // Update currentUser in auth store (if your store has an update method)
-      // You might need to add this method to your auth store
-    }
-
+    localStorage.setItem("userName", editForm.name);
+    localStorage.setItem("userEmail", editForm.email);
     setIsEditing(false);
     toast.success("Profile updated successfully!");
   };
@@ -120,8 +72,6 @@ const Profile = () => {
   };
 
   const handleImageUpload = (event) => {
-    if (!currentUser) return;
-    
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -136,8 +86,7 @@ const Profile = () => {
       reader.onload = (e) => {
         const imageDataUrl = e.target.result;
         setProfileImage(imageDataUrl);
-        // Save image with user-specific key
-        localStorage.setItem(`profileImage_${currentUser.email}`, imageDataUrl);
+        localStorage.setItem("profileImage", imageDataUrl);
         toast.success("Profile picture updated!");
       };
       reader.readAsDataURL(file);
@@ -149,26 +98,18 @@ const Profile = () => {
   };
 
   const handleRemoveImage = () => {
-    if (!currentUser) return;
-    
     setProfileImage(null);
-    localStorage.removeItem(`profileImage_${currentUser.email}`);
+    localStorage.removeItem("profileImage");
     toast("Profile picture removed");
   };
 
   const toggleNotifications = () => {
     setProfile((prev) => ({ ...prev, notifications: !prev.notifications }));
-    if (currentUser) {
-      localStorage.setItem(`notifications_${currentUser.email}`, JSON.stringify(!profile.notifications));
-    }
     toast.success("Notification preferences updated!");
   };
 
   const togglePrivacy = () => {
     setProfile((prev) => ({ ...prev, privateProfile: !prev.privateProfile }));
-    if (currentUser) {
-      localStorage.setItem(`privateProfile_${currentUser.email}`, JSON.stringify(!profile.privateProfile));
-    }
     toast.success("Privacy settings updated!");
   };
 
@@ -183,19 +124,8 @@ const Profile = () => {
     toast("Signing out...", {
       icon: "👋",
     });
-    logout();
+    // Handle sign out logic here
   };
-
-  // Show loading or redirect if no current user
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-[#0C2E8A] text-lg">Please log in to view your profile.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
@@ -267,7 +197,7 @@ const Profile = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, name: e.target.value })
                     }
-                    className="text-3xl font-bold text-[#0C2E8A] bg-transparent border-b-2 border-[#0C2E8A] focus:outline-none text-center"
+                    className="text-3xl font-bold text-[#0C2E8A] bg-transparent border-b-2 border-[#0C2E8A]focus:outline-none text-center"
                   />
                 ) : (
                   <h1 className="text-3xl font-bold text-[#0C2E8A]">

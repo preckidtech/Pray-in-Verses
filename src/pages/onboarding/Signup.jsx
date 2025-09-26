@@ -68,15 +68,6 @@ const Signup = () => {
     return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
   };
 
-  const getJoinDate = () => {
-    const now = new Date();
-    const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-    return `${months[now.getMonth()]} ${now.getFullYear()}`;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -86,27 +77,10 @@ const Signup = () => {
     if (exists) return toast.error("User already exists with this email");
 
     const hashedPassword = await hashPassword(form.password);
-    const joinDate = getJoinDate();
-    
-    const newUser = { 
-      name: form.name.trim(), 
-      email: form.email.toLowerCase(), 
-      password: hashedPassword,
-      joinDate: joinDate,
-      createdAt: new Date().toISOString()
-    };
+    const newUser = { name: form.name, email: form.email, password: hashedPassword };
 
     users.push(newUser);
     localStorage.setItem("users", JSON.stringify(users));
-
-    // Store join date for this user
-    localStorage.setItem(`joinDate_${newUser.email}`, joinDate);
-
-    // Initialize user-specific data
-    localStorage.setItem(`savedPrayers_${newUser.email}`, JSON.stringify([]));
-    localStorage.setItem(`answeredPrayers_${newUser.email}`, JSON.stringify([]));
-    localStorage.setItem(`notifications_${newUser.email}`, JSON.stringify(true));
-    localStorage.setItem(`privateProfile_${newUser.email}`, JSON.stringify(false));
 
     signup(newUser);
     toast.success("Account created successfully!");
@@ -132,7 +106,7 @@ const Signup = () => {
           <input
             type="text"
             name="name"
-            placeholder="Full Name"
+            placeholder="Name"
             value={form.name}
             onChange={handleChange}
             required
@@ -141,7 +115,7 @@ const Signup = () => {
           <input
             type="email"
             name="email"
-            placeholder="Email Address"
+            placeholder="Email"
             value={form.email}
             onChange={handleChange}
             required
@@ -185,7 +159,7 @@ const Signup = () => {
           </div>
 
           <Button type="submit" variant="primary" className="w-full py-3 text-lg">
-            Create Account
+            Sign Up
           </Button>
         </form>
 
