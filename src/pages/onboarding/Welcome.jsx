@@ -104,14 +104,6 @@ const Welcome = () => {
                   Login
                 </Button>
               </Link>
-              <Link to="/home">
-                <Button
-                  variant="ghost"
-                  className="w-full py-3 md:py-3 text-lg md:text-lg rounded-xl font-medium"
-                >
-                  Continue as Guest
-                </Button>
-              </Link>
             </div>
 
             {/* Spacer for bottom */}
