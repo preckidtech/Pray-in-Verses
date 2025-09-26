@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -8,7 +9,7 @@ import {
 } from "react-router-dom";
 
 import { useUIStore } from "./store";
-import { PrayersProvider } from "./context/PrayerContext"; // ✅ import provider
+import { PrayersProvider } from "./context/PrayerContext";
 
 // Layout
 import Header from "./components/layout/Header";
@@ -33,12 +34,16 @@ import GuidedPrayer from "./pages/GuidedPrayer";
 import BrowsePrayers from "./pages/BrowsePrayers";
 import BibleVerse from "./pages/BibleVerse";
 
+// New pages
+import BookPage from "./pages/BookPage";
+import ChapterPage from "./pages/ChapterPage";
+import VerseDetails from "./pages/VerseDetails";
+
 // Admin dashboard
-import Admin from "./pages/admin/AdminForm";
+import AdminForm from "./pages/admin/AdminForm";
 
 // Toaster
 import { Toaster } from "react-hot-toast";
-import AdminForm from "./pages/admin/AdminForm";
 
 function AppContent() {
   const { theme } = useUIStore();
@@ -71,10 +76,16 @@ function AppContent() {
             <Route path="/prayer-wall" element={<PrayerWalls />} />
             <Route path="/about" element={<About />} />
             <Route path="/mission" element={<Mission />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+
+            {/* Bible dynamic routes */}
+            <Route path="/book/:bookSlug" element={<BookPage />} />
+            <Route path="/book/:bookSlug/chapter/:chapterNumber" element={<ChapterPage />} />
+            <Route path="/book/:bookSlug/chapter/:chapterNumber/verse/:verseNumber" element={<VerseDetails />} />
 
             {/* Admin dashboard Route */}
             <Route path="/admin" element={<AdminForm />} />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
 
           <Toaster position="top-right" reverseOrder={false} />
