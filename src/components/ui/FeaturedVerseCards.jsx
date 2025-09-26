@@ -59,7 +59,7 @@ const FeaturedVerseCards = ({ items = [] }) => {
                 )}
                 <Link
                   to="/prayer-wall"
-                  className="px-4 py-2 bg-[#0C2E8A] text-white text-sm rounded-lg font-medium hover:bg-[#0C2E8A] transition-colors duration-300 text-center"
+                  className="px-4 py-2 bg-[#0C2E8A] text-white text-sm rounded-lg font-medium hover:bg-[#0C2E8A]f transition-colors duration-300 text-center"
                 >
                   Go to Prayer Wall
                 </Link>
