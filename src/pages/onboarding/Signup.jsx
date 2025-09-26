@@ -75,6 +75,32 @@ const Signup = () => {
   };
 
   /**
+   * Get the first missing password requirement
+   * @param {string} password - The password to validate
+   * @returns {string} - Error message for the first missing requirement
+   */
+  const getPasswordError = (password) => {
+    if (!password) return "";
+    
+    if (password.length < 8) {
+      return "Password must be at least 8 characters";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain a lowercase letter";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain an uppercase letter";
+    }
+    if (!/\d/.test(password)) {
+      return "Password must contain a number";
+    }
+    if (!/[@$!%*?&#]/.test(password)) {
+      return "Password must contain a special character (@$!%*?&#)";
+    }
+    return "";
+  };
+
+  /**
    * Real-time form validation
    * This function will be easy to modify when integrating with backend validation
    */
@@ -94,13 +120,12 @@ const Signup = () => {
       message: emailRegex.test(form.email) ? "" : "Please enter a valid email address"
     };
 
-    // Password validation
+    // Password validation - using the new single error approach
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    const passwordError = getPasswordError(form.password);
     newValidation.password = {
       isValid: passwordRegex.test(form.password),
-      message: passwordRegex.test(form.password) 
-        ? "" 
-        : "Password must be 8+ characters with uppercase, lowercase, number, and special character"
+      message: passwordError
     };
 
     // Password confirmation validation
@@ -236,41 +261,6 @@ const Signup = () => {
     }
   };
 
-  /**
-   * Password strength indicator component
-   */
-  const PasswordStrengthIndicator = () => {
-    const requirements = [
-      { test: form.password.length >= 8, label: "At least 8 characters" },
-      { test: /[a-z]/.test(form.password), label: "Lowercase letter" },
-      { test: /[A-Z]/.test(form.password), label: "Uppercase letter" },
-      { test: /\d/.test(form.password), label: "Number" },
-      { test: /[@$!%*?&#]/.test(form.password), label: "Special character" },
-    ];
-
-    if (!form.password) return null;
-
-    return (
-      <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-        <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
-        <div className="grid grid-cols-1 gap-1">
-          {requirements.map((req, index) => (
-            <div key={index} className="flex items-center gap-2">
-              {req.test ? (
-                <Check className="w-4 h-4 text-green-500" />
-              ) : (
-                <X className="w-4 h-4 text-red-500" />
-              )}
-              <span className={`text-sm ${req.test ? 'text-green-700' : 'text-red-700'}`}>
-                {req.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div
       className="w-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary overflow-hidden px-4 sm:px-6"
@@ -278,11 +268,11 @@ const Signup = () => {
     >
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col justify-center p-6">
         {/* Logo */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center">
           <img 
             src={logo} 
             alt="PrayInverse Logo" 
-            className="h-32 w-32 sm:h-32 sm:w-32 object-contain" 
+            className="h-42 w-32 sm:h-28 sm:w-28 m-0 p-0 object-contain" 
           />
         </div>
 
@@ -290,7 +280,7 @@ const Signup = () => {
         <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Sign Up</h2>
 
         {/* Form */}
-        <form className="w-full space-y-4" onSubmit={handleSubmit} noValidate>
+        <form className="w-full space-y-1.5" onSubmit={handleSubmit} noValidate>
           {/* Name Field */}
           <div>
             <input
@@ -365,7 +355,20 @@ const Signup = () => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            <PasswordStrengthIndicator />
+            
+            {/* Single password error message */}
+            {form.password && !validation.password.isValid && (
+              <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+                <X className="w-4 h-4" />
+                {validation.password.message}
+              </p>
+            )}
+            {form.password && validation.password.isValid && (
+              <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
+                <Check className="w-4 h-4" />
+                Strong password
+              </p>
+            )}
           </div>
 
           {/* Confirm Password Field */}
@@ -393,7 +396,7 @@ const Signup = () => {
             
             {/* Real-time password match feedback */}
             {form.confirmPassword && (
-              <div className="mt-2">
+              <div className="mt-1">
                 {validation.passwordsMatch ? (
                   <p className="text-green-600 text-sm flex items-center gap-1">
                     <Check className="w-4 h-4" />
