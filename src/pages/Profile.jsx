@@ -15,21 +15,19 @@ import {
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { getPrayers } from "../data/prayers";
-import { useAuthStore } from "../store"; // Import the auth store
+import { useAuthStore } from "../store";
 
 const Profile = () => {
-  const currentUser = useAuthStore((s) => s.currentUser); // Get current user from store
-  const logout = useAuthStore((s) => s.logout); // Get logout function
+  const currentUser = useAuthStore((s) => s.currentUser);
+  const logout = useAuthStore((s) => s.logout);
   const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(
-    localStorage.getItem("profileImage") || null
-  );
+  const [profileImage, setProfileImage] = useState(null);
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState({
     name: "",
     email: "",
-    joinDate: "January 2024",
+    joinDate: "",
     totalPrayers: 0,
     answeredPrayers: 0,
     savedPrayers: 0,
@@ -37,35 +35,45 @@ const Profile = () => {
     privateProfile: false,
   });
 
-  // Initialize profile with current user data
+  // Initialize profile with current user data and load saved image
   useEffect(() => {
     if (currentUser) {
+      // Get join date from user creation (you can modify this logic)
+      const joinDate = localStorage.getItem(`joinDate_${currentUser.email}`) || "January 2024";
+      
       setProfile(prev => ({
         ...prev,
-        name: currentUser.name || "",
-        email: currentUser.email || "",
+        name: currentUser.name,
+        email: currentUser.email,
+        joinDate: joinDate,
       }));
+
+      // Load profile image specific to this user
+      const savedImage = localStorage.getItem(`profileImage_${currentUser.email}`);
+      setProfileImage(savedImage);
     }
   }, [currentUser]);
 
   // Update stats from localStorage and prayers data
   useEffect(() => {
-    const savedPrayers = JSON.parse(localStorage.getItem("savedPrayers")) || [];
-    const answeredPrayers =
-      JSON.parse(localStorage.getItem("answeredPrayers")) || [];
-    const prayers = getPrayers(); // ✅ Fix: define prayers
+    if (currentUser) {
+      const userEmail = currentUser.email;
+      const savedPrayers = JSON.parse(localStorage.getItem(`savedPrayers_${userEmail}`)) || [];
+      const answeredPrayers = JSON.parse(localStorage.getItem(`answeredPrayers_${userEmail}`)) || [];
+      const prayers = getPrayers();
 
-    setProfile((prev) => ({
-      ...prev,
-      totalPrayers: prayers.length,
-      answeredPrayers: answeredPrayers.length,
-      savedPrayers: savedPrayers.length,
-    }));
-  }, []);
+      setProfile((prev) => ({
+        ...prev,
+        totalPrayers: prayers.length,
+        answeredPrayers: answeredPrayers.length,
+        savedPrayers: savedPrayers.length,
+      }));
+    }
+  }, [currentUser]);
 
   const [editForm, setEditForm] = useState({
-    name: profile.name,
-    email: profile.email,
+    name: "",
+    email: "",
   });
 
   // Update editForm when profile changes
@@ -77,6 +85,8 @@ const Profile = () => {
   }, [profile.name, profile.email]);
 
   const handleSave = () => {
+    if (!currentUser) return;
+
     // Update profile state
     setProfile((prev) => ({
       ...prev,
@@ -84,23 +94,20 @@ const Profile = () => {
       email: editForm.email,
     }));
 
-    // Update localStorage for backward compatibility
-    localStorage.setItem("userName", editForm.name);
-    localStorage.setItem("userEmail", editForm.email);
-
     // Update the user in the users array in localStorage
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userIndex = users.findIndex(u => u.email === currentUser?.email);
+    const userIndex = users.findIndex(u => u.email === currentUser.email);
     if (userIndex !== -1) {
-      users[userIndex] = {
+      const updatedUser = {
         ...users[userIndex],
         name: editForm.name,
         email: editForm.email,
       };
+      users[userIndex] = updatedUser;
       localStorage.setItem("users", JSON.stringify(users));
       
-      // Update the current user in the auth store if needed
-      // You might need to add an update method to your auth store
+      // Update currentUser in auth store (if your store has an update method)
+      // You might need to add this method to your auth store
     }
 
     setIsEditing(false);
@@ -113,6 +120,8 @@ const Profile = () => {
   };
 
   const handleImageUpload = (event) => {
+    if (!currentUser) return;
+    
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -127,7 +136,8 @@ const Profile = () => {
       reader.onload = (e) => {
         const imageDataUrl = e.target.result;
         setProfileImage(imageDataUrl);
-        localStorage.setItem("profileImage", imageDataUrl);
+        // Save image with user-specific key
+        localStorage.setItem(`profileImage_${currentUser.email}`, imageDataUrl);
         toast.success("Profile picture updated!");
       };
       reader.readAsDataURL(file);
@@ -139,18 +149,26 @@ const Profile = () => {
   };
 
   const handleRemoveImage = () => {
+    if (!currentUser) return;
+    
     setProfileImage(null);
-    localStorage.removeItem("profileImage");
+    localStorage.removeItem(`profileImage_${currentUser.email}`);
     toast("Profile picture removed");
   };
 
   const toggleNotifications = () => {
     setProfile((prev) => ({ ...prev, notifications: !prev.notifications }));
+    if (currentUser) {
+      localStorage.setItem(`notifications_${currentUser.email}`, JSON.stringify(!profile.notifications));
+    }
     toast.success("Notification preferences updated!");
   };
 
   const togglePrivacy = () => {
     setProfile((prev) => ({ ...prev, privateProfile: !prev.privateProfile }));
+    if (currentUser) {
+      localStorage.setItem(`privateProfile_${currentUser.email}`, JSON.stringify(!profile.privateProfile));
+    }
     toast.success("Privacy settings updated!");
   };
 
@@ -165,9 +183,7 @@ const Profile = () => {
     toast("Signing out...", {
       icon: "👋",
     });
-    logout(); // Use the logout function from auth store
-    // Additional cleanup if needed
-    localStorage.removeItem("profileImage");
+    logout();
   };
 
   // Show loading or redirect if no current user
