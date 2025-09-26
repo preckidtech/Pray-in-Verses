@@ -15,8 +15,11 @@ import {
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { getPrayers } from "../data/prayers";
+import { useAuthStore } from "../store"; // Import the auth store
 
 const Profile = () => {
+  const currentUser = useAuthStore((s) => s.currentUser); // Get current user from store
+  const logout = useAuthStore((s) => s.logout); // Get logout function
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState(
     localStorage.getItem("profileImage") || null
@@ -24,8 +27,8 @@ const Profile = () => {
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState({
-    name: localStorage.getItem("userName") || "John Smith",
-    email: localStorage.getItem("userEmail") || "john.smith@email.com",
+    name: "",
+    email: "",
     joinDate: "January 2024",
     totalPrayers: 0,
     answeredPrayers: 0,
@@ -33,6 +36,17 @@ const Profile = () => {
     notifications: true,
     privateProfile: false,
   });
+
+  // Initialize profile with current user data
+  useEffect(() => {
+    if (currentUser) {
+      setProfile(prev => ({
+        ...prev,
+        name: currentUser.name || "",
+        email: currentUser.email || "",
+      }));
+    }
+  }, [currentUser]);
 
   // Update stats from localStorage and prayers data
   useEffect(() => {
@@ -54,14 +68,41 @@ const Profile = () => {
     email: profile.email,
   });
 
+  // Update editForm when profile changes
+  useEffect(() => {
+    setEditForm({
+      name: profile.name,
+      email: profile.email,
+    });
+  }, [profile.name, profile.email]);
+
   const handleSave = () => {
+    // Update profile state
     setProfile((prev) => ({
       ...prev,
       name: editForm.name,
       email: editForm.email,
     }));
+
+    // Update localStorage for backward compatibility
     localStorage.setItem("userName", editForm.name);
     localStorage.setItem("userEmail", editForm.email);
+
+    // Update the user in the users array in localStorage
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const userIndex = users.findIndex(u => u.email === currentUser?.email);
+    if (userIndex !== -1) {
+      users[userIndex] = {
+        ...users[userIndex],
+        name: editForm.name,
+        email: editForm.email,
+      };
+      localStorage.setItem("users", JSON.stringify(users));
+      
+      // Update the current user in the auth store if needed
+      // You might need to add an update method to your auth store
+    }
+
     setIsEditing(false);
     toast.success("Profile updated successfully!");
   };
@@ -124,8 +165,21 @@ const Profile = () => {
     toast("Signing out...", {
       icon: "👋",
     });
-    // Handle sign out logic here
+    logout(); // Use the logout function from auth store
+    // Additional cleanup if needed
+    localStorage.removeItem("profileImage");
   };
+
+  // Show loading or redirect if no current user
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[#0C2E8A] text-lg">Please log in to view your profile.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
@@ -197,7 +251,7 @@ const Profile = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, name: e.target.value })
                     }
-                    className="text-3xl font-bold text-[#0C2E8A] bg-transparent border-b-2 border-[#0C2E8A]focus:outline-none text-center"
+                    className="text-3xl font-bold text-[#0C2E8A] bg-transparent border-b-2 border-[#0C2E8A] focus:outline-none text-center"
                   />
                 ) : (
                   <h1 className="text-3xl font-bold text-[#0C2E8A]">
