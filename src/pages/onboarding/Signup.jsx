@@ -280,7 +280,7 @@ const Signup = () => {
         <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Sign Up</h2>
 
         {/* Form */}
-        <form className="w-full space-y-4" onSubmit={handleSubmit} noValidate>
+        <form className="w-full space-y-4 " onSubmit={handleSubmit} noValidate>
           {/* Name Field */}
           <div>
             <input

@@ -12,21 +12,33 @@ import {
   Bookmark,
   CheckCircle,
   Heart,
+  Calendar,
+  Settings,
+  Trash2,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { useAuthStore } from "../store";
+import { useNavigate } from "react-router-dom";
 import { getPrayers } from "../data/prayers";
 
 const Profile = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(
-    localStorage.getItem("profileImage") || null
-  );
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const fileInputRef = useRef(null);
 
+  // Component state management
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Profile image state
+  const [profileImage, setProfileImage] = useState(null);
+
+  // Profile data state - populated from authenticated user data
   const [profile, setProfile] = useState({
-    name: localStorage.getItem("userName") || "John Smith",
-    email: localStorage.getItem("userEmail") || "john.smith@email.com",
-    joinDate: "January 2024",
+    name: "",
+    email: "",
+    joinDate: "",
     totalPrayers: 0,
     answeredPrayers: 0,
     savedPrayers: 0,
@@ -34,116 +46,441 @@ const Profile = () => {
     privateProfile: false,
   });
 
-  // Update stats from localStorage and prayers data
-  useEffect(() => {
-    const savedPrayers = JSON.parse(localStorage.getItem("savedPrayers")) || [];
-    const answeredPrayers =
-      JSON.parse(localStorage.getItem("answeredPrayers")) || [];
-    const prayers = getPrayers(); // ✅ Fix: define prayers
-
-    setProfile((prev) => ({
-      ...prev,
-      totalPrayers: prayers.length,
-      answeredPrayers: answeredPrayers.length,
-      savedPrayers: savedPrayers.length,
-    }));
-  }, []);
-
+  // Edit form state
   const [editForm, setEditForm] = useState({
-    name: profile.name,
-    email: profile.email,
+    name: "",
+    email: "",
   });
 
-  const handleSave = () => {
-    setProfile((prev) => ({
-      ...prev,
-      name: editForm.name,
-      email: editForm.email,
-    }));
-    localStorage.setItem("userName", editForm.name);
-    localStorage.setItem("userEmail", editForm.email);
-    setIsEditing(false);
-    toast.success("Profile updated successfully!");
+  /**
+   * Initialize profile data from authenticated user and localStorage
+   */
+  useEffect(() => {
+    initializeProfile();
+  }, [user]);
+
+  /**
+   * Get current user data from multiple sources
+   */
+  const getCurrentUser = () => {
+    // First try to get from auth store
+    if (user && user.id && user.name) {
+      return user;
+    }
+
+    // Then try current user from localStorage
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    if (currentUser.id && currentUser.name) {
+      return currentUser;
+    }
+
+    // If no current user, check if we have legacy data (backward compatibility)
+    const userName = localStorage.getItem("userName");
+    const userEmail = localStorage.getItem("userEmail");
+    
+    if (userName && userEmail) {
+      // Try to find this user in the users array
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const foundUser = users.find(u => 
+        u.email.toLowerCase() === userEmail.toLowerCase()
+      );
+      
+      if (foundUser) {
+        // Update currentUser for future use
+        localStorage.setItem("currentUser", JSON.stringify(foundUser));
+        return foundUser;
+      }
+    }
+
+    return null;
   };
 
-  const handleCancel = () => {
-    setEditForm({ name: profile.name, email: profile.email });
-    setIsEditing(false);
+  /**
+   * Format join date consistently
+   */
+  const formatJoinDate = (user) => {
+    if (user.joinDate) {
+      return user.joinDate;
+    }
+    
+    if (user.createdAt) {
+      const date = new Date(user.createdAt);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long' 
+      });
+    }
+    
+    // Fallback to current date
+    return new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long' 
+    });
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
+  /**
+   * Initialize profile with user data
+   */
+  const initializeProfile = async () => {
+    try {
+      setIsLoading(true);
+
+      const currentUser = getCurrentUser();
+      
+      if (!currentUser) {
+        toast.error("Please log in to view your profile", { duration: 2000 });
+        navigate("/login");
         return;
       }
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file");
-        return;
+
+      // Load profile image (use user ID as primary, email as fallback)
+      const userId = currentUser.id || currentUser.email;
+      let savedProfileImage = localStorage.getItem(`profileImage_${userId}`);
+      
+      // Fallback to email-based storage for backward compatibility
+      if (!savedProfileImage && currentUser.email) {
+        savedProfileImage = localStorage.getItem(`profileImage_${currentUser.email}`);
       }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageDataUrl = e.target.result;
-        setProfileImage(imageDataUrl);
-        localStorage.setItem("profileImage", imageDataUrl);
-        toast.success("Profile picture updated!");
+      
+      // Final fallback to legacy storage
+      if (!savedProfileImage) {
+        savedProfileImage = localStorage.getItem("profileImage");
+      }
+      
+      setProfileImage(savedProfileImage);
+
+      // Get prayer statistics
+      const savedPrayers = JSON.parse(
+        localStorage.getItem(`savedPrayers_${userId}`) || 
+        localStorage.getItem(`savedPrayers_${currentUser.email}`) ||
+        localStorage.getItem("savedPrayers") || 
+        "[]"
+      );
+      
+      const answeredPrayers = JSON.parse(
+        localStorage.getItem(`answeredPrayers_${userId}`) || 
+        localStorage.getItem(`answeredPrayers_${currentUser.email}`) ||
+        localStorage.getItem("answeredPrayers") || 
+        "[]"
+      );
+      
+      const prayers = getPrayers();
+
+      // Set profile data from user registration data
+      const profileData = {
+        name: currentUser.name || "User",
+        email: currentUser.email || "",
+        joinDate: formatJoinDate(currentUser),
+        totalPrayers: prayers.length,
+        answeredPrayers: answeredPrayers.length,
+        savedPrayers: savedPrayers.length,
+        notifications: currentUser.profileData?.notifications ?? true,
+        privateProfile: currentUser.profileData?.privateProfile ?? false,
       };
-      reader.readAsDataURL(file);
+
+      setProfile(profileData);
+      setEditForm({
+        name: profileData.name,
+        email: profileData.email,
+      });
+
+    } catch (error) {
+      console.error("Profile initialization error:", error);
+      toast.error("Failed to load profile data", { duration: 2000 });
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  /**
+   * Handle profile form changes
+   */
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  /**
+   * Validate profile form
+   */
+  const validateProfileForm = () => {
+    if (!editForm.name.trim()) {
+      toast.error("Name is required", { duration: 2000 });
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editForm.email)) {
+      toast.error("Please enter a valid email address", { duration: 2000 });
+      return false;
+    }
+
+    return true;
+  };
+
+  /**
+   * Save profile changes
+   */
+  const handleSave = async () => {
+    if (!validateProfileForm()) return;
+
+    setIsSaving(true);
+
+    try {
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        toast.error("User not found", { duration: 2000 });
+        setIsSaving(false);
+        return;
+      }
+      
+      // Update users array in localStorage
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const userIndex = users.findIndex(u => 
+        u.id === currentUser.id || 
+        u.email.toLowerCase() === currentUser.email.toLowerCase()
+      );
+      
+      if (userIndex !== -1) {
+        users[userIndex] = {
+          ...users[userIndex],
+          name: editForm.name,
+          email: editForm.email,
+        };
+        localStorage.setItem("users", JSON.stringify(users));
+      }
+
+      // Update legacy localStorage items for backward compatibility
+      localStorage.setItem("userName", editForm.name);
+      localStorage.setItem("userEmail", editForm.email);
+
+      // Update current user session
+      const updatedUser = {
+        ...currentUser,
+        name: editForm.name,
+        email: editForm.email,
+      };
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
+      // Update profile state
+      setProfile(prev => ({
+        ...prev,
+        name: editForm.name,
+        email: editForm.email,
+      }));
+
+      // Trigger event to update header
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
+
+      setIsEditing(false);
+      toast.success("Profile updated successfully!", { duration: 2000 });
+
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error("Failed to update profile", { duration: 2000 });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  /**
+   * Cancel profile editing
+   */
+  const handleCancel = () => {
+    setEditForm({ 
+      name: profile.name, 
+      email: profile.email 
+    });
+    setIsEditing(false);
+  };
+
+  /**
+   * Handle profile image upload
+   */
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB", { duration: 2000 });
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file", { duration: 2000 });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageDataUrl = e.target.result;
+      const currentUser = getCurrentUser();
+      
+      if (currentUser) {
+        const userId = currentUser.id || currentUser.email;
+        
+        setProfileImage(imageDataUrl);
+        
+        // Store image with multiple keys for compatibility
+        localStorage.setItem(`profileImage_${userId}`, imageDataUrl);
+        if (currentUser.email) {
+          localStorage.setItem(`profileImage_${currentUser.email}`, imageDataUrl);
+        }
+        localStorage.setItem("profileImage", imageDataUrl); // Legacy compatibility
+        
+        // Trigger event to update header
+        window.dispatchEvent(new CustomEvent('profileUpdated'));
+        
+        toast.success("Profile picture updated!", { duration: 2000 });
+      }
+    };
+    
+    reader.onerror = () => {
+      toast.error("Failed to read image file", { duration: 2000 });
+    };
+    
+    reader.readAsDataURL(file);
+  };
+
+  /**
+   * Trigger file input click
+   */
   const handleCameraClick = () => {
     fileInputRef.current?.click();
   };
 
+  /**
+   * Remove profile image
+   */
   const handleRemoveImage = () => {
-    setProfileImage(null);
-    localStorage.removeItem("profileImage");
-    toast("Profile picture removed");
+    const currentUser = getCurrentUser();
+    
+    if (currentUser) {
+      const userId = currentUser.id || currentUser.email;
+      
+      setProfileImage(null);
+      
+      // Remove from all storage locations
+      localStorage.removeItem(`profileImage_${userId}`);
+      if (currentUser.email) {
+        localStorage.removeItem(`profileImage_${currentUser.email}`);
+      }
+      localStorage.removeItem("profileImage");
+      
+      // Trigger event to update header
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
+      
+      toast.success("Profile picture removed", { duration: 2000 });
+    }
   };
 
-  const toggleNotifications = () => {
-    setProfile((prev) => ({ ...prev, notifications: !prev.notifications }));
-    toast.success("Notification preferences updated!");
+  /**
+   * Toggle notification preferences
+   */
+  const toggleNotifications = async () => {
+    try {
+      const newNotificationState = !profile.notifications;
+      
+      setProfile(prev => ({ 
+        ...prev, 
+        notifications: newNotificationState 
+      }));
+      
+      toast.success("Notification preferences updated!", { duration: 2000 });
+    } catch (error) {
+      console.error("Failed to update notifications:", error);
+      toast.error("Failed to update notification preferences", { duration: 2000 });
+    }
   };
 
-  const togglePrivacy = () => {
-    setProfile((prev) => ({ ...prev, privateProfile: !prev.privateProfile }));
-    toast.success("Privacy settings updated!");
+  /**
+   * Toggle privacy settings
+   */
+  const togglePrivacy = async () => {
+    try {
+      const newPrivacyState = !profile.privateProfile;
+      
+      setProfile(prev => ({ 
+        ...prev, 
+        privateProfile: newPrivacyState 
+      }));
+      
+      toast.success("Privacy settings updated!", { duration: 2000 });
+    } catch (error) {
+      console.error("Failed to update privacy:", error);
+      toast.error("Failed to update privacy settings", { duration: 2000 });
+    }
   };
 
+  /**
+   * Handle email change request
+   */
   const handleChangeEmail = () => {
     toast("Email change request sent! Check your inbox for instructions.", {
-      duration: 4000,
+      duration: 3000,
       icon: "📧",
     });
   };
 
+  /**
+   * Handle user sign out
+   */
   const handleSignOut = () => {
-    toast("Signing out...", {
-      icon: "👋",
-    });
-    // Handle sign out logic here
+    try {
+      // Clear user session data
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("rememberedEmail");
+      
+      // Call logout from auth store
+      logout();
+      
+      toast.success("Signed out successfully", { duration: 2000 });
+      navigate("/login");
+    } catch (error) {
+      console.error("Signout error:", error);
+      toast.error("Error signing out", { duration: 2000 });
+    }
   };
+
+  /**
+   * Render loading state
+   */
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0C2E8A] mx-auto mb-4"></div>
+            <p className="text-[#0C2E8A]">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
       <Toaster position="top-right" reverseOrder={false} />
+      
       <div className="container mx-auto px-4 py-6">
-        {/* Title */}
+        {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[#0C2E8A] mb-2">My Profile</h1>
           <p className="text-[#0C2E8A] text-lg">Manage your prayer journey</p>
         </div>
 
         <div className="max-w-4xl mx-auto">
-          {/* Profile Header */}
+          {/* Profile Header Card */}
           <div className="bg-white rounded-2xl shadow border mb-8 overflow-hidden">
+            {/* Header Background */}
             <div className="bg-gradient-to-r from-[#0C2E8A] to-[#FCCF3A] h-32"></div>
+            
             <div className="px-8 pb-8">
+              {/* Profile Image Section */}
               <div className="relative -mt-16 mb-4">
-                <div className="w-32 h-32 bg-white rounded-full p-2 mx-auto relative">
+                <div className="w-32 h-32 bg-white rounded-full p-2 mx-auto relative shadow-lg">
                   {profileImage ? (
                     <img
                       src={profileImage}
@@ -156,10 +493,10 @@ const Profile = () => {
                     </div>
                   )}
 
-                  {/* Camera Button */}
+                  {/* Camera Upload Button */}
                   <button
                     onClick={handleCameraClick}
-                    className="absolute bottom-2 right-2 bg-[#0C2E8A] text-white p-2 rounded-full hover:bg-[#0C2E8A] transition shadow-lg"
+                    className="absolute bottom-2 right-2 bg-[#0C2E8A] text-white p-2 rounded-full hover:bg-[#1a4ba0] transition shadow-lg"
                     title="Upload profile picture"
                     aria-label="Upload profile picture"
                   >
@@ -189,22 +526,24 @@ const Profile = () => {
                 />
               </div>
 
+              {/* User Name and Join Date */}
               <div className="text-center">
                 {isEditing ? (
                   <input
                     type="text"
+                    name="name"
                     value={editForm.name}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, name: e.target.value })
-                    }
-                    className="text-3xl font-bold text-[#0C2E8A] bg-transparent border-b-2 border-[#0C2E8A]focus:outline-none text-center"
+                    onChange={handleFormChange}
+                    className="text-3xl font-bold text-[#0C2E8A] bg-transparent border-b-2 border-[#0C2E8A] focus:outline-none text-center"
+                    disabled={isSaving}
                   />
                 ) : (
                   <h1 className="text-3xl font-bold text-[#0C2E8A]">
                     {profile.name}
                   </h1>
                 )}
-                <p className="text-gray-600 mt-1">
+                <p className="text-gray-600 mt-1 flex items-center justify-center gap-1">
+                  <Calendar className="w-4 h-4" />
                   Member since {profile.joinDate}
                 </p>
               </div>
@@ -212,10 +551,10 @@ const Profile = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Stats Cards */}
+            {/* Prayer Statistics Cards */}
             <div className="lg:col-span-3">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white rounded-2xl p-6 text-center shadow border">
+                <div className="bg-white rounded-2xl p-6 text-center shadow border hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Heart className="w-6 h-6 text-[#0C2E8A]" />
                   </div>
@@ -224,7 +563,8 @@ const Profile = () => {
                   </p>
                   <p className="text-gray-600">Total Prayers</p>
                 </div>
-                <div className="bg-white rounded-2xl p-6 text-center shadow border">
+                
+                <div className="bg-white rounded-2xl p-6 text-center shadow border hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <CheckCircle className="w-6 h-6 text-[#0C2E8A]" />
                   </div>
@@ -233,7 +573,8 @@ const Profile = () => {
                   </p>
                   <p className="text-gray-600">Answered Prayers</p>
                 </div>
-                <div className="bg-white rounded-2xl p-6 text-center shadow border">
+                
+                <div className="bg-white rounded-2xl p-6 text-center shadow border hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Bookmark className="w-6 h-6 text-[#0C2E8A]" />
                   </div>
@@ -245,17 +586,19 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Account Information */}
+            {/* Account Information Card */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl shadow border p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-[#0C2E8A]">
+                  <h2 className="text-xl font-bold text-[#0C2E8A] flex items-center gap-2">
+                    <User className="w-5 h-5" />
                     Account Information
                   </h2>
+                  
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#0C2E8A] text-white rounded-lg hover:bg-[#0C2E8A] transition"
+                      className="flex items-center gap-2 px-4 py-2 bg-[#0C2E8A] text-white rounded-lg hover:bg-[#1a4ba0] transition"
                     >
                       <Edit2 className="w-4 h-4" />
                       Edit Profile
@@ -264,14 +607,16 @@ const Profile = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={handleSave}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#0C2E8A] text-white rounded-lg hover:bg-[#0C2E8A] transition"
+                        disabled={isSaving}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#0C2E8A] text-white rounded-lg hover:bg-[#1a4ba0] transition disabled:opacity-50"
                       >
                         <Save className="w-4 h-4" />
-                        Save
+                        {isSaving ? "Saving..." : "Save"}
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#FCCF3A] text-[#0C2E8A] rounded-lg hover:bg-[#FCCF3A] transition"
+                        disabled={isSaving}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#FCCF3A] text-[#0C2E8A] rounded-lg hover:bg-[#fdd55a] transition disabled:opacity-50"
                       >
                         <X className="w-4 h-4" />
                         Cancel
@@ -281,6 +626,7 @@ const Profile = () => {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Full Name Field */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Full Name
@@ -288,11 +634,11 @@ const Profile = () => {
                     {isEditing ? (
                       <input
                         type="text"
+                        name="name"
                         value={editForm.name}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, name: e.target.value })
-                        }
+                        onChange={handleFormChange}
                         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={isSaving}
                       />
                     ) : (
                       <p className="px-4 py-3 bg-gray-50 rounded-lg text-[#0C2E8A]">
@@ -301,6 +647,7 @@ const Profile = () => {
                     )}
                   </div>
 
+                  {/* Email Field */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Email Address
@@ -308,18 +655,21 @@ const Profile = () => {
                     {isEditing ? (
                       <input
                         type="email"
+                        name="email"
                         value={editForm.email}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, email: e.target.value })
-                        }
+                        onChange={handleFormChange}
                         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={isSaving}
                       />
                     ) : (
                       <div className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg">
-                        <span className="text-[#0C2E8A]">{profile.email}</span>
+                        <span className="text-[#0C2E8A] flex items-center gap-2">
+                          <Mail className="w-4 h-4" />
+                          {profile.email}
+                        </span>
                         <button
                           onClick={handleChangeEmail}
-                          className="text-[#0C2E8A] hover:text-[#0C2E8A] text-sm font-semibold"
+                          className="text-[#0C2E8A] hover:text-[#1a4ba0] text-sm font-semibold transition"
                         >
                           Change Email
                         </button>
@@ -327,11 +677,13 @@ const Profile = () => {
                     )}
                   </div>
 
+                  {/* Member Since Field */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Member Since
                     </label>
-                    <p className="px-4 py-3 bg-gray-50 rounded-lg text-[#0C2E8A]">
+                    <p className="px-4 py-3 bg-gray-50 rounded-lg text-[#0C2E8A] flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
                       {profile.joinDate}
                     </p>
                   </div>
@@ -339,19 +691,21 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Settings */}
+            {/* Settings Card */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow border p-6">
-                <h2 className="text-xl font-bold text-[#0C2E8A] mb-6">
+                <h2 className="text-xl font-bold text-[#0C2E8A] mb-6 flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
                   Settings
                 </h2>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between py-3">
+                  {/* Notifications Toggle */}
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <Bell className="w-5 h-5 text-[#0C2E8A]" />
                       <div>
-                        <span className="text-[#0C2E8A] block">Notifications</span>
+                        <span className="text-[#0C2E8A] block font-medium">Notifications</span>
                         <span className="text-xs text-gray-500">
                           Prayer reminders & updates
                         </span>
@@ -376,11 +730,12 @@ const Profile = () => {
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-between py-3">
+                  {/* Privacy Toggle */}
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-[#0C2E8A]" />
                       <div>
-                        <span className="text-[#0C2E8A] block">Private Profile</span>
+                        <span className="text-[#0C2E8A] block font-medium">Private Profile</span>
                         <span className="text-xs text-gray-500">
                           Hide your prayer activity
                         </span>
@@ -405,13 +760,14 @@ const Profile = () => {
                     </button>
                   </div>
 
-                  <div className="pt-4 border-t">
+                  {/* Sign Out Button */}
+                  <div className="pt-4">
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center gap-3 w-full py-3 text-red-600 hover:text-red-700 transition"
+                      className="flex items-center gap-3 w-full py-3 px-4 text-red-600 hover:text-red-700 hover:bg-red-50 transition rounded-lg"
                     >
                       <LogOut className="w-5 h-5" />
-                      <span>Sign Out</span>
+                      <span className="font-medium">Sign Out</span>
                     </button>
                   </div>
                 </div>
