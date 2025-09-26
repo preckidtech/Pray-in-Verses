@@ -186,7 +186,7 @@
                 });
                 setShowModal(true);
               }}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+              className="flex items-center gap-2 px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-[#0C2E8A] transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
             >
               <Plus className="w-5 h-5" />
               New Entry
@@ -203,13 +203,13 @@
                   placeholder="Search your journal entries..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent bg-gray-50"
                 />
               </div>
               <select
                 value={selectedMood}
                 onChange={(e) => setSelectedMood(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 font-medium"
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent bg-gray-50 font-medium"
               >
                 {moods.map((mood) => (
                   <option key={mood} value={mood}>
@@ -224,11 +224,11 @@
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
               <div className="flex items-center">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <BookOpen className="w-6 h-6 text-blue-700" />
+                <div className="p-3 bg-[#FCCF3A] rounded-lg">
+                  <BookOpen className="w-6 h-6 text-[#0C2E8A]" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-2xl font-semibold text-gray-900">
+                  <h3 className="text-2xl font-semibold text-[#0C2E8A]">
                     {entries.length}
                   </h3>
                   <p className="text-gray-600 font-medium">Total Entries</p>
@@ -237,11 +237,11 @@
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
               <div className="flex items-center">
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <Calendar className="w-6 h-6 text-yellow-600" />
+                <div className="p-3 bg-[#FCCF3A] rounded-lg">
+                  <Calendar className="w-6 h-6 text-[#0C2E8A]" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-2xl font-semibold text-gray-900">
+                  <h3 className="text-2xl font-semibold text-[#0C2E8A]">
                     {new Set(entries.map((e) => e.date)).size}
                   </h3>
                   <p className="text-gray-600 font-medium">Days Journaled</p>
@@ -250,11 +250,11 @@
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
               <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <Heart className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-[#FCCF3A] rounded-lg">
+                  <Heart className="w-6 h-6 text-[#0C2E8A]" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-2xl font-semibold text-gray-900">
+                  <h3 className="text-2xl font-semibold text-[#0C2E8A]">
                     {
                       entries.filter(
                         (e) => e.mood === "Grateful" || e.mood === "Joyful"
@@ -293,7 +293,7 @@
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEdit(entry)}
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                        className="p-2 text-gray-500 hover:text-[#0C2E8A] hover:bg-blue-50 rounded-lg transition-all duration-200"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
@@ -306,11 +306,11 @@
                     </div>
                   </div>
 
-                  <h2 className="text-xl font-medium text-gray-900 mb-3">
+                  <h2 className="text-xl font-medium text-[#0C2E8A] mb-3">
                     {entry.title}
                   </h2>
 
-                  <div className="flex items-center text-gray-500 text-sm mb-4">
+                  <div className="flex items-center text-[#ABBC6B] text-sm mb-4">
                     <Calendar className="w-4 h-4 mr-2" />
                     {formatDate(entry.date)}
                     <Clock className="w-4 h-4 ml-4 mr-2" />
@@ -326,7 +326,7 @@
 
                   {entry.verse && (
                     <div className="bg-gradient-to-r from-blue-50 to-yellow-50 rounded-lg p-4 mb-4 border border-blue-100">
-                      <p className="text-blue-800 font-medium text-sm">
+                      <p className="text-[#0C2E8A] font-medium text-sm">
                         📖 {entry.verse}
                       </p>
                     </div>
@@ -336,7 +336,7 @@
                     {entry.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md"
+                        className="px-3 py-1 bg-[#FCCF3A] text-[#0C2E8A] text-sm rounded-md"
                       >
                         #{tag}
                       </span>
