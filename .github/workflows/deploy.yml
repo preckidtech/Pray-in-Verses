@@ -3,7 +3,7 @@ name: Deploy React + Tailwind to cPanel
 on:
   push:
     branches:
-      - main  # Change if your main branch is named differently
+      - main # Change if your main branch is named differently
 
 jobs:
   build-and-deploy:
@@ -35,6 +35,6 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./build/      # ✅ must end with /
+          local-dir: ./build/ # ✅ must end with /
           server-dir: /public_html/
           protocol: ftp
