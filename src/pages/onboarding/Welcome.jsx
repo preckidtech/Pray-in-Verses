@@ -82,7 +82,7 @@ const Welcome = () => {
                 Pray in Verses
               </h1>
               <p className="text-base md:text-lg opacity-90 leading-tight">
-                Turn every verse into prayers
+                Turn every bible verse into prayers
               </p>
             </div>
 
