@@ -33,7 +33,9 @@ const ForgotPassword = () => {
   const handleVerifyEmail = (e) => {
     e.preventDefault();
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userExists = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    const userExists = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase()
+    );
 
     if (!userExists) {
       toast.error("No account found with this email");
@@ -50,10 +52,16 @@ const ForgotPassword = () => {
     const data = encoder.encode(newPassword);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    const hashedPassword = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
 
     let users = JSON.parse(localStorage.getItem("users")) || [];
-    users = users.map((u) => (u.email.toLowerCase() === email.toLowerCase() ? { ...u, password: hashedPassword } : u));
+    users = users.map((u) =>
+      u.email.toLowerCase() === email.toLowerCase()
+        ? { ...u, password: hashedPassword }
+        : u
+    );
     localStorage.setItem("users", JSON.stringify(users));
 
     toast.success("Password reset successfully. You can now log in.");
@@ -70,10 +78,16 @@ const ForgotPassword = () => {
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col justify-center p-6">
         {/* Logo on top */}
         <div className="flex justify-center mb-4">
-          <img src={logo} alt="logo" className="h-32 w-32 sm:h-32 sm:w-32 object-contain" />
+          <img
+            src={logo}
+            alt="logo"
+            className="h-32 w-32 sm:h-32 sm:w-32 object-contain"
+          />
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Forgot Password</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
+          Forgot Password
+        </h2>
 
         {step === 1 && (
           <form className="space-y-4" onSubmit={handleVerifyEmail}>
@@ -106,9 +120,12 @@ const ForgotPassword = () => {
         )}
 
         <div className="text-center mt-4">
-          <a href="/login" className="text-primary font-semibold hover:underline text-sm">
+          <Link
+            to="/login"
+            className="text-primary font-semibold hover:underline text-sm"
+          >
             Back to Login
-          </a>
+          </Link>
         </div>
       </div>
     </div>
