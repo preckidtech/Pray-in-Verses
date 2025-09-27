@@ -34,7 +34,7 @@ const Profile = () => {
   // Profile image state
   const [profileImage, setProfileImage] = useState(null);
 
-  // Profile data state
+  // Profile data state - populated from authenticated user data
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -53,202 +53,80 @@ const Profile = () => {
   });
 
   /**
-   * Enhanced user data retrieval with comprehensive fallbacks
-   */
-  const getCurrentUser = () => {
-    console.log("=== Checking for current user ===");
-
-    // Method 1: Check auth store
-    if (user && (user.id || user.email) && user.name) {
-      console.log("Found user in auth store:", user);
-      return user;
-    }
-
-    // Method 2: Check currentUser in localStorage
-    try {
-      const currentUser = JSON.parse(
-        localStorage.getItem("currentUser") || "{}"
-      );
-      if ((currentUser.id || currentUser.email) && currentUser.name) {
-        console.log("Found user in currentUser localStorage:", currentUser);
-        return currentUser;
-      }
-    } catch (error) {
-      console.error("Error parsing currentUser from localStorage:", error);
-    }
-
-    // Method 3: Check legacy localStorage data
-    const legacyUserName = localStorage.getItem("userName");
-    const legacyUserEmail = localStorage.getItem("userEmail");
-
-    console.log(
-      "Legacy data - userName:",
-      legacyUserName,
-      "userEmail:",
-      legacyUserEmail
-    );
-
-    if (legacyUserName && legacyUserEmail) {
-      // Try to find this user in the users array
-      try {
-        const users = JSON.parse(localStorage.getItem("users") || "[]");
-        console.log("Users array:", users);
-
-        const foundUser = users.find(
-          (u) =>
-            u.email && u.email.toLowerCase() === legacyUserEmail.toLowerCase()
-        );
-
-        if (foundUser) {
-          console.log("Found user in users array:", foundUser);
-          // Update currentUser for future use
-          localStorage.setItem("currentUser", JSON.stringify(foundUser));
-          return foundUser;
-        }
-
-        // If not found in users array, create a basic user object
-        const basicUser = {
-          name: legacyUserName,
-          email: legacyUserEmail,
-          id: legacyUserEmail, // Use email as ID
-          joinDate: new Date().toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-          }),
-          profileData: {
-            totalPrayers: 0,
-            answeredPrayers: 0,
-            savedPrayers: 0,
-            notifications: true,
-            privateProfile: false,
-          },
-        };
-
-        console.log("Created basic user object:", basicUser);
-        localStorage.setItem("currentUser", JSON.stringify(basicUser));
-        return basicUser;
-      } catch (error) {
-        console.error("Error processing users array:", error);
-      }
-    }
-
-    // Method 4: Check if there's any user in users array (for cases where legacy data is missing)
-    try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      if (users.length > 0) {
-        console.log(
-          "Found users but no current user set. Using first user:",
-          users[0]
-        );
-        const firstUser = users[0];
-        localStorage.setItem("currentUser", JSON.stringify(firstUser));
-        localStorage.setItem("userName", firstUser.name);
-        localStorage.setItem("userEmail", firstUser.email);
-        return firstUser;
-      }
-    } catch (error) {
-      console.error("Error checking users array:", error);
-    }
-
-    console.log("No user found anywhere");
-    return null;
-  };
-
-  /**
-   * Initialize profile data
+   * Initialize profile data from authenticated user and localStorage
+   * This ensures the profile reflects the actual user data from signup
    */
   useEffect(() => {
     initializeProfile();
   }, [user]);
 
   /**
-   * Format join date consistently
-   */
-  const formatJoinDate = (user) => {
-    if (user.joinDate) {
-      return user.joinDate;
-    }
-
-    if (user.createdAt) {
-      const date = new Date(user.createdAt);
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-      });
-    }
-
-    // Fallback to current date
-    return new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-    });
-  };
-
-  /**
-   * Initialize profile with enhanced error handling
+   * Initialize profile with user data
+   * TODO: Fetch user profile data from API when backend is ready
    */
   const initializeProfile = async () => {
     try {
       setIsLoading(true);
-      console.log("Initializing profile...");
 
-      const currentUser = getCurrentUser();
-
-      if (!currentUser) {
-        console.log("No user found, redirecting to login");
-        toast.error("Please log in to view your profile", { duration: 3000 });
-
-        // Small delay to show the toast
-        setTimeout(() => {
+      // Get current user data (either from auth store or localStorage)
+      let currentUser = user || JSON.parse(localStorage.getItem("currentUser") || "{}");
+      
+      // If no current user, try to get from users array (for existing logged in users)
+      if (!currentUser.id || !currentUser.name) {
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        const userEmail = localStorage.getItem("userEmail");
+        const userName = localStorage.getItem("userName");
+        
+        if (userName && userEmail) {
+          // Create user object from existing localStorage data
+          currentUser = {
+            id: userEmail, // Use email as ID for now
+            name: userName,
+            email: userEmail,
+            joinDate: "January 2024", // Default join date
+            profileData: {
+              totalPrayers: 0,
+              answeredPrayers: 0,
+              savedPrayers: 0,
+              notifications: true,
+              privateProfile: false,
+            }
+          };
+          // Save as current user for future use
+          localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        } else if (users.length > 0) {
+          // If no stored user data, but users exist, redirect to login
+          toast.error("Please log in to view your profile", { duration: 2000 });
           navigate("/login");
-        }, 1500);
-        return;
+          return;
+        } else {
+          toast.error("Please log in to view your profile", { duration: 2000 });
+          navigate("/login");
+          return;
+        }
       }
 
-      console.log("Using user data:", currentUser);
+      // TODO: Replace with API call - GET /api/users/profile
+      // const response = await fetch('/api/users/profile', {
+      //   headers: { Authorization: `Bearer ${token}` }
+      // });
+      // const userData = await response.json();
 
-      // Load profile image with multiple fallbacks
+      // Load profile image from localStorage (use email as ID for backward compatibility)
       const userId = currentUser.id || currentUser.email;
-      let savedProfileImage = null;
-
-      if (userId) {
-        savedProfileImage = localStorage.getItem(`profileImage_${userId}`);
-      }
-
-      if (!savedProfileImage && currentUser.email) {
-        savedProfileImage = localStorage.getItem(
-          `profileImage_${currentUser.email}`
-        );
-      }
-
-      if (!savedProfileImage) {
-        savedProfileImage = localStorage.getItem("profileImage");
-      }
-
+      const savedProfileImage = localStorage.getItem(`profileImage_${userId}`) || localStorage.getItem("profileImage");
       setProfileImage(savedProfileImage);
 
-      // Get prayer statistics
-      const savedPrayers = JSON.parse(
-        localStorage.getItem(`savedPrayers_${userId}`) ||
-          localStorage.getItem(`savedPrayers_${currentUser.email}`) ||
-          localStorage.getItem("savedPrayers") ||
-          "[]"
-      );
-
-      const answeredPrayers = JSON.parse(
-        localStorage.getItem(`answeredPrayers_${userId}`) ||
-          localStorage.getItem(`answeredPrayers_${currentUser.email}`) ||
-          localStorage.getItem("answeredPrayers") ||
-          "[]"
-      );
-
+      // Get prayer statistics (use email as ID for backward compatibility)
+      const savedPrayers = JSON.parse(localStorage.getItem(`savedPrayers_${userId}`) || localStorage.getItem("savedPrayers") || "[]");
+      const answeredPrayers = JSON.parse(localStorage.getItem(`answeredPrayers_${userId}`) || localStorage.getItem("answeredPrayers") || "[]");
       const prayers = getPrayers();
 
-      // Set profile data
+      // Set profile data from user registration data
       const profileData = {
         name: currentUser.name || "User",
         email: currentUser.email || "",
-        joinDate: formatJoinDate(currentUser),
+        joinDate: currentUser.joinDate || "Recently",
         totalPrayers: prayers.length,
         answeredPrayers: answeredPrayers.length,
         savedPrayers: savedPrayers.length,
@@ -256,28 +134,15 @@ const Profile = () => {
         privateProfile: currentUser.profileData?.privateProfile ?? false,
       };
 
-      console.log("Setting profile data:", profileData);
-
       setProfile(profileData);
       setEditForm({
         name: profileData.name,
         email: profileData.email,
       });
 
-      // Only show welcome message on first load, not on every re-render
-      const hasShownWelcome = sessionStorage.getItem("profileWelcomeShown");
-      if (!hasShownWelcome) {
-        toast.success(`Welcome, ${profileData.name}!`, { duration: 2000 });
-        sessionStorage.setItem("profileWelcomeShown", "true");
-      }
     } catch (error) {
       console.error("Profile initialization error:", error);
       toast.error("Failed to load profile data", { duration: 2000 });
-
-      // If there's an error, try to redirect to login after a delay
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
     } finally {
       setIsLoading(false);
     }
@@ -285,14 +150,16 @@ const Profile = () => {
 
   /**
    * Handle profile form changes
+   * @param {Event} e - Input change event
    */
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setEditForm((prev) => ({ ...prev, [name]: value }));
+    setEditForm(prev => ({ ...prev, [name]: value }));
   };
 
   /**
    * Validate profile form
+   * @returns {boolean} - True if form is valid
    */
   const validateProfileForm = () => {
     if (!editForm.name.trim()) {
@@ -311,6 +178,7 @@ const Profile = () => {
 
   /**
    * Save profile changes
+   * TODO: Replace with API call when backend is ready
    */
   const handleSave = async () => {
     if (!validateProfileForm()) return;
@@ -318,25 +186,22 @@ const Profile = () => {
     setIsSaving(true);
 
     try {
-      const currentUser = getCurrentUser();
-      if (!currentUser) {
-        toast.error("User session expired. Please log in again.", {
-          duration: 2000,
-        });
-        navigate("/login");
-        return;
-      }
+      // TODO: Replace with API call - PUT /api/users/profile
+      // const response = await fetch('/api/users/profile', {
+      //   method: 'PUT',
+      //   headers: { 
+      //     'Content-Type': 'application/json',
+      //     Authorization: `Bearer ${token}` 
+      //   },
+      //   body: JSON.stringify({ name: editForm.name, email: editForm.email })
+      // });
 
-      // Update users array in localStorage
+      const currentUser = user || JSON.parse(localStorage.getItem("currentUser") || "{}");
+      
+      // Update local storage data
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex(
-        (u) =>
-          u.id === currentUser.id ||
-          (u.email &&
-            currentUser.email &&
-            u.email.toLowerCase() === currentUser.email.toLowerCase())
-      );
-
+      const userIndex = users.findIndex(u => u.id === currentUser.id || u.email === currentUser.email);
+      
       if (userIndex !== -1) {
         users[userIndex] = {
           ...users[userIndex],
@@ -346,7 +211,7 @@ const Profile = () => {
         localStorage.setItem("users", JSON.stringify(users));
       }
 
-      // Update legacy localStorage items
+      // Update legacy localStorage items for backward compatibility
       localStorage.setItem("userName", editForm.name);
       localStorage.setItem("userEmail", editForm.email);
 
@@ -359,17 +224,15 @@ const Profile = () => {
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
       // Update profile state
-      setProfile((prev) => ({
+      setProfile(prev => ({
         ...prev,
         name: editForm.name,
         email: editForm.email,
       }));
 
-      // Trigger event to update header
-      window.dispatchEvent(new CustomEvent("profileUpdated"));
-
       setIsEditing(false);
       toast.success("Profile updated successfully!", { duration: 2000 });
+
     } catch (error) {
       console.error("Profile update error:", error);
       toast.error("Failed to update profile", { duration: 2000 });
@@ -382,25 +245,28 @@ const Profile = () => {
    * Cancel profile editing
    */
   const handleCancel = () => {
-    setEditForm({
-      name: profile.name,
-      email: profile.email,
+    setEditForm({ 
+      name: profile.name, 
+      email: profile.email 
     });
     setIsEditing(false);
   };
 
   /**
    * Handle profile image upload
+   * @param {Event} event - File input change event
    */
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image size should be less than 5MB", { duration: 2000 });
       return;
     }
 
+    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please select a valid image file", { duration: 2000 });
       return;
@@ -409,34 +275,21 @@ const Profile = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const imageDataUrl = e.target.result;
-      const currentUser = getCurrentUser();
-
-      if (currentUser) {
-        const userId = currentUser.id || currentUser.email;
-
-        setProfileImage(imageDataUrl);
-
-        // Store image with multiple keys
-        if (userId) {
-          localStorage.setItem(`profileImage_${userId}`, imageDataUrl);
-        }
-        if (currentUser.email) {
-          localStorage.setItem(
-            `profileImage_${currentUser.email}`,
-            imageDataUrl
-          );
-        }
-        localStorage.setItem("profileImage", imageDataUrl);
-
-        window.dispatchEvent(new CustomEvent("profileUpdated"));
-        toast.success("Profile picture updated!", { duration: 2000 });
-      }
+      const currentUser = user || JSON.parse(localStorage.getItem("currentUser") || "{}");
+      const userId = currentUser.id || currentUser.email;
+      
+      setProfileImage(imageDataUrl);
+      
+      // Store image per user ID and also update legacy storage
+      localStorage.setItem(`profileImage_${userId}`, imageDataUrl);
+      localStorage.setItem("profileImage", imageDataUrl); // For backward compatibility
+      toast.success("Profile picture updated!", { duration: 2000 });
     };
-
+    
     reader.onerror = () => {
       toast.error("Failed to read image file", { duration: 2000 });
     };
-
+    
     reader.readAsDataURL(file);
   };
 
@@ -451,59 +304,56 @@ const Profile = () => {
    * Remove profile image
    */
   const handleRemoveImage = () => {
-    const currentUser = getCurrentUser();
-
-    if (currentUser) {
-      const userId = currentUser.id || currentUser.email;
-
-      setProfileImage(null);
-
-      if (userId) {
-        localStorage.removeItem(`profileImage_${userId}`);
-      }
-      if (currentUser.email) {
-        localStorage.removeItem(`profileImage_${currentUser.email}`);
-      }
-      localStorage.removeItem("profileImage");
-
-      window.dispatchEvent(new CustomEvent("profileUpdated"));
-      toast.success("Profile picture removed", { duration: 2000 });
-    }
+    const currentUser = user || JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const userId = currentUser.id || currentUser.email;
+    
+    setProfileImage(null);
+    localStorage.removeItem(`profileImage_${userId}`);
+    localStorage.removeItem("profileImage"); // Remove legacy storage too
+    toast.success("Profile picture removed", { duration: 2000 });
   };
 
   /**
    * Toggle notification preferences
+   * TODO: Update user preferences via API
    */
   const toggleNotifications = async () => {
     try {
       const newNotificationState = !profile.notifications;
+      
+      // TODO: API call to update preferences
+      // await fetch('/api/users/preferences', {
+      //   method: 'PUT',
+      //   headers: { Authorization: `Bearer ${token}` },
+      //   body: JSON.stringify({ notifications: newNotificationState })
+      // });
 
-      setProfile((prev) => ({
-        ...prev,
-        notifications: newNotificationState,
+      setProfile(prev => ({ 
+        ...prev, 
+        notifications: newNotificationState 
       }));
-
+      
       toast.success("Notification preferences updated!", { duration: 2000 });
     } catch (error) {
       console.error("Failed to update notifications:", error);
-      toast.error("Failed to update notification preferences", {
-        duration: 2000,
-      });
+      toast.error("Failed to update notification preferences", { duration: 2000 });
     }
   };
 
   /**
    * Toggle privacy settings
+   * TODO: Update user privacy settings via API
    */
   const togglePrivacy = async () => {
     try {
       const newPrivacyState = !profile.privateProfile;
-
-      setProfile((prev) => ({
-        ...prev,
-        privateProfile: newPrivacyState,
+      
+      // TODO: API call to update privacy settings
+      setProfile(prev => ({ 
+        ...prev, 
+        privateProfile: newPrivacyState 
       }));
-
+      
       toast.success("Privacy settings updated!", { duration: 2000 });
     } catch (error) {
       console.error("Failed to update privacy:", error);
@@ -513,6 +363,7 @@ const Profile = () => {
 
   /**
    * Handle email change request
+   * TODO: Implement proper email change flow with verification
    */
   const handleChangeEmail = () => {
     toast("Email change request sent! Check your inbox for instructions.", {
@@ -526,11 +377,13 @@ const Profile = () => {
    */
   const handleSignOut = () => {
     try {
+      // Clear user session data
       localStorage.removeItem("currentUser");
       localStorage.removeItem("rememberedEmail");
-
+      
+      // Call logout from auth store
       logout();
-
+      
       toast.success("Signed out successfully", { duration: 2000 });
       navigate("/login");
     } catch (error) {
@@ -540,44 +393,15 @@ const Profile = () => {
   };
 
   /**
-   * Debug button to check user data
+   * Render loading state
    */
-  const handleDebugUser = () => {
-    const currentUser = getCurrentUser();
-    console.log("=== DEBUG USER DATA ===");
-    console.log("Auth store user:", user);
-    console.log("Current user function result:", currentUser);
-    console.log(
-      "localStorage currentUser:",
-      localStorage.getItem("currentUser")
-    );
-    console.log("localStorage userName:", localStorage.getItem("userName"));
-    console.log("localStorage userEmail:", localStorage.getItem("userEmail"));
-    console.log("localStorage users:", localStorage.getItem("users"));
-    console.log("========================");
-
-    if (currentUser) {
-      toast.success(`Found user: ${currentUser.name} (${currentUser.email})`, {
-        duration: 3000,
-      });
-    } else {
-      toast.error("No user found!", { duration: 3000 });
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0C2E8A] mx-auto mb-4"></div>
-            <p className="text-[#0C2E8A] mb-2">Loading profile...</p>
-            <button
-              onClick={handleDebugUser}
-              className="text-sm text-gray-600 underline hover:text-gray-800"
-            >
-              Debug user data
-            </button>
+            <p className="text-[#0C2E8A]">Loading profile...</p>
           </div>
         </div>
       </div>
@@ -587,18 +411,8 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
       <Toaster position="top-right" reverseOrder={false} />
-
+      
       <div className="container mx-auto px-4 py-6">
-        {/* Debug button for development */}
-        <div className="fixed bottom-4 left-4 z-50">
-          <button
-            onClick={handleDebugUser}
-            className="bg-gray-800 text-white text-xs px-2 py-1 rounded hover:bg-gray-700"
-          >
-            Debug
-          </button>
-        </div>
-
         {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[#0C2E8A] mb-2">My Profile</h1>
@@ -608,9 +422,11 @@ const Profile = () => {
         <div className="max-w-4xl mx-auto">
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl shadow border mb-8 overflow-hidden">
+            {/* Header Background */}
             <div className="bg-gradient-to-r from-[#0C2E8A] to-[#FCCF3A] h-32"></div>
-
+            
             <div className="px-8 pb-8">
+              {/* Profile Image Section */}
               <div className="relative -mt-16 mb-4">
                 <div className="w-32 h-32 bg-white rounded-full p-2 mx-auto relative shadow-lg">
                   {profileImage ? (
@@ -625,25 +441,30 @@ const Profile = () => {
                     </div>
                   )}
 
+                  {/* Camera Upload Button */}
                   <button
                     onClick={handleCameraClick}
                     className="absolute bottom-2 right-2 bg-[#0C2E8A] text-white p-2 rounded-full hover:bg-[#1a4ba0] transition shadow-lg"
                     title="Upload profile picture"
+                    aria-label="Upload profile picture"
                   >
                     <Camera className="w-4 h-4" />
                   </button>
 
+                  {/* Remove Image Button */}
                   {profileImage && (
                     <button
                       onClick={handleRemoveImage}
                       className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition shadow-lg"
                       title="Remove profile picture"
+                      aria-label="Remove profile picture"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   )}
                 </div>
 
+                {/* Hidden File Input */}
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -653,6 +474,7 @@ const Profile = () => {
                 />
               </div>
 
+              {/* User Name and Join Date */}
               <div className="text-center">
                 {isEditing ? (
                   <input
@@ -689,7 +511,7 @@ const Profile = () => {
                   </p>
                   <p className="text-gray-600">Total Prayers</p>
                 </div>
-
+                
                 <div className="bg-white rounded-2xl p-6 text-center shadow border hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <CheckCircle className="w-6 h-6 text-[#0C2E8A]" />
@@ -699,7 +521,7 @@ const Profile = () => {
                   </p>
                   <p className="text-gray-600">Answered Prayers</p>
                 </div>
-
+                
                 <div className="bg-white rounded-2xl p-6 text-center shadow border hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Bookmark className="w-6 h-6 text-[#0C2E8A]" />
@@ -720,7 +542,7 @@ const Profile = () => {
                     <User className="w-5 h-5" />
                     Account Information
                   </h2>
-
+                  
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
@@ -752,6 +574,7 @@ const Profile = () => {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Full Name Field */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Full Name
@@ -772,6 +595,7 @@ const Profile = () => {
                     )}
                   </div>
 
+                  {/* Email Field */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Email Address
@@ -801,6 +625,7 @@ const Profile = () => {
                     )}
                   </div>
 
+                  {/* Member Since Field */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Member Since
@@ -823,13 +648,12 @@ const Profile = () => {
                 </h2>
 
                 <div className="space-y-4">
+                  {/* Notifications Toggle */}
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <Bell className="w-5 h-5 text-[#0C2E8A]" />
                       <div>
-                        <span className="text-[#0C2E8A] block font-medium">
-                          Notifications
-                        </span>
+                        <span className="text-[#0C2E8A] block font-medium">Notifications</span>
                         <span className="text-xs text-gray-500">
                           Prayer reminders & updates
                         </span>
@@ -837,27 +661,29 @@ const Profile = () => {
                     </div>
                     <button
                       onClick={toggleNotifications}
+                      aria-label={
+                        profile.notifications
+                          ? "Disable notifications"
+                          : "Enable notifications"
+                      }
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         profile.notifications ? "bg-[#0C2E8A]" : "bg-gray-300"
                       }`}
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          profile.notifications
-                            ? "translate-x-6"
-                            : "translate-x-1"
+                          profile.notifications ? "translate-x-6" : "translate-x-1"
                         }`}
                       />
                     </button>
                   </div>
 
+                  {/* Privacy Toggle */}
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-[#0C2E8A]" />
                       <div>
-                        <span className="text-[#0C2E8A] block font-medium">
-                          Private Profile
-                        </span>
+                        <span className="text-[#0C2E8A] block font-medium">Private Profile</span>
                         <span className="text-xs text-gray-500">
                           Hide your prayer activity
                         </span>
@@ -865,20 +691,24 @@ const Profile = () => {
                     </div>
                     <button
                       onClick={togglePrivacy}
+                      aria-label={
+                        profile.privateProfile
+                          ? "Disable private profile"
+                          : "Enable private profile"
+                      }
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         profile.privateProfile ? "bg-[#0C2E8A]" : "bg-gray-300"
                       }`}
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          profile.privateProfile
-                            ? "translate-x-6"
-                            : "translate-x-1"
+                          profile.privateProfile ? "translate-x-6" : "translate-x-1"
                         }`}
                       />
                     </button>
                   </div>
 
+                  {/* Sign Out Button */}
                   <div className="pt-4">
                     <button
                       onClick={handleSignOut}
