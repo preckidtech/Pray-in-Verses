@@ -3,7 +3,7 @@ name: Deploy React + Tailwind to cPanel
 on:
   push:
     branches:
-      - main # Change if your main branch is named differently
+      - main # Replace with your default branch if different
 
 jobs:
   build-and-deploy:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.19.0" # Change to your Node version
+          node-version: "22.19.0" # Replace with your Node.js version
 
       # Step 3 — Install dependencies
       - name: Install dependencies
@@ -30,11 +30,11 @@ jobs:
 
       # Step 5 — Deploy build folder via FTP
       - name: Upload build to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v3
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./build
           server-dir: /public_html/
-          protocol: ftp # Change to sftp if your host supports it
+          protocol: ftp # Use 'sftp' if your host supports it
