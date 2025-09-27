@@ -395,11 +395,11 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Demo Credentials */}
+        {/* Demo Credentials
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500 text-center mb-1">Demo Admin Access:</p>
           <p className="text-xs text-gray-600 text-center">admin@gmail.com / Krd364ca@2004</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ import About from "./pages/About";
 import GuidedPrayer from "./pages/GuidedPrayer";
 import BrowsePrayers from "./pages/BrowsePrayers";
 import BibleVerse from "./pages/BibleVerse";
-import Bookmarks from "./pages/Bookmark"
+import Bookmarks from "./pages/Bookmark";
 
 // New pages
 import BookPage from "./pages/BookPage";
@@ -81,9 +81,14 @@ function AppContent() {
 
             {/* Bible dynamic routes */}
             <Route path="/book/:bookSlug" element={<BookPage />} />
-            <Route path="/book/:bookSlug/chapter/:chapterNumber" element={<ChapterPage />} />
-            <Route path="/book/:bookSlug/chapter/:chapterNumber/verse/:verseNumber" element={<VerseDetails />} />
-
+            <Route
+              path="/book/:bookSlug/chapter/:chapterNumber"
+              element={<ChapterPage />}
+            />
+            <Route
+              path="/book/:bookSlug/chapter/:chapterNumber/verse/:verseNumber"
+              element={<VerseDetails />}
+            />
 
             {/* Admin dashboard Route */}
             <Route path="/admin" element={<AdminForm />} />

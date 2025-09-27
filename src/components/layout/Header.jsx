@@ -375,7 +375,7 @@
 
         {/* Sidebar */}
         <aside
-          className={`bg-[#2c3E91] shadow-md w-56 h-screen fixed top-16 left-0 z-40 
+          className={`bg-[#2c3E91] shadow-md w-56 h-screen fixed top-16 left-0 z-40 pb-28
                       border-r border-gray-200 overflow-y-auto scrollbar-thin 
                       scrollbar-thumb-gray-400 scrollbar-track-transparent 
                       transform lg:translate-x-0 
