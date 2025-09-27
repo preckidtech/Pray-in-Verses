@@ -57,7 +57,7 @@ const Profile = () => {
    */
   const getCurrentUser = () => {
     console.log("=== Checking for current user ===");
-    
+
     // Method 1: Check auth store
     if (user && (user.id || user.email) && user.name) {
       console.log("Found user in auth store:", user);
@@ -66,7 +66,9 @@ const Profile = () => {
 
     // Method 2: Check currentUser in localStorage
     try {
-      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "{}"
+      );
       if ((currentUser.id || currentUser.email) && currentUser.name) {
         console.log("Found user in currentUser localStorage:", currentUser);
         return currentUser;
@@ -78,34 +80,40 @@ const Profile = () => {
     // Method 3: Check legacy localStorage data
     const legacyUserName = localStorage.getItem("userName");
     const legacyUserEmail = localStorage.getItem("userEmail");
-    
-    console.log("Legacy data - userName:", legacyUserName, "userEmail:", legacyUserEmail);
-    
+
+    console.log(
+      "Legacy data - userName:",
+      legacyUserName,
+      "userEmail:",
+      legacyUserEmail
+    );
+
     if (legacyUserName && legacyUserEmail) {
       // Try to find this user in the users array
       try {
         const users = JSON.parse(localStorage.getItem("users") || "[]");
         console.log("Users array:", users);
-        
-        const foundUser = users.find(u => 
-          u.email && u.email.toLowerCase() === legacyUserEmail.toLowerCase()
+
+        const foundUser = users.find(
+          (u) =>
+            u.email && u.email.toLowerCase() === legacyUserEmail.toLowerCase()
         );
-        
+
         if (foundUser) {
           console.log("Found user in users array:", foundUser);
           // Update currentUser for future use
           localStorage.setItem("currentUser", JSON.stringify(foundUser));
           return foundUser;
         }
-        
+
         // If not found in users array, create a basic user object
         const basicUser = {
           name: legacyUserName,
           email: legacyUserEmail,
           id: legacyUserEmail, // Use email as ID
-          joinDate: new Date().toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long' 
+          joinDate: new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
           }),
           profileData: {
             totalPrayers: 0,
@@ -113,13 +121,12 @@ const Profile = () => {
             savedPrayers: 0,
             notifications: true,
             privateProfile: false,
-          }
+          },
         };
-        
+
         console.log("Created basic user object:", basicUser);
         localStorage.setItem("currentUser", JSON.stringify(basicUser));
         return basicUser;
-        
       } catch (error) {
         console.error("Error processing users array:", error);
       }
@@ -129,7 +136,10 @@ const Profile = () => {
     try {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       if (users.length > 0) {
-        console.log("Found users but no current user set. Using first user:", users[0]);
+        console.log(
+          "Found users but no current user set. Using first user:",
+          users[0]
+        );
         const firstUser = users[0];
         localStorage.setItem("currentUser", JSON.stringify(firstUser));
         localStorage.setItem("userName", firstUser.name);
@@ -158,19 +168,19 @@ const Profile = () => {
     if (user.joinDate) {
       return user.joinDate;
     }
-    
+
     if (user.createdAt) {
       const date = new Date(user.createdAt);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long' 
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
       });
     }
-    
+
     // Fallback to current date
-    return new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long' 
+    return new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
     });
   };
 
@@ -183,11 +193,11 @@ const Profile = () => {
       console.log("Initializing profile...");
 
       const currentUser = getCurrentUser();
-      
+
       if (!currentUser) {
         console.log("No user found, redirecting to login");
         toast.error("Please log in to view your profile", { duration: 3000 });
-        
+
         // Small delay to show the toast
         setTimeout(() => {
           navigate("/login");
@@ -200,36 +210,38 @@ const Profile = () => {
       // Load profile image with multiple fallbacks
       const userId = currentUser.id || currentUser.email;
       let savedProfileImage = null;
-      
+
       if (userId) {
         savedProfileImage = localStorage.getItem(`profileImage_${userId}`);
       }
-      
+
       if (!savedProfileImage && currentUser.email) {
-        savedProfileImage = localStorage.getItem(`profileImage_${currentUser.email}`);
+        savedProfileImage = localStorage.getItem(
+          `profileImage_${currentUser.email}`
+        );
       }
-      
+
       if (!savedProfileImage) {
         savedProfileImage = localStorage.getItem("profileImage");
       }
-      
+
       setProfileImage(savedProfileImage);
 
       // Get prayer statistics
       const savedPrayers = JSON.parse(
-        localStorage.getItem(`savedPrayers_${userId}`) || 
-        localStorage.getItem(`savedPrayers_${currentUser.email}`) ||
-        localStorage.getItem("savedPrayers") || 
-        "[]"
+        localStorage.getItem(`savedPrayers_${userId}`) ||
+          localStorage.getItem(`savedPrayers_${currentUser.email}`) ||
+          localStorage.getItem("savedPrayers") ||
+          "[]"
       );
-      
+
       const answeredPrayers = JSON.parse(
-        localStorage.getItem(`answeredPrayers_${userId}`) || 
-        localStorage.getItem(`answeredPrayers_${currentUser.email}`) ||
-        localStorage.getItem("answeredPrayers") || 
-        "[]"
+        localStorage.getItem(`answeredPrayers_${userId}`) ||
+          localStorage.getItem(`answeredPrayers_${currentUser.email}`) ||
+          localStorage.getItem("answeredPrayers") ||
+          "[]"
       );
-      
+
       const prayers = getPrayers();
 
       // Set profile data
@@ -253,16 +265,15 @@ const Profile = () => {
       });
 
       // Only show welcome message on first load, not on every re-render
-      const hasShownWelcome = sessionStorage.getItem('profileWelcomeShown');
+      const hasShownWelcome = sessionStorage.getItem("profileWelcomeShown");
       if (!hasShownWelcome) {
         toast.success(`Welcome, ${profileData.name}!`, { duration: 2000 });
-        sessionStorage.setItem('profileWelcomeShown', 'true');
+        sessionStorage.setItem("profileWelcomeShown", "true");
       }
-
     } catch (error) {
       console.error("Profile initialization error:", error);
       toast.error("Failed to load profile data", { duration: 2000 });
-      
+
       // If there's an error, try to redirect to login after a delay
       setTimeout(() => {
         navigate("/login");
@@ -277,7 +288,7 @@ const Profile = () => {
    */
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setEditForm(prev => ({ ...prev, [name]: value }));
+    setEditForm((prev) => ({ ...prev, [name]: value }));
   };
 
   /**
@@ -309,18 +320,23 @@ const Profile = () => {
     try {
       const currentUser = getCurrentUser();
       if (!currentUser) {
-        toast.error("User session expired. Please log in again.", { duration: 2000 });
+        toast.error("User session expired. Please log in again.", {
+          duration: 2000,
+        });
         navigate("/login");
         return;
       }
-      
+
       // Update users array in localStorage
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex(u => 
-        u.id === currentUser.id || 
-        (u.email && currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase())
+      const userIndex = users.findIndex(
+        (u) =>
+          u.id === currentUser.id ||
+          (u.email &&
+            currentUser.email &&
+            u.email.toLowerCase() === currentUser.email.toLowerCase())
       );
-      
+
       if (userIndex !== -1) {
         users[userIndex] = {
           ...users[userIndex],
@@ -343,18 +359,17 @@ const Profile = () => {
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
       // Update profile state
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
         name: editForm.name,
         email: editForm.email,
       }));
 
       // Trigger event to update header
-      window.dispatchEvent(new CustomEvent('profileUpdated'));
+      window.dispatchEvent(new CustomEvent("profileUpdated"));
 
       setIsEditing(false);
       toast.success("Profile updated successfully!", { duration: 2000 });
-
     } catch (error) {
       console.error("Profile update error:", error);
       toast.error("Failed to update profile", { duration: 2000 });
@@ -367,9 +382,9 @@ const Profile = () => {
    * Cancel profile editing
    */
   const handleCancel = () => {
-    setEditForm({ 
-      name: profile.name, 
-      email: profile.email 
+    setEditForm({
+      name: profile.name,
+      email: profile.email,
     });
     setIsEditing(false);
   };
@@ -395,30 +410,33 @@ const Profile = () => {
     reader.onload = (e) => {
       const imageDataUrl = e.target.result;
       const currentUser = getCurrentUser();
-      
+
       if (currentUser) {
         const userId = currentUser.id || currentUser.email;
-        
+
         setProfileImage(imageDataUrl);
-        
+
         // Store image with multiple keys
         if (userId) {
           localStorage.setItem(`profileImage_${userId}`, imageDataUrl);
         }
         if (currentUser.email) {
-          localStorage.setItem(`profileImage_${currentUser.email}`, imageDataUrl);
+          localStorage.setItem(
+            `profileImage_${currentUser.email}`,
+            imageDataUrl
+          );
         }
         localStorage.setItem("profileImage", imageDataUrl);
-        
-        window.dispatchEvent(new CustomEvent('profileUpdated'));
+
+        window.dispatchEvent(new CustomEvent("profileUpdated"));
         toast.success("Profile picture updated!", { duration: 2000 });
       }
     };
-    
+
     reader.onerror = () => {
       toast.error("Failed to read image file", { duration: 2000 });
     };
-    
+
     reader.readAsDataURL(file);
   };
 
@@ -434,12 +452,12 @@ const Profile = () => {
    */
   const handleRemoveImage = () => {
     const currentUser = getCurrentUser();
-    
+
     if (currentUser) {
       const userId = currentUser.id || currentUser.email;
-      
+
       setProfileImage(null);
-      
+
       if (userId) {
         localStorage.removeItem(`profileImage_${userId}`);
       }
@@ -447,8 +465,8 @@ const Profile = () => {
         localStorage.removeItem(`profileImage_${currentUser.email}`);
       }
       localStorage.removeItem("profileImage");
-      
-      window.dispatchEvent(new CustomEvent('profileUpdated'));
+
+      window.dispatchEvent(new CustomEvent("profileUpdated"));
       toast.success("Profile picture removed", { duration: 2000 });
     }
   };
@@ -459,16 +477,18 @@ const Profile = () => {
   const toggleNotifications = async () => {
     try {
       const newNotificationState = !profile.notifications;
-      
-      setProfile(prev => ({ 
-        ...prev, 
-        notifications: newNotificationState 
+
+      setProfile((prev) => ({
+        ...prev,
+        notifications: newNotificationState,
       }));
-      
+
       toast.success("Notification preferences updated!", { duration: 2000 });
     } catch (error) {
       console.error("Failed to update notifications:", error);
-      toast.error("Failed to update notification preferences", { duration: 2000 });
+      toast.error("Failed to update notification preferences", {
+        duration: 2000,
+      });
     }
   };
 
@@ -478,12 +498,12 @@ const Profile = () => {
   const togglePrivacy = async () => {
     try {
       const newPrivacyState = !profile.privateProfile;
-      
-      setProfile(prev => ({ 
-        ...prev, 
-        privateProfile: newPrivacyState 
+
+      setProfile((prev) => ({
+        ...prev,
+        privateProfile: newPrivacyState,
       }));
-      
+
       toast.success("Privacy settings updated!", { duration: 2000 });
     } catch (error) {
       console.error("Failed to update privacy:", error);
@@ -508,9 +528,9 @@ const Profile = () => {
     try {
       localStorage.removeItem("currentUser");
       localStorage.removeItem("rememberedEmail");
-      
+
       logout();
-      
+
       toast.success("Signed out successfully", { duration: 2000 });
       navigate("/login");
     } catch (error) {
@@ -527,14 +547,19 @@ const Profile = () => {
     console.log("=== DEBUG USER DATA ===");
     console.log("Auth store user:", user);
     console.log("Current user function result:", currentUser);
-    console.log("localStorage currentUser:", localStorage.getItem("currentUser"));
+    console.log(
+      "localStorage currentUser:",
+      localStorage.getItem("currentUser")
+    );
     console.log("localStorage userName:", localStorage.getItem("userName"));
     console.log("localStorage userEmail:", localStorage.getItem("userEmail"));
     console.log("localStorage users:", localStorage.getItem("users"));
     console.log("========================");
-    
+
     if (currentUser) {
-      toast.success(`Found user: ${currentUser.name} (${currentUser.email})`, { duration: 3000 });
+      toast.success(`Found user: ${currentUser.name} (${currentUser.email})`, {
+        duration: 3000,
+      });
     } else {
       toast.error("No user found!", { duration: 3000 });
     }
@@ -562,7 +587,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-40 px-4 pb-8">
       <Toaster position="top-right" reverseOrder={false} />
-      
+
       <div className="container mx-auto px-4 py-6">
         {/* Debug button for development */}
         <div className="fixed bottom-4 left-4 z-50">
@@ -584,7 +609,7 @@ const Profile = () => {
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl shadow border mb-8 overflow-hidden">
             <div className="bg-gradient-to-r from-[#0C2E8A] to-[#FCCF3A] h-32"></div>
-            
+
             <div className="px-8 pb-8">
               <div className="relative -mt-16 mb-4">
                 <div className="w-32 h-32 bg-white rounded-full p-2 mx-auto relative shadow-lg">
@@ -664,7 +689,7 @@ const Profile = () => {
                   </p>
                   <p className="text-gray-600">Total Prayers</p>
                 </div>
-                
+
                 <div className="bg-white rounded-2xl p-6 text-center shadow border hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <CheckCircle className="w-6 h-6 text-[#0C2E8A]" />
@@ -674,7 +699,7 @@ const Profile = () => {
                   </p>
                   <p className="text-gray-600">Answered Prayers</p>
                 </div>
-                
+
                 <div className="bg-white rounded-2xl p-6 text-center shadow border hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Bookmark className="w-6 h-6 text-[#0C2E8A]" />
@@ -695,7 +720,7 @@ const Profile = () => {
                     <User className="w-5 h-5" />
                     Account Information
                   </h2>
-                  
+
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
@@ -802,7 +827,9 @@ const Profile = () => {
                     <div className="flex items-center gap-3">
                       <Bell className="w-5 h-5 text-[#0C2E8A]" />
                       <div>
-                        <span className="text-[#0C2E8A] block font-medium">Notifications</span>
+                        <span className="text-[#0C2E8A] block font-medium">
+                          Notifications
+                        </span>
                         <span className="text-xs text-gray-500">
                           Prayer reminders & updates
                         </span>
@@ -816,7 +843,9 @@ const Profile = () => {
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          profile.notifications ? "translate-x-6" : "translate-x-1"
+                          profile.notifications
+                            ? "translate-x-6"
+                            : "translate-x-1"
                         }`}
                       />
                     </button>
@@ -826,7 +855,9 @@ const Profile = () => {
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-[#0C2E8A]" />
                       <div>
-                        <span className="text-[#0C2E8A] block font-medium">Private Profile</span>
+                        <span className="text-[#0C2E8A] block font-medium">
+                          Private Profile
+                        </span>
                         <span className="text-xs text-gray-500">
                           Hide your prayer activity
                         </span>
@@ -840,7 +871,9 @@ const Profile = () => {
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          profile.privateProfile ? "translate-x-6" : "translate-x-1"
+                          profile.privateProfile
+                            ? "translate-x-6"
+                            : "translate-x-1"
                         }`}
                       />
                     </button>

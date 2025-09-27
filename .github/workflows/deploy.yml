@@ -10,22 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1 — Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2 — Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.19.0" # Change to match your Node version
+          node-version: "22.19.0" # Change to your Node version
 
+      # Step 3 — Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # Step 4 — Build project
       - name: Build project
         run: npm run build
 
+      # Step 5 — Deploy build folder via FTP
       - name: Upload build to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@v3
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
