@@ -1,72 +1,9 @@
-import React, { useState } from "react";
-import {
-  Plus,
-  Heart,
-  MessageCircle,
-  Users,
-  Clock,
-  Search,
-  Send,
-  X,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Plus, Heart, MessageCircle, Users, Clock, Search, Send, X } from "lucide-react";
 
 const PrayerWalls = () => {
-  const [prayerRequests, setPrayerRequests] = useState([
-    {
-      id: 1,
-      author: "Sarah M.",
-      title: "Prayer for my mother's surgery",
-      content:
-        "Please pray for my mother who is going into surgery tomorrow. We're trusting God for a successful operation and quick recovery.",
-      category: "Health",
-      isUrgent: true,
-      createdAt: "2024-03-15T10:30:00",
-      prayers: 45,
-      comments: 3,
-      prayed: false,
-      avatar: "SM",
-    },
-    {
-      id: 2,
-      author: "John D.",
-      title: "Job interview guidance",
-      content:
-        "I have an important job interview next week. Praying for God's favor and wisdom as I seek His will for my career path.",
-      category: "Career",
-      isUrgent: false,
-      createdAt: "2024-03-15T08:15:00",
-      prayers: 28,
-      comments: 2,
-      prayed: true,
-      avatar: "JD",
-    },
-  ]);
-
-  const [comments, setComments] = useState({
-    1: [
-      {
-        id: 1,
-        author: "Grace K.",
-        content: "Praying for your mother! God is the great healer.",
-        time: "2 hours ago",
-      },
-      {
-        id: 2,
-        author: "Peter S.",
-        content: "Lifting your family up in prayer. Trusting God for a miracle.",
-        time: "4 hours ago",
-      },
-    ],
-    2: [
-      {
-        id: 3,
-        author: "David R.",
-        content: "Praying for God's favor upon you!",
-        time: "3 hours ago",
-      },
-    ],
-  });
-
+  const [prayerRequests, setPrayerRequests] = useState([]);
+  const [comments, setComments] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [showComments, setShowComments] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -80,6 +17,8 @@ const PrayerWalls = () => {
     isUrgent: false,
     isAnonymous: false,
   });
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVisible, setToastVisible] = useState(false);
 
   const categories = [
     "All",
@@ -100,6 +39,30 @@ const PrayerWalls = () => {
     Financial: "bg-yellow-100 text-yellow-800",
     Spiritual: "bg-indigo-100 text-indigo-800",
     General: "bg-gray-100 text-gray-800",
+  };
+
+  // Load prayers from localStorage
+  useEffect(() => {
+    const savedPrayers = JSON.parse(localStorage.getItem("prayerRequests") || "[]");
+    const savedComments = JSON.parse(localStorage.getItem("comments") || "{}");
+    setPrayerRequests(savedPrayers);
+    setComments(savedComments);
+  }, []);
+
+  // Save prayers to localStorage
+  useEffect(() => {
+    localStorage.setItem("prayerRequests", JSON.stringify(prayerRequests));
+  }, [prayerRequests]);
+
+  // Save comments to localStorage
+  useEffect(() => {
+    localStorage.setItem("comments", JSON.stringify(comments));
+  }, [comments]);
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 3000);
   };
 
   const filteredRequests = prayerRequests.filter((request) => {
@@ -130,16 +93,36 @@ const PrayerWalls = () => {
     setPrayerRequests((prev) =>
       prev.map((request) =>
         request.id === id
-          ? {
-              ...request,
-              prayers: request.prayed
-                ? request.prayers - 1
-                : request.prayers + 1,
-              prayed: !request.prayed,
-            }
+          ? { ...request, prayers: request.prayed ? request.prayers - 1 : request.prayers + 1, prayed: !request.prayed }
           : request
       )
     );
+  };
+
+  const handleMarkAnswered = (id) => {
+    setPrayerRequests((prev) =>
+      prev.map((request) =>
+        request.id === id ? { ...request, answered: !request.answered } : request
+      )
+    );
+    const prayer = prayerRequests.find((p) => p.id === id);
+    if (prayer) {
+      const answeredPrayers = JSON.parse(localStorage.getItem("answeredPrayers") || "[]");
+      const alreadyAnswered = answeredPrayers.find((p) => p.id === prayer.id);
+      if (!alreadyAnswered) {
+        localStorage.setItem(
+          "answeredPrayers",
+          JSON.stringify([...answeredPrayers, { ...prayer, answeredAt: new Date().toISOString() }])
+        );
+        showToast("Prayer marked as answered");
+      } else {
+        showToast("Prayer removed from answered prayers");
+        localStorage.setItem(
+          "answeredPrayers",
+          JSON.stringify(answeredPrayers.filter((p) => p.id !== prayer.id))
+        );
+      }
+    }
   };
 
   const handleSubmit = (e) => {
@@ -156,17 +139,12 @@ const PrayerWalls = () => {
       comments: 0,
       prayed: false,
       avatar: formData.isAnonymous ? "A" : "Y",
+      answered: false,
     };
-
     setPrayerRequests([newRequest, ...prayerRequests]);
-    setFormData({
-      title: "",
-      content: "",
-      category: "General",
-      isUrgent: false,
-      isAnonymous: false,
-    });
+    setFormData({ title: "", content: "", category: "General", isUrgent: false, isAnonymous: false });
     setShowModal(false);
+    showToast("Prayer request posted");
   };
 
   const handleAddComment = (requestId) => {
@@ -177,16 +155,12 @@ const PrayerWalls = () => {
         content: newComment,
         time: "Just now",
       };
-      setComments((prev) => ({
-        ...prev,
-        [requestId]: [...(prev[requestId] || []), newEntry],
-      }));
+      setComments((prev) => ({ ...prev, [requestId]: [...(prev[requestId] || []), newEntry] }));
       setPrayerRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId ? { ...req, comments: req.comments + 1 } : req
-        )
+        prev.map((req) => (req.id === requestId ? { ...req, comments: req.comments + 1 } : req))
       );
       setNewComment("");
+      showToast("Comment added");
     }
   };
 
@@ -194,7 +168,6 @@ const PrayerWalls = () => {
     const now = new Date();
     const date = new Date(dateString);
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours} hours ago`;
     return `${Math.floor(diffInHours / 24)} days ago`;
@@ -202,69 +175,71 @@ const PrayerWalls = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
+      {toastVisible && (
+        <div className="fixed top-24 right-6 bg-white shadow-lg rounded-lg px-4 py-3 border-l-4 border-green-500 z-50 animate-slide-in">
+          <span className="text-gray-800 font-medium">{toastMessage}</span>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">Prayer Wall</h1>
+          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
+            Prayer Wall
+          </h1>
           <p className="text-sm md:text-lg text-[#0C2E8A]">Share prayer requests and support fellow believers</p>
         </div>
 
-        {/* Search and Add Button */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search prayer requests..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
-              />
-            </div>
-            <button
-              className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
-              onClick={() => setShowModal(true)}
-            >
-              <Plus className="w-5 h-5" /> Add Request
-            </button>
+        {/* Search + Add Button */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search prayer requests..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#0C2E8A]"
+            />
           </div>
+          <button
+            className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
+            onClick={() => setShowModal(true)}
+          >
+            <Plus className="w-5 h-5" /> Add Request
+          </button>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-[#0C2E8A] mb-2">Filter by Category</label>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
-                      selectedCategory === cat
-                        ? "bg-[#0C2E8A] text-white"
-                        : "bg-[#FCCF3A] text-[#0C2E8A] font-bold hover:bg-[#ABBC6B]"
-                    }`}
-                    onClick={() => setSelectedCategory(cat)}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-[#0C2E8A] mb-2">Filter by Category</label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                    selectedCategory === cat ? "bg-[#0C2E8A] text-white" : "bg-[#FCCF3A] text-[#0C2E8A] font-bold hover:bg-[#ABBC6B]"
+                  }`}
+                  onClick={() => setSelectedCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent text-sm"
-              >
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="most-prayed">Most Prayed</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="most-prayed">Most Prayed</option>
+              <option value="urgent">Urgent</option>
+            </select>
           </div>
         </div>
 
@@ -273,84 +248,80 @@ const PrayerWalls = () => {
           {sortedRequests.map((req) => (
             <div
               key={req.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-shadow duration-300"
+              className={`bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-lg transition ${
+                req.answered ? "bg-green-50 border-green-300" : ""
+              }`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#0C2E8A] text-white rounded-full flex items-center justify-center font-medium">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-white font-bold">
                     {req.avatar}
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-[#0C2E8A]">{req.title}</h3>
-                    {req.isUrgent && (
-                      <span className="inline-block px-2 py-1 bg-red-100 text-[#BA1A1A] text-xs rounded-full font-medium">
-                        Urgent
-                      </span>
-                    )}
+                    <h3 className="text-lg font-bold text-[#0C2E8A]">{req.title}</h3>
+                    <p className="text-sm text-gray-500">{formatTimeAgo(req.createdAt)}</p>
                   </div>
                 </div>
+                <button
+                  onClick={() => handleMarkAnswered(req.id)}
+                  className={`px-3 py-1 text-sm font-medium rounded-full ${
+                    req.answered ? "bg-green-600 text-white" : "bg-yellow-300 text-[#0C2E8A]"
+                  }`}
+                >
+                  {req.answered ? "Answered" : "Mark Answered"}
+                </button>
+              </div>
+              <p className="text-gray-700 mb-4">{req.content}</p>
+              <div className="flex gap-4 flex-wrap">
                 <span
-                  className={`text-xs px-3 py-1 rounded-full font-medium ${categoryColors[req.category]}`}
+                  className={`px-2 py-1 text-xs rounded-full ${categoryColors[req.category]}`}
                 >
                   {req.category}
                 </span>
+                {req.isUrgent && (
+                  <span className="px-2 py-1 text-xs rounded-full bg-red-200 text-red-800">
+                    Urgent
+                  </span>
+                )}
               </div>
-              
-              <p className="text-gray-600 mb-4 leading-relaxed">{req.content}</p>
-              
-              <div className="flex items-center text-sm text-[#3FCBFF] gap-4 mb-4">
-                <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" /> {req.author}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" /> {formatTimeAgo(req.createdAt)}
-                </span>
-              </div>
-              
-              <div className="flex gap-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-4 mt-4">
                 <button
                   onClick={() => handlePray(req.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium ${
-                    req.prayed 
-                      ? "bg-red-100 text-[#BA1A1A] hover:bg-red-200" 
-                      : "bg-gray-100 text-[#FFFEF0] hover:bg-gray-200"
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
+                    req.prayed ? "bg-blue-600 text-white" : "border-gray-300 text-gray-700"
                   }`}
                 >
-                  <Heart className="w-4 h-4" /> {req.prayers} Prayed
+                  <Heart className="w-4 h-4" /> Pray ({req.prayers})
                 </button>
                 <button
                   onClick={() =>
                     setShowComments(showComments === req.id ? null : req.id)
                   }
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
+                  className="flex items-center gap-1 px-3 py-1 rounded-full border border-gray-300"
                 >
-                  <MessageCircle className="w-4 h-4" /> {req.comments} Comments
+                  <MessageCircle className="w-4 h-4" /> Comment ({req.comments})
                 </button>
               </div>
-
-              {/* Comments */}
               {showComments === req.id && (
-                <div className="mt-6 space-y-3 border-t border-gray-100 pt-4">
-                  {(comments[req.id] || []).map((c) => (
-                    <div key={c.id} className="bg-gray-50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-gray-900">{c.author}</span>
-                        <span className="text-xs text-gray-500">{c.time}</span>
+                <div className="mt-4">
+                  <div className="space-y-2">
+                    {(comments[req.id] || []).map((c) => (
+                      <div key={c.id} className="p-2 bg-gray-100 rounded">
+                        <span className="font-bold">{c.author}</span>: {c.content}
                       </div>
-                      <p className="text-gray-700">{c.content}</p>
-                    </div>
-                  ))}
-                  <div className="flex gap-3 mt-4">
+                    ))}
+                  </div>
+                  <div className="mt-2 flex gap-2">
                     <input
                       type="text"
-                      placeholder="Add a supportive comment..."
+                      placeholder="Write a comment..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
                     />
                     <button
                       onClick={() => handleAddComment(req.id)}
-                      className="bg-[#0C2E8A] text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
+                      className="px-4 py-2 bg-[#0C2E8A] text-white rounded-lg"
                     >
                       <Send className="w-4 h-4" />
                     </button>
@@ -360,131 +331,104 @@ const PrayerWalls = () => {
             </div>
           ))}
         </div>
-
-        {/* Empty State */}
-        {sortedRequests.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-10 h-10 text-blue-700" />
-            </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
-              No prayer requests found
-            </h3>
-            <p className="text-gray-600">
-              Be the first to share a prayer request with the community
-            </p>
-          </div>
-        )}
       </div>
 
-      {/* Modal */}
+      {/* Modal for adding prayer */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-[#0C2E8A]">New Prayer Request</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Add Prayer Request</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="text"
+                placeholder="Title"
+                value={formData.title}
+                required
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+              <textarea
+                placeholder="Your prayer request..."
+                value={formData.content}
+                required
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+              <select
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                {categories.slice(1).map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isUrgent}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isUrgent: e.target.checked })
+                    }
+                  />
+                  Urgent
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isAnonymous}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isAnonymous: e.target.checked })
+                    }
+                  />
+                  Post Anonymously
+                </label>
+              </div>
+              <div className="flex justify-end gap-2">
                 <button
+                  type="button"
                   onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition"
+                  className="px-4 py-2 border rounded-lg"
                 >
-                  <X className="w-5 h-5" />
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#0C2E8A] text-white rounded-lg"
+                >
+                  Post
                 </button>
               </div>
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    placeholder="Brief description of your prayer need"
-                    value={formData.title}
-                    onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Prayer Request</label>
-                  <textarea
-                    placeholder="Share your prayer request with the community..."
-                    value={formData.content}
-                    onChange={(e) =>
-                      setFormData({ ...formData, content: e.target.value })
-                    }
-                    rows="4"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent resize-none"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]focus:border-transparent"
-                  >
-                    {categories.filter(cat => cat !== "All").map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="space-y-3">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.isUrgent}
-                      onChange={(e) =>
-                        setFormData({ ...formData, isUrgent: e.target.checked })
-                      }
-                      className="w-4 h-4 text-[#0C2E8A] focus:ring-[#0C2E8A] border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Mark as urgent</span>
-                  </label>
-                  
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.isAnonymous}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          isAnonymous: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 text-[#0C2E8A] focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Post anonymously</span>
-                  </label>
-                </div>
-                
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-blue-800 transition font-medium"
-                  >
-                    Submit Request
-                  </button>
-                </div>
-              </form>
-            </div>
+            </form>
           </div>
         </div>
       )}
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

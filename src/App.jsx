@@ -34,6 +34,7 @@ import GuidedPrayer from "./pages/GuidedPrayer";
 import BrowsePrayers from "./pages/BrowsePrayers";
 import BibleVerse from "./pages/BibleVerse";
 import Bookmarks from "./pages/Bookmark";
+import MyPrayerPoint from "./pages/MyPrayerPoint"
 
 // New pages
 import BookPage from "./pages/BookPage";
@@ -78,6 +79,7 @@ function AppContent() {
             <Route path="/about" element={<About />} />
             <Route path="/mission" element={<Mission />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
+            <Route path="/my-prayer-point" element={<MyPrayerPoint />} />
 
             {/* Bible dynamic routes */}
             <Route path="/book/:bookSlug" element={<BookPage />} />
