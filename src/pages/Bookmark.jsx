@@ -2,105 +2,98 @@ import React, { useState, useEffect } from "react";
 import {
   BookMarked,
   Search,
-  Filter,
   Calendar,
   Heart,
   Share2,
   Trash2,
   Eye,
-  ChevronDown,
   BookOpen,
-  Clock,
   Tag,
-  X,
-  Copy,
   Check,
+  X,
+  AlertCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export default function Bookmark() {
   const [bookmarks, setBookmarks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [notification, setNotification] = useState(null);
 
-  // Sample bookmark data - replace with actual data fetching
-  const sampleBookmarks = [
-    {
-      id: 1,
-      title: "Faith and Trust in God",
-      verse: "Trust in the Lord with all your heart and lean not on your own understanding.",
-      reference: "Proverbs 3:5-6",
-      category: "faith",
-      dateBookmarked: "2024-01-15",
-      tags: ["trust", "guidance", "faith"],
-      prayerText: "Dear Lord, help me to trust in You completely and surrender my understanding to Your wisdom.",
-      isFavorite: true,
-      type: "verse"
-    },
-    {
-      id: 2,
-      title: "Morning Prayer for Strength",
-      verse: "I can do all things through Christ who strengthens me.",
-      reference: "Philippians 4:13",
-      category: "strength",
-      dateBookmarked: "2024-01-14",
-      tags: ["strength", "morning", "empowerment"],
-      prayerText: "Heavenly Father, grant me the strength to face today's challenges with courage and faith.",
-      isFavorite: false,
-      type: "prayer"
-    },
-    {
-      id: 3,
-      title: "Peace in Times of Trouble",
-      verse: "Peace I leave with you; my peace I give you.",
-      reference: "John 14:27",
-      category: "peace",
-      dateBookmarked: "2024-01-12",
-      tags: ["peace", "comfort", "anxiety"],
-      prayerText: "Lord Jesus, fill my heart with Your perfect peace that surpasses all understanding.",
-      isFavorite: true,
-      type: "verse"
-    },
-    {
-      id: 4,
-      title: "Gratitude Prayer",
-      verse: "Give thanks in all circumstances; for this is God's will for you in Christ Jesus.",
-      reference: "1 Thessalonians 5:18",
-      category: "gratitude",
-      dateBookmarked: "2024-01-10",
-      tags: ["gratitude", "thanksgiving", "blessing"],
-      prayerText: "Thank You, Lord, for all Your blessings. Help me maintain a grateful heart in all situations.",
-      isFavorite: false,
-      type: "prayer"
-    },
-    {
-      id: 5,
-      title: "God's Love and Protection",
-      verse: "The Lord your God is with you, the Mighty Warrior who saves.",
-      reference: "Zephaniah 3:17",
-      category: "protection",
-      dateBookmarked: "2024-01-08",
-      tags: ["love", "protection", "warrior"],
-      prayerText: "Almighty God, thank You for Your constant presence and protection in my life.",
-      isFavorite: true,
-      type: "verse"
-    }
-  ];
+  // Get current user
+  const getCurrentUser = () => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    return currentUser.id || currentUser.email || "guest";
+  };
 
-  const categories = [
-    { value: "all", label: "All Categories", count: 5 },
-    { value: "faith", label: "Faith", count: 1 },
-    { value: "strength", label: "Strength", count: 1 },
-    { value: "peace", label: "Peace", count: 1 },
-    { value: "gratitude", label: "Gratitude", count: 1 },
-    { value: "protection", label: "Protection", count: 1 },
-  ];
+  // Load bookmarks from localStorage
+  useEffect(() => {
+    const loadBookmarks = () => {
+      setLoading(true);
+      try {
+        const userId = getCurrentUser();
+        const savedBookmarks = JSON.parse(
+          localStorage.getItem(`bookmarks_${userId}`) || "[]"
+        );
+        setBookmarks(savedBookmarks);
+      } catch (error) {
+        console.error("Error loading bookmarks:", error);
+        setBookmarks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBookmarks();
+
+    // Listen for bookmark updates from other parts of the app
+    const handleBookmarkUpdate = () => {
+      loadBookmarks();
+    };
+
+    window.addEventListener("bookmarkUpdated", handleBookmarkUpdate);
+    return () => window.removeEventListener("bookmarkUpdated", handleBookmarkUpdate);
+  }, []);
+
+  // Save bookmarks to localStorage
+  const saveBookmarks = (updatedBookmarks) => {
+    const userId = getCurrentUser();
+    localStorage.setItem(`bookmarks_${userId}`, JSON.stringify(updatedBookmarks));
+    setBookmarks(updatedBookmarks);
+    
+    // Dispatch event to notify other components
+    window.dispatchEvent(new Event("bookmarkUpdated"));
+  };
+
+  // Show notification
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Get all unique categories from bookmarks
+  const getCategories = () => {
+    const categoryCount = bookmarks.reduce((acc, bookmark) => {
+      acc[bookmark.category] = (acc[bookmark.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    const categories = [
+      { value: "all", label: "All Categories", count: bookmarks.length },
+      ...Object.entries(categoryCount).map(([key, count]) => ({
+        value: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1),
+        count
+      }))
+    ];
+
+    return categories;
+  };
 
   const sortOptions = [
     { value: "newest", label: "Newest First" },
@@ -109,27 +102,14 @@ export default function Bookmark() {
     { value: "favorites", label: "Favorites First" },
   ];
 
-  // Load bookmarks on component mount
-  useEffect(() => {
-    const loadBookmarks = async () => {
-      setLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        setBookmarks(sampleBookmarks);
-        setLoading(false);
-      }, 1000);
-    };
-
-    loadBookmarks();
-  }, []);
-
   // Filter and sort bookmarks
   const filteredBookmarks = bookmarks
     .filter((bookmark) => {
-      const matchesSearch = bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          bookmark.verse.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          bookmark.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          bookmark.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesSearch = 
+        bookmark.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bookmark.verse?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bookmark.reference?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bookmark.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesCategory = selectedCategory === "all" || bookmark.category === selectedCategory;
       
@@ -144,16 +124,22 @@ export default function Bookmark() {
         case "alphabetical":
           return a.title.localeCompare(b.title);
         case "favorites":
-          return b.isFavorite - a.isFavorite;
+          return (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0);
         default:
           return 0;
       }
     });
 
   const toggleFavorite = (id) => {
-    setBookmarks(prev => prev.map(bookmark => 
+    const updatedBookmarks = bookmarks.map(bookmark => 
       bookmark.id === id ? { ...bookmark, isFavorite: !bookmark.isFavorite } : bookmark
-    ));
+    );
+    saveBookmarks(updatedBookmarks);
+    showNotification(
+      updatedBookmarks.find(b => b.id === id).isFavorite 
+        ? "Added to favorites" 
+        : "Removed from favorites"
+    );
   };
 
   const handleShare = async (bookmark) => {
@@ -165,14 +151,23 @@ export default function Bookmark() {
           title: bookmark.title,
           text: shareText,
         });
+        showNotification("Shared successfully");
       } catch (err) {
-        console.log('Error sharing:', err);
+        if (err.name !== 'AbortError') {
+          console.log('Error sharing:', err);
+        }
       }
     } else {
       // Fallback: copy to clipboard
-      await navigator.clipboard.writeText(shareText);
-      setCopiedId(bookmark.id);
-      setTimeout(() => setCopiedId(null), 2000);
+      try {
+        await navigator.clipboard.writeText(shareText);
+        setCopiedId(bookmark.id);
+        setTimeout(() => setCopiedId(null), 2000);
+        showNotification("Copied to clipboard");
+      } catch (err) {
+        console.error('Error copying:', err);
+        showNotification("Failed to copy", "error");
+      }
     }
   };
 
@@ -185,9 +180,19 @@ export default function Bookmark() {
   };
 
   const handleDeleteSelected = () => {
-    setBookmarks(prev => prev.filter(bookmark => !selectedItems.includes(bookmark.id)));
+    const updatedBookmarks = bookmarks.filter(
+      bookmark => !selectedItems.includes(bookmark.id)
+    );
+    saveBookmarks(updatedBookmarks);
     setSelectedItems([]);
     setShowDeleteModal(false);
+    showNotification(`Deleted ${selectedItems.length} bookmark${selectedItems.length > 1 ? 's' : ''}`);
+  };
+
+  const handleDeleteSingle = (id) => {
+    const updatedBookmarks = bookmarks.filter(bookmark => bookmark.id !== id);
+    saveBookmarks(updatedBookmarks);
+    showNotification("Bookmark deleted");
   };
 
   const formatDate = (dateString) => {
@@ -222,6 +227,16 @@ export default function Bookmark() {
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pl-0 lg:pl-56">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Notification */}
+        {notification && (
+          <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+            notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+          } text-white animate-slide-in`}>
+            <Check className="w-5 h-5" />
+            <span>{notification.message}</span>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -252,7 +267,7 @@ export default function Bookmark() {
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
             >
-              {categories.map(category => (
+              {getCategories().map(category => (
                 <option key={category.value} value={category.value}>
                   {category.label} ({category.count})
                 </option>
@@ -286,11 +301,13 @@ export default function Bookmark() {
         </div>
 
         {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            Showing {filteredBookmarks.length} of {bookmarks.length} bookmarks
-          </p>
-        </div>
+        {bookmarks.length > 0 && (
+          <div className="mb-6">
+            <p className="text-gray-600">
+              Showing {filteredBookmarks.length} of {bookmarks.length} bookmarks
+            </p>
+          </div>
+        )}
 
         {/* Bookmarks Grid */}
         {filteredBookmarks.length > 0 ? (
@@ -328,6 +345,7 @@ export default function Bookmark() {
                           ? 'text-red-500 hover:bg-red-50'
                           : 'text-gray-400 hover:bg-gray-100'
                       }`}
+                      title={bookmark.isFavorite ? "Remove from favorites" : "Add to favorites"}
                     >
                       <Heart className={`w-5 h-5 ${bookmark.isFavorite ? 'fill-current' : ''}`} />
                     </button>
@@ -335,12 +353,21 @@ export default function Bookmark() {
                     <button
                       onClick={() => handleShare(bookmark)}
                       className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-[#2c3E91] transition-colors"
+                      title="Share bookmark"
                     >
                       {copiedId === bookmark.id ? (
                         <Check className="w-5 h-5 text-green-500" />
                       ) : (
                         <Share2 className="w-5 h-5" />
                       )}
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteSingle(bookmark.id)}
+                      className="p-2 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                      title="Delete bookmark"
+                    >
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -350,7 +377,7 @@ export default function Bookmark() {
                   <blockquote className="text-gray-700 italic text-lg leading-relaxed mb-2">
                     "{bookmark.verse}"
                   </blockquote>
-                  <cite className="text-[#2c3E91] font-semibold">
+                  <cite className="text-[#2c3E91] font-semibold not-italic">
                     - {bookmark.reference}
                   </cite>
                 </div>
@@ -366,64 +393,62 @@ export default function Bookmark() {
                 )}
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {bookmark.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 bg-[#FCCF3A]/20 text-[#2c3E91] text-sm rounded-full font-medium"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+                {bookmark.tags && bookmark.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {bookmark.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-[#FCCF3A]/20 text-[#2c3E91] text-sm rounded-full font-medium"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Footer */}
-                <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      <span>Saved on {formatDate(bookmark.dateBookmarked)}</span>
+                      <span>Saved {formatDate(bookmark.dateBookmarked)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Tag className="w-4 h-4" />
-                      <span className="capitalize">{bookmark.category}</span>
-                    </div>
+                    {bookmark.category && (
+                      <div className="flex items-center gap-1">
+                        <Tag className="w-4 h-4" />
+                        <span className="capitalize">{bookmark.category}</span>
+                      </div>
+                    )}
                   </div>
-                  
-                  <Link
-                    to={`/bookmark/${bookmark.id}`}
-                    className="flex items-center gap-1 text-[#2c3E91] hover:text-[#1e2a6b] font-medium"
-                  >
-                    <Eye className="w-4 h-4" />
-                    View Details
-                  </Link>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <BookMarked className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+              <BookMarked className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
               {searchQuery || selectedCategory !== "all" 
                 ? "No bookmarks found" 
                 : "No bookmarks yet"
               }
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
               {searchQuery || selectedCategory !== "all"
-                ? "Try adjusting your search or filters"
-                : "Start bookmarking prayers and verses to build your collection"
+                ? "Try adjusting your search or filters to find what you're looking for"
+                : "Start bookmarking prayers and verses to build your personal collection"
               }
             </p>
             {(!searchQuery && selectedCategory === "all") && (
-              <Link
-                to="/browse-prayers"
+              <button
+                onClick={() => window.location.href = '/browse-prayers'}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#2c3E91] text-white rounded-lg hover:bg-[#1e2a6b] transition-colors"
               >
                 <BookOpen className="w-5 h-5" />
                 Browse Prayers
-              </Link>
+              </button>
             )}
           </div>
         )}
@@ -434,15 +459,15 @@ export default function Bookmark() {
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
               <div className="p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <Trash2 className="w-6 h-6 text-red-500" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
                       Delete Bookmarks
                     </h3>
-                    <p className="text-gray-600">
-                      Are you sure you want to delete {selectedItems.length} bookmark{selectedItems.length > 1 ? 's' : ''}?
+                    <p className="text-gray-600 text-sm mt-1">
+                      Are you sure you want to delete {selectedItems.length} bookmark{selectedItems.length > 1 ? 's' : ''}? This action cannot be undone.
                     </p>
                   </div>
                 </div>
@@ -450,13 +475,13 @@ export default function Bookmark() {
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setShowDeleteModal(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDeleteSelected}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                   >
                     Delete
                   </button>

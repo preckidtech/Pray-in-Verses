@@ -3,7 +3,7 @@ name: Deploy Vite + Tailwind to cPanel
 on:
   push:
     branches:
-      - main  # Trigger deployment on push to the main branch
+      - main # Trigger deployment on push to the main branch
 
 jobs:
   build-and-deploy:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.19.0"  # Ensure this matches your project's Node version
+          node-version: "22.19.0" # Ensure this matches your project's Node version
 
       # Step 3: Install dependencies
       - name: Install dependencies
@@ -35,6 +35,6 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/        # Vite's build output directory
+          local-dir: ./dist/ # Vite's build output directory
           server-dir: /public_html/
-          protocol: ftp             # Use 'ftps' if your server supports FTPS
+          protocol: ftp # Use 'ftps' if your server supports FTPS

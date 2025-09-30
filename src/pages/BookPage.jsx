@@ -1,9 +1,9 @@
-// src/pages/BookPage.jsx
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { chapterCounts } from "../utils/bible";
+import { usePageLogger } from "../hooks/usePageLogger";
 
 const BookPage = () => {
   const { bookSlug } = useParams();
@@ -27,7 +27,6 @@ const BookPage = () => {
     );
   }
 
-  // ✅ Format title from slug
   const formatTitleFromSlug = (s) =>
     String(s || "")
       .split("-")
@@ -38,22 +37,20 @@ const BookPage = () => {
 
   const bookTitle = formatTitleFromSlug(bookSlug);
 
-  // ✅ Number of chapters from utils or fallback
   const chaptersTotal = chapterCounts[bookTitle] ?? 50;
   const chapters = Array.from({ length: chaptersTotal }, (_, i) => i + 1);
 
-  // ✅ Update tab title
   useEffect(() => {
-    if (bookTitle) {
-      document.title = `${bookTitle} – Book`;
-    }
+    if (bookTitle) document.title = `${bookTitle} – Book`;
   }, [bookTitle]);
+
+  // Log this page visit
+  usePageLogger(bookTitle, "book", `/book/${bookSlug}`, "", "Bible Books");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 
       pt-[100px] px-4 lg:pl-[224px] lg:pr-6 lg:pb-8">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => navigate(-1)}
@@ -62,15 +59,12 @@ const BookPage = () => {
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-
           <h1 className="text-lg sm:text-2xl font-bold text-[#0C2E8A] text-center truncate">
             {bookTitle}
           </h1>
-
-          <div className="w-20" /> {/* Spacer */}
+          <div className="w-20" />
         </div>
 
-        {/* Chapters Grid */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

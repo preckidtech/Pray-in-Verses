@@ -35,6 +35,7 @@ import BrowsePrayers from "./pages/BrowsePrayers";
 import BibleVerse from "./pages/BibleVerse";
 import Bookmarks from "./pages/Bookmark";
 import MyPrayerPoint from "./pages/MyPrayerPoint"
+import History from "./pages/History"
 
 // New pages
 import BookPage from "./pages/BookPage";
@@ -43,6 +44,7 @@ import VerseDetails from "./pages/VerseDetails";
 
 // Admin dashboard
 import AdminForm from "./pages/admin/AdminForm";
+import AdminContentEditor from "./pages/admin/AdminContentEditor"
 
 // Toaster
 import { Toaster } from "react-hot-toast";
@@ -80,6 +82,11 @@ function AppContent() {
             <Route path="/mission" element={<Mission />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/my-prayer-point" element={<MyPrayerPoint />} />
+            <Route path="history" element={<History />} />
+
+
+            {/* Admin Route */}
+            <Route path="/admin-content-editor" element={<AdminContentEditor />} />
 
             {/* Bible dynamic routes */}
             <Route path="/book/:bookSlug" element={<BookPage />} />

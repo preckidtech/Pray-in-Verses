@@ -1,14 +1,13 @@
-// src/pages/ChapterPage.jsx
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { usePageLogger } from "../hooks/usePageLogger";
 
 const ChapterPage = () => {
-  const { bookSlug, chapterNumber } = useParams(); // ✅ FIXED param name
+  const { bookSlug, chapterNumber } = useParams();
   const navigate = useNavigate();
 
-  // ✅ Format book name
   const formatTitleFromSlug = (s) =>
     String(s || "")
       .split("-")
@@ -19,21 +18,27 @@ const ChapterPage = () => {
 
   const bookTitle = bookSlug ? formatTitleFromSlug(bookSlug) : "Unknown Book";
 
-  // Example verses
-  const verses = Array.from({ length: 30 }, (_, i) => i + 1);
+  const chapters = Array.from({ length: 30 }, (_, i) => i + 1);
 
-  // ✅ Update tab title dynamically
   useEffect(() => {
     if (bookTitle && chapterNumber) {
       document.title = `${bookTitle} – Chapter ${chapterNumber}`;
     }
   }, [bookTitle, chapterNumber]);
 
+  // Log this chapter visit
+  usePageLogger({
+    title: bookTitle,
+    type: "chapter",
+    reference: `Chapter ${chapterNumber}`,
+    content: "",
+    category: "Bible Chapters"
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 
       pt-[100px] px-4 lg:pl-[224px] lg:pr-6 lg:pb-8">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => navigate(-1)}
@@ -47,17 +52,16 @@ const ChapterPage = () => {
             {bookTitle} – Chapter {chapterNumber}
           </h1>
 
-          <div className="w-20" /> {/* Spacer */}
+          <div className="w-20" />
         </div>
 
-        {/* Verses Grid */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ staggerChildren: 0.01 }}
           className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-14 xl:grid-cols-16 gap-1 justify-items-center"
         >
-          {verses.map((verse) => (
+          {chapters.map((verse) => (
             <motion.div
               key={verse}
               whileHover={{ scale: 1.06 }}

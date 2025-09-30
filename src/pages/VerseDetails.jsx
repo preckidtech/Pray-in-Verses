@@ -1,3 +1,4 @@
+// src/pages/VerseDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,6 +9,7 @@ const VerseDetails = () => {
   const { bookSlug, chapterNumber, verseNumber } = useParams();
   const navigate = useNavigate();
 
+  // Format book slug to proper title
   const formatTitleFromSlug = (s) =>
     String(s || "")
       .split("-")
@@ -22,11 +24,20 @@ const VerseDetails = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
 
+  // Load saved prayer points from localStorage
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("savedPrayers") || "[]");
-    setSavedPoints(saved.map(p => p.prayerPoint));
+    setSavedPoints(saved.map((p) => p.prayerPoint));
   }, []);
 
+  // Update tab title dynamically
+  useEffect(() => {
+    if (bookTitle && chapterNumber && verseNumber) {
+      document.title = `${bookTitle} – ${chapterNumber}:${verseNumber}`;
+    }
+  }, [bookTitle, chapterNumber, verseNumber]);
+
+  // Example verse data
   const verseData = {
     themeFocus: "God’s Guidance in Decisions",
     reference: `${bookTitle} ${chapterNumber}:${verseNumber}`,
@@ -45,6 +56,7 @@ const VerseDetails = () => {
       "Father, I commit my path into Your hands. Lead me always in truth. Amen.",
   };
 
+  // Save prayer point
   const handleSavePoint = (point) => {
     const saved = JSON.parse(localStorage.getItem("savedPrayers") || "[]");
 
@@ -64,8 +76,10 @@ const VerseDetails = () => {
     showToast("Prayer point saved successfully ✅");
   };
 
+  // Check if point is already saved
   const isSaved = (point) => savedPoints.includes(point);
 
+  // Toast notification
   const showToast = (message) => {
     setToastMessage(message);
     setToastVisible(true);
@@ -97,6 +111,7 @@ const VerseDetails = () => {
       {/* Content */}
       <div className="max-w-3xl mx-auto px-6 -mt-12 relative z-10">
         <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-100">
+          {/* Back button */}
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 mb-6 text-[#0C2E8A] hover:underline"
@@ -104,15 +119,26 @@ const VerseDetails = () => {
             <ArrowLeft className="w-4 h-4" /> Back to Chapter
           </button>
 
+          {/* Theme */}
           <h2 className="text-xl font-bold text-[#0C2E8A] mb-4">{verseData.themeFocus}</h2>
           <p className="text-gray-600 italic mb-6">Reference: {verseData.reference}</p>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          {/* Reflection */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
             <h3 className="text-lg font-semibold text-[#0C2E8A] mb-2">Reflection</h3>
             <p className="text-gray-700 leading-relaxed">{verseData.reflection}</p>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          {/* Key Lessons */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
             <h3 className="text-lg font-semibold text-[#0C2E8A] mb-2">Key Lessons</h3>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
               {verseData.keyLessons.map((lesson, i) => (
@@ -122,7 +148,11 @@ const VerseDetails = () => {
           </motion.div>
 
           {/* Prayer Points */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <h3 className="text-lg font-semibold text-[#0C2E8A] mb-2 flex items-center gap-2">
               Prayer Points
             </h3>
@@ -147,13 +177,19 @@ const VerseDetails = () => {
             </ul>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          {/* Closing Prayer */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             <h3 className="text-lg font-semibold text-[#0C2E8A] mb-2">Closing Prayer</h3>
             <p className="text-gray-700 leading-relaxed">{verseData.closingPrayer}</p>
           </motion.div>
         </div>
       </div>
 
+      {/* Animations */}
       <style jsx>{`
         @keyframes slide-in {
           from {

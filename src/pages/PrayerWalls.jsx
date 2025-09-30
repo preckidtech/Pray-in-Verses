@@ -41,7 +41,7 @@ const PrayerWalls = () => {
     General: "bg-gray-100 text-gray-800",
   };
 
-  // Load prayers from localStorage
+  // Load prayers and comments
   useEffect(() => {
     const savedPrayers = JSON.parse(localStorage.getItem("prayerRequests") || "[]");
     const savedComments = JSON.parse(localStorage.getItem("comments") || "{}");
@@ -49,12 +49,11 @@ const PrayerWalls = () => {
     setComments(savedComments);
   }, []);
 
-  // Save prayers to localStorage
+  // Save prayers and comments
   useEffect(() => {
     localStorage.setItem("prayerRequests", JSON.stringify(prayerRequests));
   }, [prayerRequests]);
 
-  // Save comments to localStorage
   useEffect(() => {
     localStorage.setItem("comments", JSON.stringify(comments));
   }, [comments]);
@@ -172,6 +171,26 @@ const PrayerWalls = () => {
     if (diffInHours < 24) return `${diffInHours} hours ago`;
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
+
+  // ➤ Track Prayer Wall visit in History
+  useEffect(() => {
+    const history = JSON.parse(localStorage.getItem("savedPrayers") || "[]");
+    const exists = history.some((item) => item.title === "Visited Prayer Wall");
+
+    if (!exists) {
+      const newHistoryItem = {
+        id: Date.now() + Math.random(),
+        title: "Visited Prayer Wall",
+        verse: "Prayer Wall",
+        savedAt: new Date().toISOString(),
+        themeFocus: "Prayer Wall",
+        content: "User visited the Prayer Wall page",
+      };
+
+      history.push(newHistoryItem);
+      localStorage.setItem("savedPrayers", JSON.stringify(history));
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
@@ -333,7 +352,7 @@ const PrayerWalls = () => {
         </div>
       </div>
 
-      {/* Modal for adding prayer */}
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">

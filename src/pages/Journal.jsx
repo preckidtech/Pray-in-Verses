@@ -10,6 +10,7 @@
     Clock,
   } from "lucide-react";
 
+  
   const Journal = () => {
     const [entries, setEntries] = useState([
       {
