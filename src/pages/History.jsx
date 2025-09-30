@@ -1,3 +1,4 @@
+// src/pages/History.jsx
 import React, { useState, useEffect } from "react";
 import {
   Clock,
@@ -6,9 +7,6 @@ import {
   Trash2,
   BookMarked,
   BookOpen,
-  Eye,
-  Filter,
-  X,
   Check,
 } from "lucide-react";
 
@@ -22,58 +20,43 @@ export default function History() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [notification, setNotification] = useState(null);
 
-  // Get current user
   const getCurrentUser = () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
     return currentUser.id || currentUser.email || "guest";
   };
 
-  // Load history from localStorage
+  const loadHistory = () => {
+    setLoading(true);
+    try {
+      const userId = getCurrentUser();
+      const savedHistory = JSON.parse(localStorage.getItem(`history_${userId}`) || "[]");
+      setHistory(savedHistory);
+    } catch (error) {
+      console.error("Error loading history:", error);
+      setHistory([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadHistory = () => {
-      setLoading(true);
-      try {
-        const userId = getCurrentUser();
-        const savedHistory = JSON.parse(
-          localStorage.getItem(`history_${userId}`) || "[]"
-        );
-        setHistory(savedHistory);
-      } catch (error) {
-        console.error("Error loading history:", error);
-        setHistory([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadHistory();
-
-    // Listen for history updates
-    const handleHistoryUpdate = () => {
-      loadHistory();
-    };
-
-    window.addEventListener("historyUpdated", handleHistoryUpdate);
-    return () => window.removeEventListener("historyUpdated", handleHistoryUpdate);
+    window.addEventListener("historyUpdated", loadHistory);
+    return () => window.removeEventListener("historyUpdated", loadHistory);
   }, []);
 
-  // Save history to localStorage
   const saveHistory = (updatedHistory) => {
     const userId = getCurrentUser();
     localStorage.setItem(`history_${userId}`, JSON.stringify(updatedHistory));
     setHistory(updatedHistory);
-    
-    // Dispatch event
     window.dispatchEvent(new Event("historyUpdated"));
   };
 
-  // Show notification
   const showNotification = (message, type = "success") => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Get unique date ranges
   const getDateRanges = () => {
     const today = new Date();
     const yesterday = new Date(today);
@@ -124,17 +107,15 @@ export default function History() {
     { value: "journal", label: "Journal Entries" },
   ];
 
-  // Filter history
   const filteredHistory = history
     .filter((item) => {
-      const matchesSearch = 
+      const matchesSearch =
         item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.reference?.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesType = selectedType === "all" || item.type === selectedType;
 
-      // Date filtering
       let matchesDate = true;
       if (selectedDate !== "all") {
         const itemDate = new Date(item.timestamp);
@@ -165,14 +146,14 @@ export default function History() {
             break;
         }
       }
-      
+
       return matchesSearch && matchesType && matchesDate;
     })
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   const handleSelectItem = (id) => {
-    setSelectedItems(prev => 
-      prev.includes(id) 
+    setSelectedItems(prev =>
+      prev.includes(id)
         ? prev.filter(item => item !== id)
         : [...prev, id]
     );
@@ -214,7 +195,7 @@ export default function History() {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    
+
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -222,18 +203,6 @@ export default function History() {
     });
   };
 
-  const formatFullDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // Group history by date
   const groupedHistory = filteredHistory.reduce((groups, item) => {
     const date = new Date(item.timestamp);
     const today = new Date();
@@ -247,7 +216,7 @@ export default function History() {
     } else if (date >= yesterday) {
       label = "Yesterday";
     } else {
-      label = date.toLocaleDateString('en-US', { 
+      label = date.toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
@@ -317,7 +286,6 @@ export default function History() {
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -329,7 +297,6 @@ export default function History() {
               />
             </div>
 
-            {/* Date Filter */}
             <select
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -342,7 +309,6 @@ export default function History() {
               ))}
             </select>
 
-            {/* Type Filter */}
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
@@ -355,7 +321,6 @@ export default function History() {
               ))}
             </select>
 
-            {/* Bulk Actions */}
             {selectedItems.length > 0 && (
               <button
                 onClick={() => setShowDeleteModal(true)}
@@ -368,28 +333,17 @@ export default function History() {
           </div>
         </div>
 
-        {/* Results Count */}
-        {history.length > 0 && (
-          <div className="mb-6">
-            <p className="text-gray-600">
-              Showing {filteredHistory.length} of {history.length} items
-            </p>
-          </div>
-        )}
-
         {/* History Timeline */}
         {Object.keys(groupedHistory).length > 0 ? (
           <div className="space-y-8">
             {Object.entries(groupedHistory).map(([dateLabel, items]) => (
               <div key={dateLabel}>
-                {/* Date Header */}
                 <div className="flex items-center gap-3 mb-4">
                   <Calendar className="w-5 h-5 text-[#2c3E91]" />
                   <h2 className="text-lg font-semibold text-[#2c3E91]">{dateLabel}</h2>
                   <div className="flex-1 h-px bg-gray-200"></div>
                 </div>
 
-                {/* Items for this date */}
                 <div className="space-y-3">
                   {items.map((item) => (
                     <div
@@ -397,7 +351,6 @@ export default function History() {
                       className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-start gap-3">
-                        {/* Checkbox */}
                         <input
                           type="checkbox"
                           checked={selectedItems.includes(item.id)}
@@ -405,7 +358,6 @@ export default function History() {
                           className="w-4 h-4 text-[#2c3E91] focus:ring-[#2c3E91] border-gray-300 rounded mt-1"
                         />
 
-                        {/* Icon */}
                         <div className="flex-shrink-0 w-10 h-10 bg-[#2c3E91]/10 rounded-full flex items-center justify-center">
                           {item.type === 'prayer' ? (
                             <BookOpen className="w-5 h-5 text-[#2c3E91]" />
@@ -416,7 +368,6 @@ export default function History() {
                           )}
                         </div>
 
-                        {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
@@ -435,7 +386,6 @@ export default function History() {
                               )}
                             </div>
 
-                            {/* Actions */}
                             <button
                               onClick={() => handleDeleteSingle(item.id)}
                               className="p-2 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors flex-shrink-0"
@@ -445,7 +395,6 @@ export default function History() {
                             </button>
                           </div>
 
-                          {/* Metadata */}
                           <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
@@ -454,11 +403,6 @@ export default function History() {
                             <span className="capitalize px-2 py-0.5 bg-gray-100 rounded">
                               {item.type}
                             </span>
-                            {item.category && (
-                              <span className="capitalize px-2 py-0.5 bg-[#FCCF3A]/20 text-[#2c3E91] rounded">
-                                {item.category}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -475,61 +419,35 @@ export default function History() {
             </div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
               {searchQuery || selectedDate !== "all" || selectedType !== "all"
-                ? "No history found" 
+                ? "No history found"
                 : "No history yet"
               }
             </h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              {searchQuery || selectedDate !== "all" || selectedType !== "all"
-                ? "Try adjusting your filters to find what you're looking for"
-                : "Your prayer activities will appear here as you use the app"
-              }
+            <p className="text-gray-500">
+              Start browsing prayers, verses, and journal entries to see your history here.
             </p>
-            {(!searchQuery && selectedDate === "all" && selectedType === "all") && (
-              <button
-                onClick={() => window.location.href = '/browse-prayers'}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#2c3E91] text-white rounded-lg hover:bg-[#1e2a6b] transition-colors"
-              >
-                <BookOpen className="w-5 h-5" />
-                Start Praying
-              </button>
-            )}
           </div>
         )}
 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-              <div className="p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Trash2 className="w-6 h-6 text-red-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Delete History Items
-                    </h3>
-                    <p className="text-gray-600 text-sm mt-1">
-                      Are you sure you want to delete {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''}? This action cannot be undone.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={() => setShowDeleteModal(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteSelected}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-                  >
-                    Delete
-                  </button>
-                </div>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+              <h3 className="text-lg font-semibold mb-4">Delete Selected Items</h3>
+              <p className="mb-6">Are you sure you want to delete {selectedItems.length} item(s)? This action cannot be undone.</p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteSelected}
+                  className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </div>

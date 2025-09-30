@@ -13,7 +13,5 @@ export const usePageLogger = ({
     if (title) {
       logPageVisit(title, type, reference, content, category);
     }
-    // We only want to run this once when the page mounts
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [title, type, reference, content, category]);
 };
