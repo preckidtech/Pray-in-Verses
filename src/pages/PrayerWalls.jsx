@@ -1,5 +1,15 @@
+// src/components/PrayerWalls.jsx
 import React, { useEffect, useState } from "react";
-import { Plus, Heart, MessageCircle, Users, Clock, Search, Send, X } from "lucide-react";
+import {
+  Plus,
+  Heart,
+  MessageCircle,
+  Clock,
+  Search,
+  Send,
+  X
+} from "lucide-react";
+import { logPageVisit } from "../utils/historyLogger"; // ✅ Import logger
 
 const PrayerWalls = () => {
   const [prayerRequests, setPrayerRequests] = useState([]);
@@ -15,7 +25,7 @@ const PrayerWalls = () => {
     content: "",
     category: "General",
     isUrgent: false,
-    isAnonymous: false,
+    isAnonymous: false
   });
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
@@ -28,7 +38,7 @@ const PrayerWalls = () => {
     "Relationship",
     "Financial",
     "Spiritual",
-    "General",
+    "General"
   ];
 
   const categoryColors = {
@@ -38,8 +48,20 @@ const PrayerWalls = () => {
     Relationship: "bg-purple-100 text-purple-800",
     Financial: "bg-yellow-100 text-yellow-800",
     Spiritual: "bg-indigo-100 text-indigo-800",
-    General: "bg-gray-100 text-gray-800",
+    General: "bg-gray-100 text-gray-800"
   };
+
+  // ➤ ✅ NEW: Track Prayer Wall visit
+  useEffect(() => {
+    logPageVisit(
+      "Prayer Wall",                                // Title
+      "page",                                        // Type
+      "Prayer Wall Page",                           // Reference
+      "User visited the Prayer Wall page",         // Content
+      "Prayer",                                      // Category
+      window.location.pathname                      // Extra reference
+    );
+  }, []);
 
   // Load prayers and comments
   useEffect(() => {
@@ -49,11 +71,12 @@ const PrayerWalls = () => {
     setComments(savedComments);
   }, []);
 
-  // Save prayers and comments
+  // Save prayers
   useEffect(() => {
     localStorage.setItem("prayerRequests", JSON.stringify(prayerRequests));
   }, [prayerRequests]);
 
+  // Save comments
   useEffect(() => {
     localStorage.setItem("comments", JSON.stringify(comments));
   }, [comments]);
@@ -138,7 +161,7 @@ const PrayerWalls = () => {
       comments: 0,
       prayed: false,
       avatar: formData.isAnonymous ? "A" : "Y",
-      answered: false,
+      answered: false
     };
     setPrayerRequests([newRequest, ...prayerRequests]);
     setFormData({ title: "", content: "", category: "General", isUrgent: false, isAnonymous: false });
@@ -152,7 +175,7 @@ const PrayerWalls = () => {
         id: Date.now(),
         author: "You",
         content: newComment,
-        time: "Just now",
+        time: "Just now"
       };
       setComments((prev) => ({ ...prev, [requestId]: [...(prev[requestId] || []), newEntry] }));
       setPrayerRequests((prev) =>
@@ -172,26 +195,6 @@ const PrayerWalls = () => {
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
-  // ➤ Track Prayer Wall visit in History
-  useEffect(() => {
-    const history = JSON.parse(localStorage.getItem("savedPrayers") || "[]");
-    const exists = history.some((item) => item.title === "Visited Prayer Wall");
-
-    if (!exists) {
-      const newHistoryItem = {
-        id: Date.now() + Math.random(),
-        title: "Visited Prayer Wall",
-        verse: "Prayer Wall",
-        savedAt: new Date().toISOString(),
-        themeFocus: "Prayer Wall",
-        content: "User visited the Prayer Wall page",
-      };
-
-      history.push(newHistoryItem);
-      localStorage.setItem("savedPrayers", JSON.stringify(history));
-    }
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
       {toastVisible && (
@@ -201,7 +204,6 @@ const PrayerWalls = () => {
       )}
 
       <div className="container mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
             Prayer Wall
