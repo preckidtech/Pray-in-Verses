@@ -1,15 +1,8 @@
 // src/components/PrayerWalls.jsx
 import React, { useEffect, useState } from "react";
-import {
-  Plus,
-  Heart,
-  MessageCircle,
-  Clock,
-  Search,
-  Send,
-  X
-} from "lucide-react";
-import { logPageVisit } from "../utils/historyLogger"; // ✅ Import logger
+import { Plus, Heart, MessageCircle, Search, Send } from "lucide-react";
+import { usePageLogger } from "../hooks/usePageLogger";
+import { logPrayer } from "../utils/historyLogger";
 
 const PrayerWalls = () => {
   const [prayerRequests, setPrayerRequests] = useState([]);
@@ -31,14 +24,7 @@ const PrayerWalls = () => {
   const [toastVisible, setToastVisible] = useState(false);
 
   const categories = [
-    "All",
-    "Health",
-    "Family",
-    "Career",
-    "Relationship",
-    "Financial",
-    "Spiritual",
-    "General"
+    "All", "Health", "Family", "Career", "Relationship", "Financial", "Spiritual", "General"
   ];
 
   const categoryColors = {
@@ -51,19 +37,15 @@ const PrayerWalls = () => {
     General: "bg-gray-100 text-gray-800"
   };
 
-  // ➤ ✅ NEW: Track Prayer Wall visit
-  useEffect(() => {
-    logPageVisit(
-      "Prayer Wall",                                // Title
-      "page",                                        // Type
-      "Prayer Wall Page",                           // Reference
-      "User visited the Prayer Wall page",         // Content
-      "Prayer",                                      // Category
-      window.location.pathname                      // Extra reference
-    );
-  }, []);
+  // Track Prayer Wall page visit
+  usePageLogger({
+    title: "Prayer Wall",
+    type: "page",
+    reference: "Prayer Wall Page",
+    content: "Browsing community prayer requests",
+    category: "Prayer"
+  });
 
-  // Load prayers and comments
   useEffect(() => {
     const savedPrayers = JSON.parse(localStorage.getItem("prayerRequests") || "[]");
     const savedComments = JSON.parse(localStorage.getItem("comments") || "{}");
@@ -71,12 +53,10 @@ const PrayerWalls = () => {
     setComments(savedComments);
   }, []);
 
-  // Save prayers
   useEffect(() => {
     localStorage.setItem("prayerRequests", JSON.stringify(prayerRequests));
   }, [prayerRequests]);
 
-  // Save comments
   useEffect(() => {
     localStorage.setItem("comments", JSON.stringify(comments));
   }, [comments]);
@@ -112,6 +92,8 @@ const PrayerWalls = () => {
   });
 
   const handlePray = (id) => {
+    const request = prayerRequests.find(r => r.id === id);
+    
     setPrayerRequests((prev) =>
       prev.map((request) =>
         request.id === id
@@ -119,31 +101,35 @@ const PrayerWalls = () => {
           : request
       )
     );
+
+    // Log to history when user prays for a request
+    if (request && !request.prayed) {
+      logPrayer(
+        `Prayed for: ${request.title}`,
+        request.content,
+        request.category
+      );
+    }
   };
 
   const handleMarkAnswered = (id) => {
+    const request = prayerRequests.find(r => r.id === id);
+    
     setPrayerRequests((prev) =>
       prev.map((request) =>
         request.id === id ? { ...request, answered: !request.answered } : request
       )
     );
-    const prayer = prayerRequests.find((p) => p.id === id);
-    if (prayer) {
-      const answeredPrayers = JSON.parse(localStorage.getItem("answeredPrayers") || "[]");
-      const alreadyAnswered = answeredPrayers.find((p) => p.id === prayer.id);
-      if (!alreadyAnswered) {
-        localStorage.setItem(
-          "answeredPrayers",
-          JSON.stringify([...answeredPrayers, { ...prayer, answeredAt: new Date().toISOString() }])
-        );
-        showToast("Prayer marked as answered");
-      } else {
-        showToast("Prayer removed from answered prayers");
-        localStorage.setItem(
-          "answeredPrayers",
-          JSON.stringify(answeredPrayers.filter((p) => p.id !== prayer.id))
-        );
-      }
+    
+    showToast("Marked as answered");
+
+    // Log to history when a prayer is marked as answered
+    if (request && !request.answered) {
+      logPrayer(
+        `Prayer Answered: ${request.title}`,
+        "Testimony of answered prayer",
+        request.category
+      );
     }
   };
 
@@ -163,10 +149,18 @@ const PrayerWalls = () => {
       avatar: formData.isAnonymous ? "A" : "Y",
       answered: false
     };
+    
     setPrayerRequests([newRequest, ...prayerRequests]);
     setFormData({ title: "", content: "", category: "General", isUrgent: false, isAnonymous: false });
     setShowModal(false);
     showToast("Prayer request posted");
+
+    // Log to history when user posts a prayer request
+    logPrayer(
+      `Posted Prayer Request: ${formData.title}`,
+      formData.content,
+      formData.category
+    );
   };
 
   const handleAddComment = (requestId) => {
@@ -208,7 +202,9 @@ const PrayerWalls = () => {
           <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
             Prayer Wall
           </h1>
-          <p className="text-sm md:text-lg text-[#0C2E8A]">Share prayer requests and support fellow believers</p>
+          <p className="text-sm md:text-lg text-[#0C2E8A]">
+            Share prayer requests and support fellow believers
+          </p>
         </div>
 
         {/* Search + Add Button */}
@@ -305,44 +301,54 @@ const PrayerWalls = () => {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-4 mt-4">
-                <button
-                  onClick={() => handlePray(req.id)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
-                    req.prayed ? "bg-blue-600 text-white" : "border-gray-300 text-gray-700"
-                  }`}
-                >
-                  <Heart className="w-4 h-4" /> Pray ({req.prayers})
-                </button>
-                <button
-                  onClick={() =>
-                    setShowComments(showComments === req.id ? null : req.id)
-                  }
-                  className="flex items-center gap-1 px-3 py-1 rounded-full border border-gray-300"
-                >
-                  <MessageCircle className="w-4 h-4" /> Comment ({req.comments})
-                </button>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between mt-4 border-t border-gray-200 pt-3">
+                <div className="flex items-center gap-4">
+                  <button
+                    className="flex items-center gap-1 text-[#0C2E8A]"
+                    onClick={() => handlePray(req.id)}
+                  >
+                    <Heart className={`w-4 h-4 ${req.prayed ? "text-red-500" : ""}`} />
+                    {req.prayers}
+                  </button>
+                  <button
+                    className="flex items-center gap-1 text-[#0C2E8A]"
+                    onClick={() => setShowComments(showComments === req.id ? null : req.id)}
+                  >
+                    <MessageCircle className="w-4 h-4" /> {req.comments}
+                  </button>
+                </div>
               </div>
+
+              {/* Comments Section */}
               {showComments === req.id && (
-                <div className="mt-4">
-                  <div className="space-y-2">
-                    {(comments[req.id] || []).map((c) => (
-                      <div key={c.id} className="p-2 bg-gray-100 rounded">
-                        <span className="font-bold">{c.author}</span>: {c.content}
+                <div className="mt-4 space-y-3">
+                  {(comments[req.id] || []).map((comment) => (
+                    <div key={comment.id} className="flex gap-2 items-start">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-white font-bold">
+                        {comment.author[0]}
                       </div>
-                    ))}
-                  </div>
-                  <div className="mt-2 flex gap-2">
+                      <div>
+                        <p className="text-sm font-medium text-[#0C2E8A]">{comment.author}</p>
+                        <p className="text-sm text-gray-700">{comment.content}</p>
+                        <span className="text-xs text-gray-400">{comment.time}</span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add Comment */}
+                  <div className="flex gap-2 items-center mt-2">
                     <input
                       type="text"
-                      placeholder="Write a comment..."
+                      placeholder="Add a comment..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
                     />
                     <button
                       onClick={() => handleAddComment(req.id)}
-                      className="px-4 py-2 bg-[#0C2E8A] text-white rounded-lg"
+                      className="bg-[#0C2E8A] text-white px-4 py-2 rounded-lg"
                     >
                       <Send className="w-4 h-4" />
                     </button>
@@ -354,52 +360,43 @@ const PrayerWalls = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Add Request Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Add Prayer Request</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <h2 className="text-lg font-bold mb-4">Add Prayer Request</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
                 placeholder="Title"
                 value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               />
               <textarea
-                placeholder="Your prayer request..."
+                placeholder="Content"
                 value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
+                rows="4"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               />
               <select
                 value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
               >
                 {categories.slice(1).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
-              <div className="flex gap-4">
+              <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={formData.isUrgent}
-                    onChange={(e) =>
-                      setFormData({ ...formData, isUrgent: e.target.checked })
-                    }
+                    onChange={(e) => setFormData({ ...formData, isUrgent: e.target.checked })}
                   />
                   Urgent
                 </label>
@@ -407,18 +404,16 @@ const PrayerWalls = () => {
                   <input
                     type="checkbox"
                     checked={formData.isAnonymous}
-                    onChange={(e) =>
-                      setFormData({ ...formData, isAnonymous: e.target.checked })
-                    }
+                    onChange={(e) => setFormData({ ...formData, isAnonymous: e.target.checked })}
                   />
-                  Post Anonymously
+                  Anonymous
                 </label>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border rounded-lg"
+                  className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -426,30 +421,13 @@ const PrayerWalls = () => {
                   type="submit"
                   className="px-4 py-2 bg-[#0C2E8A] text-white rounded-lg"
                 >
-                  Post
+                  Submit
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
-      {/* Animation Styles */}
-      <style jsx>{`
-        @keyframes slide-in {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-in {
-          animation: slide-in 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

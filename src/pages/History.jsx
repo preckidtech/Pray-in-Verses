@@ -22,7 +22,7 @@ export default function History() {
 
   const getCurrentUser = () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-    return currentUser.id || currentUser.email || "guest";
+    return currentUser?.id || currentUser?.email || "guest";
   };
 
   const loadHistory = () => {
@@ -105,14 +105,15 @@ export default function History() {
     { value: "prayer", label: "Prayers" },
     { value: "verse", label: "Verses" },
     { value: "journal", label: "Journal Entries" },
+    { value: "page", label: "Page Visits" },
   ];
 
   const filteredHistory = history
     .filter((item) => {
       const matchesSearch =
-        item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.reference?.toLowerCase().includes(searchQuery.toLowerCase());
+        String(item.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.content || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.reference || "").toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesType = selectedType === "all" || item.type === selectedType;
 
@@ -144,64 +145,14 @@ export default function History() {
           case "older":
             matchesDate = itemDate < lastMonth;
             break;
+          default:
+            matchesDate = true;
         }
       }
 
       return matchesSearch && matchesType && matchesDate;
     })
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-  const handleSelectItem = (id) => {
-    setSelectedItems(prev =>
-      prev.includes(id)
-        ? prev.filter(item => item !== id)
-        : [...prev, id]
-    );
-  };
-
-  const handleDeleteSelected = () => {
-    const updatedHistory = history.filter(
-      item => !selectedItems.includes(item.id)
-    );
-    saveHistory(updatedHistory);
-    setSelectedItems([]);
-    setShowDeleteModal(false);
-    showNotification(`Deleted ${selectedItems.length} item${selectedItems.length > 1 ? 's' : ''}`);
-  };
-
-  const handleDeleteSingle = (id) => {
-    const updatedHistory = history.filter(item => item.id !== id);
-    saveHistory(updatedHistory);
-    showNotification("Item deleted from history");
-  };
-
-  const handleClearAll = () => {
-    if (window.confirm("Are you sure you want to clear all history? This action cannot be undone.")) {
-      saveHistory([]);
-      setSelectedItems([]);
-      showNotification("History cleared");
-    }
-  };
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   const groupedHistory = filteredHistory.reduce((groups, item) => {
     const date = new Date(item.timestamp);
@@ -216,10 +167,10 @@ export default function History() {
     } else if (date >= yesterday) {
       label = "Yesterday";
     } else {
-      label = date.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+      label = date.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
       });
     }
 
@@ -229,6 +180,56 @@ export default function History() {
     groups[label].push(item);
     return groups;
   }, {});
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleDeleteSelected = () => {
+    const updatedHistory = history.filter(
+      (item) => !selectedItems.includes(item.id)
+    );
+    saveHistory(updatedHistory);
+    setSelectedItems([]);
+    setShowDeleteModal(false);
+    showNotification(`Deleted ${selectedItems.length} item${selectedItems.length > 1 ? "s" : ""}`);
+  };
+
+  const handleDeleteSingle = (id) => {
+    const updatedHistory = history.filter((item) => item.id !== id);
+    saveHistory(updatedHistory);
+    showNotification("Item deleted from history");
+  };
+
+  const handleClearAll = () => {
+    if (window.confirm("Are you sure you want to clear all history? This action cannot be undone.")) {
+      saveHistory([]);
+      setSelectedItems([]);
+      showNotification("History cleared");
+    }
+  };
 
   if (loading) {
     return (
@@ -253,17 +254,17 @@ export default function History() {
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pl-0 lg:pl-56">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Notification */}
         {notification && (
-          <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
-            notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-          } text-white`}>
+          <div
+            className={`fixed top-24 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+              notification.type === "success" ? "bg-green-500" : "bg-red-500"
+            } text-white`}
+          >
             <Check className="w-5 h-5" />
-            <span>{notification.message}</span>
+            <span>{String(notification.message)}</span>
           </div>
         )}
 
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
@@ -283,14 +284,14 @@ export default function History() {
           <p className="text-gray-600">Track your prayer journey and spiritual activities</p>
         </div>
 
-        {/* Search and Filter Bar */}
+        {/* Search & Filters */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                value={searchQuery}
+                value={String(searchQuery)}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search history..."
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
@@ -298,11 +299,11 @@ export default function History() {
             </div>
 
             <select
-              value={selectedDate}
+              value={String(selectedDate)}
               onChange={(e) => setSelectedDate(e.target.value)}
               className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
             >
-              {getDateRanges().map(range => (
+              {getDateRanges().map((range) => (
                 <option key={range.value} value={range.value}>
                   {range.label} ({range.count})
                 </option>
@@ -310,11 +311,11 @@ export default function History() {
             </select>
 
             <select
-              value={selectedType}
+              value={String(selectedType)}
               onChange={(e) => setSelectedType(e.target.value)}
               className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
             >
-              {typeOptions.map(option => (
+              {typeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -359,9 +360,9 @@ export default function History() {
                         />
 
                         <div className="flex-shrink-0 w-10 h-10 bg-[#2c3E91]/10 rounded-full flex items-center justify-center">
-                          {item.type === 'prayer' ? (
+                          {item.type === "prayer" ? (
                             <BookOpen className="w-5 h-5 text-[#2c3E91]" />
-                          ) : item.type === 'verse' ? (
+                          ) : item.type === "verse" ? (
                             <BookMarked className="w-5 h-5 text-[#2c3E91]" />
                           ) : (
                             <Clock className="w-5 h-5 text-[#2c3E91]" />
@@ -372,16 +373,16 @@ export default function History() {
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
                               <h3 className="text-base font-semibold text-gray-900 mb-1">
-                                {item.title}
+                                {String(item.title || "Untitled")}
                               </h3>
                               {item.content && (
                                 <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                  {item.content}
+                                  {String(item.content)}
                                 </p>
                               )}
                               {item.reference && (
                                 <p className="text-sm text-[#2c3E91] font-medium">
-                                  {item.reference}
+                                  {String(item.reference)}
                                 </p>
                               )}
                             </div>
@@ -401,8 +402,13 @@ export default function History() {
                               {formatTimestamp(item.timestamp)}
                             </span>
                             <span className="capitalize px-2 py-0.5 bg-gray-100 rounded">
-                              {item.type}
+                              {String(item.type || "page")}
                             </span>
+                            {item.category && (
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                                {String(item.category)}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -418,10 +424,9 @@ export default function History() {
               <Clock className="w-10 h-10 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              {searchQuery || selectedDate !== "all" || selectedType !== "all"
+              {String(searchQuery) || selectedDate !== "all" || selectedType !== "all"
                 ? "No history found"
-                : "No history yet"
-              }
+                : "No history yet"}
             </h3>
             <p className="text-gray-500">
               Start browsing prayers, verses, and journal entries to see your history here.
@@ -434,7 +439,9 @@ export default function History() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-80">
               <h3 className="text-lg font-semibold mb-4">Delete Selected Items</h3>
-              <p className="mb-6">Are you sure you want to delete {selectedItems.length} item(s)? This action cannot be undone.</p>
+              <p className="mb-6">
+                Are you sure you want to delete {selectedItems.length} item(s)? This action cannot be undone.
+              </p>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}
@@ -456,4 +463,3 @@ export default function History() {
     </div>
   );
 }
-

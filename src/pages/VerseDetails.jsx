@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Bookmark } from "lucide-react";
 import banner from "../assets/images/suggest/two-lovers-studying-the-bible-it-is-god-s-love-for-2022-06-18-20-18-08-utc.jpg";
+import { usePageLogger } from "../hooks/usePageLogger";
+import { logPrayer } from "../utils/historyLogger";
 
 const VerseDetails = () => {
   const { bookSlug, chapterNumber, verseNumber } = useParams();
@@ -37,14 +39,23 @@ const VerseDetails = () => {
     }
   }, [bookTitle, chapterNumber, verseNumber]);
 
+  // Track verse visit in history
+  usePageLogger({
+    title: `${bookTitle} ${chapterNumber}:${verseNumber}`,
+    type: "verse",
+    reference: `${bookTitle} ${chapterNumber}:${verseNumber}`,
+    content: "Viewed Bible verse details and reflections",
+    category: "Bible Study"
+  });
+
   // Example verse data
   const verseData = {
-    themeFocus: "God’s Guidance in Decisions",
+    themeFocus: "God's Guidance in Decisions",
     reference: `${bookTitle} ${chapterNumber}:${verseNumber}`,
     reflection:
       "This verse reminds us to fully rely on God when making important choices, trusting that His plan is greater than ours.",
     keyLessons: [
-      "Trust in God’s timing",
+      "Trust in God's timing",
       "Avoid leaning on human understanding",
       "Seek God in all decisions",
     ],
@@ -74,6 +85,13 @@ const VerseDetails = () => {
     localStorage.setItem("savedPrayers", JSON.stringify(saved));
     setSavedPoints((prev) => [...prev, point]);
     showToast("Prayer point saved successfully ✅");
+
+    // Log to history when user saves a prayer point
+    logPrayer(
+      `Prayer Point Saved`,
+      point,
+      verseData.reference
+    );
   };
 
   // Check if point is already saved
