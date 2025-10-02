@@ -1,11 +1,10 @@
-// src/App.jsx
 import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-  useLocation,
+  useLocation
 } from "react-router-dom";
 
 import { useUIStore } from "./store";
@@ -13,6 +12,7 @@ import { PrayersProvider } from "./context/PrayerContext";
 
 // Layout
 import Header from "./components/layout/Header";
+import BottomNavigation from "./components/BottomNavigation";
 
 // Pages
 import Welcome from "./pages/onboarding/Welcome";
@@ -34,17 +34,17 @@ import GuidedPrayer from "./pages/GuidedPrayer";
 import BrowsePrayers from "./pages/BrowsePrayers";
 import BibleVerse from "./pages/BibleVerse";
 import Bookmarks from "./pages/Bookmark";
-import MyPrayerPoint from "./pages/MyPrayerPoint"
-import History from "./pages/History"
+import MyPrayerPoint from "./pages/MyPrayerPoint";
+import History from "./pages/History";
 
-// New pages
+// New Pages
 import BookPage from "./pages/BookPage";
 import ChapterPage from "./pages/ChapterPage";
 import VerseDetails from "./pages/VerseDetails";
 
 // Admin dashboard
 import AdminForm from "./pages/admin/AdminForm";
-import AdminContentEditor from "./pages/admin/AdminContentEditor"
+import AdminContentEditor from "./pages/admin/AdminContentEditor";
 
 // Toaster
 import { Toaster } from "react-hot-toast";
@@ -53,19 +53,26 @@ function AppContent() {
   const { theme } = useUIStore();
   const location = useLocation();
 
+  // Pages that don't need Header or Bottom Navigation
   const authFreePaths = ["/", "/login", "/signup", "/forgot-password"];
   const isLoggedInView = !authFreePaths.includes(location.pathname);
 
   return (
     <div className={theme === "dark" ? "dark" : ""}>
+      {/* Header */}
       {isLoggedInView && <Header />}
+
+      {/* Main Content */}
       <div className="min-h-screen flex flex-col bg-white dark:bg-primary text-primary dark:text-white font-sans">
         <main className="flex-1 pb-14 md:pb-0">
           <Routes>
+            {/* Onboarding */}
             <Route path="/" element={<Welcome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            {/* Main App Pages */}
             <Route path="/home" element={<Home />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/explore" element={<Explore />} />
@@ -82,37 +89,33 @@ function AppContent() {
             <Route path="/mission" element={<Mission />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route path="/my-prayer-point" element={<MyPrayerPoint />} />
-            <Route path="history" element={<History />} />
+            <Route path="/history" element={<History />} />
 
-
-            {/* Admin Route */}
+            {/* Admin */}
             <Route path="/admin-content-editor" element={<AdminContentEditor />} />
-
-            {/* Bible dynamic routes */}
-            <Route path="/book/:bookSlug" element={<BookPage />} />
-            <Route
-              path="/book/:bookSlug/chapter/:chapterNumber"
-              element={<ChapterPage />}
-            />
-            <Route
-              path="/book/:bookSlug/chapter/:chapterNumber/verse/:verseNumber"
-              element={<VerseDetails />}
-            />
-
-            {/* Admin dashboard Route */}
             <Route path="/admin" element={<AdminForm />} />
 
+            {/* Bible reading dynamic routes */}
+            <Route path="/book/:bookSlug" element={<BookPage />} />
+            <Route path="/book/:bookSlug/chapter/:chapterNumber" element={<ChapterPage />} />
+            <Route path="/book/:bookSlug/chapter/:chapterNumber/verse/:verseNumber" element={<VerseDetails />} />
+
+            {/* Redirect unknown routes */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-
-          <Toaster position="top-right" reverseOrder={false} />
         </main>
+
+        {/* Bottom Navigation - only visible when logged in */}
+        {isLoggedInView && <BottomNavigation />}
+
+        {/* Notifications */}
+        <Toaster position="top-right" reverseOrder={false} />
       </div>
     </div>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <Router>
       <PrayersProvider>
@@ -121,5 +124,3 @@ function App() {
     </Router>
   );
 }
-
-export default App;
