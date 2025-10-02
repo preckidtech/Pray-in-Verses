@@ -1,5 +1,5 @@
 // Reminder.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Clock,
@@ -72,6 +72,9 @@ const Reminder = () => {
     },
   ]);
 
+  const [bookmarks, setBookmarks] = useState(
+    JSON.parse(localStorage.getItem("reminderBookmarks")) || []
+  );
   const [showModal, setShowModal] = useState(false);
   const [editingReminder, setEditingReminder] = useState(null);
   const [formData, setFormData] = useState({
@@ -158,6 +161,22 @@ const Reminder = () => {
     toast.success("Reminder toggled");
   };
 
+  const trackBookmark = (reminder) => {
+    let bookmarks = JSON.parse(localStorage.getItem("reminderBookmarks")) || [];
+
+    if (!bookmarks.find((b) => b.id === reminder.id)) {
+      bookmarks.push({
+        id: reminder.id,
+        title: reminder.title,
+        time: reminder.time,
+        days: reminder.days,
+        createdAt: new Date().toISOString(),
+      });
+      localStorage.setItem("reminderBookmarks", JSON.stringify(bookmarks));
+      setBookmarks(bookmarks);
+    }
+  };
+
   const handleSubmit = () => {
     if (!formData.title || !formData.time || formData.days.length === 0) {
       toast.error("Please fill in title, time and at least one day.");
@@ -190,6 +209,8 @@ const Reminder = () => {
       toast.success("Reminder created");
     }
 
+    trackBookmark(newReminder); // ✅ Bookmark tracking
+
     setFormData({
       title: "",
       time: "",
@@ -217,7 +238,6 @@ const Reminder = () => {
   };
 
   const handleDelete = (id) => {
-    // Toast-based confirmation (non-blocking)
     toast((t) => (
       <div className="max-w-xs">
         <div className="text-sm mb-3">Delete this reminder?</div>
@@ -226,9 +246,7 @@ const Reminder = () => {
             onClick={() => {
               setReminders((prev) => prev.filter((r) => r.id !== id));
               toast.dismiss(t.id);
-              toast.success("Reminder deleted", {
-                duration: 2000, // ✅ disappears in 2s
-              });
+              toast.success("Reminder deleted", { duration: 2000 });
             }}
             className="px-3 py-1 rounded bg-red-600 text-white text-sm hover:bg-red-700 transition-colors"
           >
@@ -262,7 +280,6 @@ const Reminder = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
-      {/* Toaster mounted here so file is self-contained */}
       <Toaster position="top-right" />
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-8">
         {/* Header */}
@@ -343,56 +360,6 @@ const Reminder = () => {
           </div>
         </div>
 
-        {/* Quick Setup */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
-          <h2 className="text-lg sm:text-xl font-medium text-[#0C2E8A] mb-3">
-            Quick Setup
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { title: "Morning Prayer", time: "07:00", icon: Sun },
-              { title: "Midday Prayer", time: "12:00", icon: Sun },
-              { title: "Evening Prayer", time: "18:00", icon: Sunset },
-              { title: "Night Prayer", time: "22:00", icon: Moon },
-            ].map((preset, idx) => {
-              const Icon = preset.icon;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setFormData({
-                      title: preset.title,
-                      time: preset.time,
-                      days: daysOfWeek,
-                      sound: "gentle-chime",
-                      prayer: "",
-                      icon: preset.title.includes("Morning")
-                        ? "sunrise"
-                        : preset.title.includes("Evening")
-                        ? "sunset"
-                        : preset.title.includes("Night")
-                        ? "moon"
-                        : "sun",
-                    });
-                    setEditingReminder(null);
-                    setShowModal(true);
-                  }}
-                  className="flex flex-col items-center gap-2 p-3 border rounded-lg hover:shadow-sm transition"
-                >
-                  <Icon className="w-8 h-8 text-[#0C2E8A]" />
-                  <div className="text-sm font-medium text-gray-900">
-                    {preset.title}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {formatTime(preset.time)}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Reminders List */}
         <div className="space-y-4">
           {reminders.map((reminder) => {
@@ -451,7 +418,6 @@ const Reminder = () => {
                       </div>
                     </div>
 
-                    {/* Action buttons - responsive: will wrap on small screens */}
                     <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2 max-w-full">
                       <button
                         onClick={() => toggleReminder(reminder.id)}
@@ -513,183 +479,166 @@ const Reminder = () => {
               </div>
             );
           })}
-
-          {/* Empty state */}
-          {reminders.length === 0 && (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bell className="w-10 h-10 text-[#0C2E8A]" />
-              </div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
-                No reminders set
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Create your first prayer reminder to build a consistent
-                Scripture-based habit
-              </p>
-              <button
-                onClick={() => setShowModal(true)}
-                className="px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-[#0B2870] transition"
-              >
-                Create First Reminder
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-3 sm:p-6">
-            <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="p-4 sm:p-6">
-                <h2 className="text-xl sm:text-2xl font-semibold text-[#0C2E8A] mb-4">
-                  {editingReminder ? "Edit Reminder" : "New Prayer Reminder"}
-                </h2>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Reminder Title
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:outline-none"
-                      placeholder="e.g., Morning Prayer"
-                    />
+        {/* Bookmarks List */}
+        {bookmarks.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-[#0C2E8A] mb-3">
+              Bookmarked Reminders
+            </h3>
+            <div className="space-y-2">
+              {bookmarks.map((b) => (
+                <div
+                  key={b.id}
+                  className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{b.title}</span>
+                    <span className="text-sm text-gray-500">
+                      {formatTime(b.time)}
+                    </span>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Time
-                      </label>
-                      <input
-                        type="time"
-                        value={formData.time}
-                        onChange={(e) =>
-                          setFormData({ ...formData, time: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Sound
-                      </label>
-                      <select
-                        value={formData.sound}
-                        onChange={(e) =>
-                          setFormData({ ...formData, sound: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:outline-none"
-                      >
-                        {soundOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Days to Repeat
-                    </label>
-                    <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                      {daysOfWeek.map((day) => (
-                        <button
-                          key={day}
-                          type="button"
-                          onClick={() => handleDayToggle(day)}
-                          className={`px-2 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                            formData.days.includes(day)
-                              ? "bg-[#0C2E8A] text-white shadow"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
-                        >
-                          {day.slice(0, 3)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Icon
-                    </label>
-                    <div className="grid grid-cols-4 gap-3">
-                      {iconOptions.map((option) => {
-                        const Icon = option.icon;
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() =>
-                              setFormData({ ...formData, icon: option.value })
-                            }
-                            className={`p-2 sm:p-3 rounded-lg border-2 transition ${
-                              formData.icon === option.value
-                                ? "border-[#0C2E8A] bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                          >
-                            <Icon
-                              className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto ${
-                                formData.icon === option.value
-                                  ? "text-[#0C2E8A]"
-                                  : "text-gray-600"
-                              }`}
-                            />
-                            <p className="text-xs mt-1">{option.label}</p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Prayer Text (Optional)
-                    </label>
-                    <textarea
-                      value={formData.prayer}
-                      onChange={(e) =>
-                        setFormData({ ...formData, prayer: e.target.value })
-                      }
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:outline-none resize-none"
-                      placeholder="Add a short prayer or verse to display with this reminder..."
-                    />
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row justify-end gap-3 mt-3 pt-3 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                      className="px-4 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      className="px-4 py-2 text-sm bg-[#0C2E8A] text-white rounded-lg hover:bg-[#0B2870]"
-                    >
-                      {editingReminder ? "Update Reminder" : "Create Reminder"}
-                    </button>
+                  <div className="text-sm text-gray-500">
+                    {getDaysText(b.days)}
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* Modal for creating/editing reminders */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg relative">
+            <h2 className="text-xl font-semibold text-[#0C2E8A] mb-4">
+              {editingReminder ? "Edit Reminder" : "New Reminder"}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  placeholder="Reminder title"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) =>
+                    setFormData({ ...formData, time: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Days
+                </label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {daysOfWeek.map((day) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => handleDayToggle(day)}
+                      className={`px-3 py-1 rounded-full border ${
+                        formData.days.includes(day)
+                          ? "bg-blue-600 text-white"
+                          : "bg-white text-gray-700 border-gray-300"
+                      }`}
+                    >
+                      {day.slice(0, 3)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Sound
+                </label>
+                <select
+                  value={formData.sound}
+                  onChange={(e) =>
+                    setFormData({ ...formData, sound: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                >
+                  {soundOptions.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Prayer
+                </label>
+                <textarea
+                  value={formData.prayer}
+                  onChange={(e) =>
+                    setFormData({ ...formData, prayer: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  placeholder="Enter your prayer"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Icon
+                </label>
+                <select
+                  value={formData.icon}
+                  onChange={(e) =>
+                    setFormData({ ...formData, icon: e.target.value })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                >
+                  {iconOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+              >
+                {editingReminder ? "Update" : "Create"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

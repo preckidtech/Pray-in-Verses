@@ -13,6 +13,45 @@ import {
   Clock,
 } from "lucide-react";
 
+// Bookmark handler
+const handleBookmark = (entry) => {
+  const userId =
+    JSON.parse(localStorage.getItem("currentUser") || "{}").id || "guest";
+  const bookmarks = JSON.parse(
+    localStorage.getItem(`bookmarks_${userId}`) || "[]"
+  );
+
+  const isAlreadyBookmarked = bookmarks.some(
+    (b) => b.id === entry.id && b.type === "journal"
+  );
+
+  if (isAlreadyBookmarked) {
+    alert("This journal entry is already bookmarked.");
+    return;
+  }
+
+  const newBookmark = {
+    id: entry.id || Date.now().toString(),
+    type: "journal",
+    title: entry.title,
+    content: entry.content,
+    mood: entry.mood,
+    tags: entry.tags,
+    verse: entry.verse,
+    date: entry.date,
+    createdAt: entry.createdAt,
+    isPrivate: entry.isPrivate,
+  };
+
+  localStorage.setItem(
+    `bookmarks_${userId}`,
+    JSON.stringify([...bookmarks, newBookmark])
+  );
+
+  window.dispatchEvent(new Event("bookmarkUpdated"));
+  alert("Journal entry bookmarked!");
+};
+
 const Journal = () => {
   const [entries, setEntries] = useState([
     {
@@ -87,7 +126,6 @@ const Journal = () => {
     Blessed: "bg-pink-100 text-pink-800",
   };
 
-  // Track Journal page visit
   usePageLogger({
     title: "Journal Page",
     type: "page",
@@ -129,8 +167,6 @@ const Journal = () => {
           entry.id === editingEntry.id ? newEntry : entry
         )
       );
-      
-      // Log journal update to history
       logJournal(
         `Updated: ${formData.title}`,
         formData.content.substring(0, 100),
@@ -138,8 +174,6 @@ const Journal = () => {
       );
     } else {
       setEntries([newEntry, ...entries]);
-      
-      // Log new journal entry to history
       logJournal(
         formData.title,
         formData.content.substring(0, 100),
@@ -189,13 +223,13 @@ const Journal = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
       <div className="container mx-auto px-4 py-8">
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <div className="grid align-middle text-center md:text-left mb-8">
-            <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2">
+          <div>
+            <h1 className="text-2xl font-bold text-[#0C2E8A] mb-2">
               My Prayer Journal
             </h1>
-            <p className="text-sm md:text-lg text-[#0C2E8A]">
+            <p className="text-sm text-[#0C2E8A]">
               Record your spiritual journey and God's faithfulness
             </p>
           </div>
@@ -212,14 +246,13 @@ const Journal = () => {
               });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-[#0C2E8A] transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+            className="flex items-center gap-2 px-6 py-3 bg-[#0C2E8A] text-white rounded-lg shadow-lg"
           >
-            <Plus className="w-5 h-5" />
-            New Entry
+            <Plus className="w-5 h-5" /> New Entry
           </button>
         </div>
 
-        {/* Search and Filter Section */}
+        {/* Search Filter */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
@@ -229,13 +262,13 @@ const Journal = () => {
                 placeholder="Search your journal entries..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent bg-gray-50"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
               />
             </div>
             <select
               value={selectedMood}
               onChange={(e) => setSelectedMood(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent bg-gray-50 font-medium"
+              className="px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
             >
               {moods.map((mood) => (
                 <option key={mood} value={mood}>
@@ -243,53 +276,6 @@ const Journal = () => {
                 </option>
               ))}
             </select>
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center">
-              <div className="p-3 bg-[#FCCF3A] rounded-lg">
-                <BookOpen className="w-6 h-6 text-[#0C2E8A]" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-2xl font-semibold text-[#0C2E8A]">
-                  {entries.length}
-                </h3>
-                <p className="text-gray-600 font-medium">Total Entries</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center">
-              <div className="p-3 bg-[#FCCF3A] rounded-lg">
-                <Calendar className="w-6 h-6 text-[#0C2E8A]" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-2xl font-semibold text-[#0C2E8A]">
-                  {new Set(entries.map((e) => e.date)).size}
-                </h3>
-                <p className="text-gray-600 font-medium">Days Journaled</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center">
-              <div className="p-3 bg-[#FCCF3A] rounded-lg">
-                <Heart className="w-6 h-6 text-[#0C2E8A]" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-2xl font-semibold text-[#0C2E8A]">
-                  {
-                    entries.filter(
-                      (e) => e.mood === "Grateful" || e.mood === "Joyful"
-                    ).length
-                  }
-                </h3>
-                <p className="text-gray-600 font-medium">Grateful Moments</p>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -316,16 +302,24 @@ const Journal = () => {
                       </span>
                     )}
                   </div>
+
                   <div className="flex items-center space-x-2">
                     <button
+                      onClick={() => handleBookmark(entry)}
+                      className="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg"
+                      title="Bookmark this entry"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => handleEdit(entry)}
-                      className="p-2 text-gray-500 hover:text-[#0C2E8A] hover:bg-blue-50 rounded-lg transition-all duration-200"
+                      className="p-2 text-gray-500 hover:text-blue-600 rounded-lg"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(entry.id)}
-                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                      className="p-2 text-gray-500 hover:text-red-600 rounded-lg"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -346,9 +340,7 @@ const Journal = () => {
                   })}
                 </div>
 
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  {entry.content}
-                </p>
+                <p className="text-gray-700 mb-4">{entry.content}</p>
 
                 {entry.verse && (
                   <div className="bg-gradient-to-r from-blue-50 to-yellow-50 rounded-lg p-4 mb-4 border border-blue-100">
@@ -372,163 +364,6 @@ const Journal = () => {
             </div>
           ))}
         </div>
-
-        {/* Empty State */}
-        {filteredEntries.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="w-10 h-10 text-blue-700" />
-            </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
-              No journal entries found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Start documenting your spiritual journey today
-            </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-6 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors duration-200 font-medium"
-            >
-              Create Your First Entry
-            </button>
-          </div>
-        )}
-
-        {/* Modal for Adding/Editing Entry */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                  {editingEntry ? "Edit Entry" : "New Journal Entry"}
-                </h2>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Content
-                    </label>
-                    <textarea
-                      value={formData.content}
-                      onChange={(e) =>
-                        setFormData({ ...formData, content: e.target.value })
-                      }
-                      rows="8"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      placeholder="Write about your spiritual journey, prayers, reflections..."
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mood
-                      </label>
-                      <select
-                        value={formData.mood}
-                        onChange={(e) =>
-                          setFormData({ ...formData, mood: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        {moods
-                          .filter((mood) => mood !== "All")
-                          .map((mood) => (
-                            <option key={mood} value={mood}>
-                              {mood}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bible Verse (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.verse}
-                        onChange={(e) =>
-                          setFormData({ ...formData, verse: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., John 3:16"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tags (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.tags}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tags: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Separate tags with commas (e.g., prayer, healing, gratitude)"
-                    />
-                  </div>
-
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="private"
-                      checked={formData.isPrivate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          isPrivate: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label
-                      htmlFor="private"
-                      className="ml-2 text-sm text-gray-700"
-                    >
-                      Keep this entry private
-                    </label>
-                  </div>
-
-                  <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors duration-200 font-medium"
-                    >
-                      {editingEntry ? "Update Entry" : "Save Entry"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

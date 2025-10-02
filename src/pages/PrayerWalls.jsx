@@ -1,6 +1,6 @@
 // src/components/PrayerWalls.jsx
 import React, { useEffect, useState } from "react";
-import { Plus, Heart, MessageCircle, Search, Send } from "lucide-react";
+import { Plus, Heart, MessageCircle, Search, Send, Bookmark } from "lucide-react";
 import { usePageLogger } from "../hooks/usePageLogger";
 import { logPrayer } from "../utils/historyLogger";
 
@@ -18,13 +18,21 @@ const PrayerWalls = () => {
     content: "",
     category: "General",
     isUrgent: false,
-    isAnonymous: false
+    isAnonymous: false,
   });
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
 
   const categories = [
-    "All", "Health", "Family", "Career", "Relationship", "Financial", "Spiritual", "General"
+    "All",
+    "Health",
+    "Family",
+    "Career",
+    "Relationship",
+    "Financial",
+    "Spiritual",
+    "General",
   ];
 
   const categoryColors = {
@@ -34,7 +42,36 @@ const PrayerWalls = () => {
     Relationship: "bg-purple-100 text-purple-800",
     Financial: "bg-yellow-100 text-yellow-800",
     Spiritual: "bg-indigo-100 text-indigo-800",
-    General: "bg-gray-100 text-gray-800"
+    General: "bg-gray-100 text-gray-800",
+  };
+
+  const getCurrentUser = () => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    if (currentUser.id) return currentUser;
+    return { id: "guest" };
+  };
+
+  const loadBookmarks = () => {
+    const user = getCurrentUser();
+    const saved = JSON.parse(localStorage.getItem(`bookmarks_${user.id}`) || "[]");
+    setBookmarks(saved);
+  };
+
+  const saveBookmark = (entry) => {
+    const user = getCurrentUser();
+    const updatedBookmarks = [...bookmarks, entry];
+    localStorage.setItem(`bookmarks_${user.id}`, JSON.stringify(updatedBookmarks));
+    setBookmarks(updatedBookmarks);
+    setToastMessage("Saved to Bookmarks");
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 2000);
+
+    // Dispatch event for Bookmark page to refresh
+    window.dispatchEvent(new Event("bookmarkUpdated"));
+  };
+
+  const isBookmarked = (id) => {
+    return bookmarks.some((b) => b.id === id);
   };
 
   // Track Prayer Wall page visit
@@ -43,14 +80,17 @@ const PrayerWalls = () => {
     type: "page",
     reference: "Prayer Wall Page",
     content: "Browsing community prayer requests",
-    category: "Prayer"
+    category: "Prayer",
   });
 
   useEffect(() => {
-    const savedPrayers = JSON.parse(localStorage.getItem("prayerRequests") || "[]");
+    const savedPrayers = JSON.parse(
+      localStorage.getItem("prayerRequests") || "[]"
+    );
     const savedComments = JSON.parse(localStorage.getItem("comments") || "{}");
     setPrayerRequests(savedPrayers);
     setComments(savedComments);
+    loadBookmarks();
   }, []);
 
   useEffect(() => {
@@ -92,17 +132,21 @@ const PrayerWalls = () => {
   });
 
   const handlePray = (id) => {
-    const request = prayerRequests.find(r => r.id === id);
-    
+    const request = prayerRequests.find((r) => r.id === id);
     setPrayerRequests((prev) =>
       prev.map((request) =>
         request.id === id
-          ? { ...request, prayers: request.prayed ? request.prayers - 1 : request.prayers + 1, prayed: !request.prayed }
+          ? {
+              ...request,
+              prayers: request.prayed
+                ? request.prayers - 1
+                : request.prayers + 1,
+              prayed: !request.prayed,
+            }
           : request
       )
     );
 
-    // Log to history when user prays for a request
     if (request && !request.prayed) {
       logPrayer(
         `Prayed for: ${request.title}`,
@@ -113,17 +157,15 @@ const PrayerWalls = () => {
   };
 
   const handleMarkAnswered = (id) => {
-    const request = prayerRequests.find(r => r.id === id);
-    
+    const request = prayerRequests.find((r) => r.id === id);
     setPrayerRequests((prev) =>
       prev.map((request) =>
-        request.id === id ? { ...request, answered: !request.answered } : request
+        request.id === id
+          ? { ...request, answered: !request.answered }
+          : request
       )
     );
-    
     showToast("Marked as answered");
-
-    // Log to history when a prayer is marked as answered
     if (request && !request.answered) {
       logPrayer(
         `Prayer Answered: ${request.title}`,
@@ -147,15 +189,19 @@ const PrayerWalls = () => {
       comments: 0,
       prayed: false,
       avatar: formData.isAnonymous ? "A" : "Y",
-      answered: false
+      answered: false,
+      type: "Prayer", // for bookmark filtering
     };
-    
     setPrayerRequests([newRequest, ...prayerRequests]);
-    setFormData({ title: "", content: "", category: "General", isUrgent: false, isAnonymous: false });
+    setFormData({
+      title: "",
+      content: "",
+      category: "General",
+      isUrgent: false,
+      isAnonymous: false,
+    });
     setShowModal(false);
     showToast("Prayer request posted");
-
-    // Log to history when user posts a prayer request
     logPrayer(
       `Posted Prayer Request: ${formData.title}`,
       formData.content,
@@ -169,11 +215,16 @@ const PrayerWalls = () => {
         id: Date.now(),
         author: "You",
         content: newComment,
-        time: "Just now"
+        time: "Just now",
       };
-      setComments((prev) => ({ ...prev, [requestId]: [...(prev[requestId] || []), newEntry] }));
+      setComments((prev) => ({
+        ...prev,
+        [requestId]: [...(prev[requestId] || []), newEntry],
+      }));
       setPrayerRequests((prev) =>
-        prev.map((req) => (req.id === requestId ? { ...req, comments: req.comments + 1 } : req))
+        prev.map((req) =>
+          req.id === requestId ? { ...req, comments: req.comments + 1 } : req
+        )
       );
       setNewComment("");
       showToast("Comment added");
@@ -230,13 +281,17 @@ const PrayerWalls = () => {
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-[#0C2E8A] mb-2">Filter by Category</label>
+            <label className="block text-sm font-medium text-[#0C2E8A] mb-2">
+              Filter by Category
+            </label>
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
-                    selectedCategory === cat ? "bg-[#0C2E8A] text-white" : "bg-[#FCCF3A] text-[#0C2E8A] font-bold hover:bg-[#ABBC6B]"
+                    selectedCategory === cat
+                      ? "bg-[#0C2E8A] text-white"
+                      : "bg-[#FCCF3A] text-[#0C2E8A] font-bold hover:bg-[#ABBC6B]"
                   }`}
                   onClick={() => setSelectedCategory(cat)}
                 >
@@ -246,7 +301,9 @@ const PrayerWalls = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sort by
+            </label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -275,23 +332,41 @@ const PrayerWalls = () => {
                     {req.avatar}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-[#0C2E8A]">{req.title}</h3>
-                    <p className="text-sm text-gray-500">{formatTimeAgo(req.createdAt)}</p>
+                    <h3 className="text-lg font-bold text-[#0C2E8A]">
+                      {req.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {formatTimeAgo(req.createdAt)}
+                    </p>
                   </div>
                 </div>
+
+                {/* Bookmark Button */}
                 <button
-                  onClick={() => handleMarkAnswered(req.id)}
-                  className={`px-3 py-1 text-sm font-medium rounded-full ${
-                    req.answered ? "bg-green-600 text-white" : "bg-yellow-300 text-[#0C2E8A]"
+                  onClick={() =>
+                    saveBookmark({
+                      ...req,
+                      type: "Prayer",
+                    })
+                  }
+                  className={`p-2 rounded-lg ${
+                    isBookmarked(req.id)
+                      ? "bg-yellow-200 text-yellow-800"
+                      : "bg-gray-100 text-gray-600 hover:bg-yellow-100"
                   }`}
+                  title="Save to Bookmarks"
                 >
-                  {req.answered ? "Answered" : "Mark Answered"}
+                  <Bookmark className="w-5 h-5" />
                 </button>
               </div>
+
               <p className="text-gray-700 mb-4">{req.content}</p>
+
               <div className="flex gap-4 flex-wrap">
                 <span
-                  className={`px-2 py-1 text-xs rounded-full ${categoryColors[req.category]}`}
+                  className={`px-2 py-1 text-xs rounded-full ${
+                    categoryColors[req.category]
+                  }`}
                 >
                   {req.category}
                 </span>
@@ -309,12 +384,16 @@ const PrayerWalls = () => {
                     className="flex items-center gap-1 text-[#0C2E8A]"
                     onClick={() => handlePray(req.id)}
                   >
-                    <Heart className={`w-4 h-4 ${req.prayed ? "text-red-500" : ""}`} />
+                    <Heart
+                      className={`w-4 h-4 ${req.prayed ? "text-red-500" : ""}`}
+                    />
                     {req.prayers}
                   </button>
                   <button
                     className="flex items-center gap-1 text-[#0C2E8A]"
-                    onClick={() => setShowComments(showComments === req.id ? null : req.id)}
+                    onClick={() =>
+                      setShowComments(showComments === req.id ? null : req.id)
+                    }
                   >
                     <MessageCircle className="w-4 h-4" /> {req.comments}
                   </button>
@@ -330,9 +409,15 @@ const PrayerWalls = () => {
                         {comment.author[0]}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[#0C2E8A]">{comment.author}</p>
-                        <p className="text-sm text-gray-700">{comment.content}</p>
-                        <span className="text-xs text-gray-400">{comment.time}</span>
+                        <p className="text-sm font-medium text-[#0C2E8A]">
+                          {comment.author}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {comment.content}
+                        </p>
+                        <span className="text-xs text-gray-400">
+                          {comment.time}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -370,25 +455,33 @@ const PrayerWalls = () => {
                 type="text"
                 placeholder="Title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
                 required
               />
               <textarea
                 placeholder="Content"
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
                 rows="4"
                 required
               />
               <select
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A]"
               >
                 {categories.slice(1).map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
               <div className="flex items-center gap-4">
@@ -396,7 +489,9 @@ const PrayerWalls = () => {
                   <input
                     type="checkbox"
                     checked={formData.isUrgent}
-                    onChange={(e) => setFormData({ ...formData, isUrgent: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isUrgent: e.target.checked })
+                    }
                   />
                   Urgent
                 </label>
@@ -404,7 +499,12 @@ const PrayerWalls = () => {
                   <input
                     type="checkbox"
                     checked={formData.isAnonymous}
-                    onChange={(e) => setFormData({ ...formData, isAnonymous: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        isAnonymous: e.target.checked,
+                      })
+                    }
                   />
                   Anonymous
                 </label>
