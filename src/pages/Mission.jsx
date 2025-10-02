@@ -6,7 +6,7 @@ export default function Mission() {
   const content = getDefaultMissionContent();
 
   return (
-    <div className="ml-56 pt-16 bg-gray-50 min-h-screen">
+    <div className="md:ml-56 pt-16 bg-gray-50 min-h-screen">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-[#0C2E8A] to-[#0C2E8A] text-white py-20 px-8">
         <div className="max-w-5xl mx-auto text-center">
