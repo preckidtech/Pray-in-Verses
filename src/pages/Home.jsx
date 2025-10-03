@@ -20,7 +20,7 @@ const Home = () => {
       <div className="hidden lg:block w-56"></div>
 
       {/* Main Content */}
-      <main className="flex-1 space-y-10 px-4 lg:px-6 pb-10 max-w-7xl">
+      <main className="flex-1 space-y-10 px-4  lg:px-6 pb-10 max-w-7xl">
         {/* Welcome Section */}
         <section
           className="relative rounded-xl overflow-hidden shadow-lg border border-gray-100"
@@ -49,7 +49,7 @@ const Home = () => {
 
         {/* Featured Verses */}
         <section className="space-y-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
             <FeaturedVerseCards />
           </div>
         </section>
