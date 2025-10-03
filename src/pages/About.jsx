@@ -6,18 +6,18 @@ export default function About() {
   const content = getDefaultAboutContent();
 
   return (
-    <div className="md:ml-56 pt-8 bg-gray-50 min-h-screen font-['Poppins']">
+    <div className="my-[80px] md:ml-56 pt-8 bg-gray-50 min-h-screen font-['Poppins']">
       {/* Hero Section */}
-      <section className="  text-white py-20 px-8">
+      <section className=" text-white px-8">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-2xl text-[#0C2E8A] font-bold">{content.hero.title}</h1>
           <h2 className="text-lg mt-1 font-semibold text-yellow-300">
             {content.hero.highlight}
           </h2>
-          <p className="italic text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="italic text-[#FCCF3A] text-lg max-w-2xl mx-auto">
             {content.hero.description}
           </p>
-          <p className="text-gray-900">
+          <p className="text-gray-700">
             {content.hero.motivation}
           </p>
         </div>
@@ -34,9 +34,9 @@ export default function About() {
             >
               <div className="flex items-center gap-3 mb-3">
                 <CheckCircle2 size={24} className="text-blue-600" />
-                <h3 className="text-xl font-semibold">{feature.title}</h3>
+                <h3 className="text-lg font-semibold">{feature.title}</h3>
               </div>
-              <p className="text-gray-600">{feature.description}</p>
+              <p className=" text-sm md:text-[16px]  text-gray-600">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -47,7 +47,7 @@ export default function About() {
         <h2 className="text-xl font-bold mb-4 flex items-center gap-3">
           <Users size={20} className="text-blue-600" /> {content.vision.title}
         </h2>
-        <p className="text-gray-700 text-sm md:text-lg leading-relaxed">
+        <p className="text-gray-700 text-sm md:text-[16px] leading-relaxed">
           {content.vision.description}
         </p>
       </section>

@@ -3,8 +3,7 @@
 export function getDefaultAboutContent() {
   return {
     hero: {
-      title: "About",
-      highlight: "Pray the Bible",
+      title: "PRAY IN VERSES",
       description: "Turning every verse into prayers",
       motivation: "Luke 18: 1 -> men ought always to pray, and not to faint"
     },
