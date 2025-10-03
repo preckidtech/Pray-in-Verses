@@ -279,7 +279,7 @@ const Reminder = () => {
     .sort((a, b) => a.time.localeCompare(b.time))[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px] font-['Poppins']">
       <Toaster position="top-right" />
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-8">
         {/* Header */}
