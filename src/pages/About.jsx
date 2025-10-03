@@ -6,23 +6,26 @@ export default function About() {
   const content = getDefaultAboutContent();
 
   return (
-    <div className="md:ml-56 pt-16 bg-gray-50 min-h-screen">
+    <div className="md:ml-56 pt-8 bg-gray-50 min-h-screen">
       {/* Hero Section */}
       <section className="  text-white py-20 px-8">
         <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-3xl text-[#0C2E8A] font-bold">{content.hero.title}</h1>
-          <h2 className="text-2xl mt-1 font-semibold text-yellow-300">
+          <h1 className="text-2xl text-[#0C2E8A] font-bold">{content.hero.title}</h1>
+          <h2 className="text-lg mt-1 font-semibold text-yellow-300">
             {content.hero.highlight}
           </h2>
           <p className="italic text-gray-600 text-lg max-w-2xl mx-auto">
             {content.hero.description}
           </p>
+          <p className="text-gray-900">
+            {content.hero.motivation}
+          </p>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-16 px-8">
-        <h2 className="text-3xl font-bold text-center mb-10">What You Will Get</h2>
+      <section className="bg-white py-8 px-8">
+        <h2 className="text-2xl font-bold text-center mb-10">What You Will Get</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
           {content.features.map((feature, idx) => (
             <div

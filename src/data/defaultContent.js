@@ -5,8 +5,8 @@ export function getDefaultAboutContent() {
     hero: {
       title: "About",
       highlight: "Pray the Bible",
-      description: "Turning every verse into prayers"
-
+      description: "Turning every verse into prayers",
+      motivation: "Luke 18: 1 -> men ought always to pray, and not to faint"
     },
     story: {
       title: "Born from a Heart for Prayer",
