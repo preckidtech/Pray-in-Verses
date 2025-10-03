@@ -10,7 +10,7 @@ export default function About() {
       {/* Hero Section */}
       <section className=" text-white px-8">
         <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-2xl text-[#0C2E8A] font-bold">{content.hero.title}</h1>
+          <h1 className="text-xl text-[#0C2E8A] font-bold">{content.hero.title}</h1>
           <h2 className="text-lg mt-1 font-semibold text-yellow-300">
             {content.hero.highlight}
           </h2>
@@ -25,7 +25,7 @@ export default function About() {
 
       {/* Features Section */}
       <section className="bg-white py-8 px-8">
-        <h2 className="text-2xl font-bold text-center mb-10">What You Will Get</h2>
+        <h2 className="text-xl font-bold text-center mb-10">What You Will Get</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
           {content.features.map((feature, idx) => (
             <div
