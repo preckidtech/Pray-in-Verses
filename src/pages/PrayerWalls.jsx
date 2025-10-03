@@ -1,6 +1,13 @@
 // src/components/PrayerWalls.jsx
 import React, { useEffect, useState } from "react";
-import { Plus, Heart, MessageCircle, Search, Send, Bookmark } from "lucide-react";
+import {
+  Plus,
+  Heart,
+  MessageCircle,
+  Search,
+  Send,
+  Bookmark,
+} from "lucide-react";
 import { usePageLogger } from "../hooks/usePageLogger";
 import { logPrayer } from "../utils/historyLogger";
 
@@ -53,14 +60,19 @@ const PrayerWalls = () => {
 
   const loadBookmarks = () => {
     const user = getCurrentUser();
-    const saved = JSON.parse(localStorage.getItem(`bookmarks_${user.id}`) || "[]");
+    const saved = JSON.parse(
+      localStorage.getItem(`bookmarks_${user.id}`) || "[]"
+    );
     setBookmarks(saved);
   };
 
   const saveBookmark = (entry) => {
     const user = getCurrentUser();
     const updatedBookmarks = [...bookmarks, entry];
-    localStorage.setItem(`bookmarks_${user.id}`, JSON.stringify(updatedBookmarks));
+    localStorage.setItem(
+      `bookmarks_${user.id}`,
+      JSON.stringify(updatedBookmarks)
+    );
     setBookmarks(updatedBookmarks);
     setToastMessage("Saved to Bookmarks");
     setToastVisible(true);
