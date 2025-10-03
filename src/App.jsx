@@ -12,7 +12,7 @@ import { PrayersProvider } from "./context/PrayerContext";
 
 // Layout
 import Header from "./components/layout/Header";
-import BottomNavigation from "./components/BottomNavigation";
+import BottomNavigation from "./components/layout/ButtomNavigation"
 
 // Pages
 import Welcome from "./pages/onboarding/Welcome";
