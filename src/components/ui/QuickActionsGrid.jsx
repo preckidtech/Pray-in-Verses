@@ -21,7 +21,7 @@ const actions = [
 ];
 
 const QuickActionsGrid = () => (
-  <div className="flex flex-wrap justify-between gap-2 md:gap-4">
+  <div className="flex flex-wrap sm:grid-cols-4 justify-between gap-2 md:gap-4">
     {actions.map((action, index) => {
       const Icon = action.icon;
       return (
