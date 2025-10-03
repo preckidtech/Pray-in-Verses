@@ -226,10 +226,10 @@ const Journal = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div className="">
-            <h1 className="text-center mb-2 md:text-left text-2xl font-bold text-[#0C2E8A] mb-2">
+            <h1 className="text-center md:text-left text-2xl font-bold text-[#0C2E8A] mb-2">
               My Prayer Journal
             </h1>
-            <p className="text-sm text-[#0C2E8A]">
+            <p className="text-sm mb-2 text-[#0C2E8A]">
               Record your spiritual journey and God's faithfulness
             </p>
           </div>
