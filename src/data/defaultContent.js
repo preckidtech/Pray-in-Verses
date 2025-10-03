@@ -5,7 +5,8 @@ export function getDefaultAboutContent() {
     hero: {
       title: "About",
       highlight: "Pray the Bible",
-      description: "Connecting hearts to heaven through the timeless wisdom of Scripture. Your digital sanctuary for prayer, reflection, and spiritual growth rooted in God's Word."
+      description: "Turning every verse into prayers"
+
     },
     story: {
       title: "Born from a Heart for Prayer",
