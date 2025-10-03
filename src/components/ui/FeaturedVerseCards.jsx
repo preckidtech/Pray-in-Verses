@@ -1,6 +1,6 @@
 import React from "react";
 import { Bookmark, Share2 } from "lucide-react";
-import { Link } from "react-router-dom"; // ✅ for navigation
+import { Link } from "react-router-dom";
 import image1 from "../../assets/images/home/christian-afro-girl-holds-bible-in-her-hands-PCPX2FM.jpg";
 import image2 from "../../assets/images/home/cropped-shot-of-african-american-man-praying-with-2021-08-30-01-46-12-utc.jpg";
 import image3 from "../../assets/images/home/man-praying-hands-clasped-together-on-his-bible-JX5FTZD.jpg";
@@ -32,20 +32,21 @@ const FeaturedVerseCards = ({ items = [] }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 gap-y-12">
       {list.map((v, i) => (
-        <div key={i} className="bg-gray-50 p-0 shadow hover:shadow-md transition rounded-lg overflow-hidden">
-          {/* Card top label */}
-          <div className="px-4 py-2 bg-white border-b">
-            <span className="text-xs font-semibold text-gray-700">
+        <div key={i} className="space-y-3">
+          {/* Title + gradient line (like your section) */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-900 tracking-wide">
               {labelMap[v.key] || "Card"}
-            </span>
+            </h2>
+            <div className="w-10 h-0.5 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
           </div>
 
           {/* Card body */}
-          <div className="p-4 flex flex-col h-full">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             {v.key === "streak" ? (
-              <div className="flex-1 flex items-center justify-center">
+              <div className="flex items-center justify-center h-36">
                 <PrayerStreakCard streakDays={5} />
               </div>
             ) : v.key === "prayerWall" ? (
@@ -59,7 +60,7 @@ const FeaturedVerseCards = ({ items = [] }) => {
                 )}
                 <Link
                   to="/prayer-wall"
-                  className="px-4 py-2 bg-[#0C2E8A] text-white text-sm rounded-lg font-medium hover:bg-[#0C2E8A]f transition-colors duration-300 text-center"
+                  className="px-4 py-2 bg-[#0C2E8A] text-white text-sm rounded-lg font-medium hover:bg-[#0C2E8A]f transition-colors duration-300 text-center block"
                 >
                   Go to Prayer Wall
                 </Link>
@@ -75,7 +76,7 @@ const FeaturedVerseCards = ({ items = [] }) => {
                 )}
                 <Link
                   to="/saved-prayers"
-                  className="px-4 py-2 bg-[#FCCF3A] text-white text-sm rounded-lg font-medium hover:bg-[#FCCF3A] transition-colors duration-300 text-center"
+                  className="px-4 py-2 bg-[#FCCF3A] text-white text-sm rounded-lg font-medium hover:bg-[#FCCF3A] transition-colors duration-300 text-center block"
                 >
                   View Saved Prayers
                 </Link>
