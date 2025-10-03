@@ -46,7 +46,7 @@ const FeaturedVerseCards = ({ items = [] }) => {
           {/* Card body */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             {v.key === "streak" ? (
-              <div className="flex items-center justify-center h-36">
+              <div className="">
                 <PrayerStreakCard streakDays={5} />
               </div>
             ) : v.key === "prayerWall" ? (
