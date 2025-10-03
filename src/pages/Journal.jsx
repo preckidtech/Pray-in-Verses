@@ -19,7 +19,9 @@ const Toast = ({ message, onClose }) => (
   <div className="fixed top-20 right-4 md:right-6 bg-white shadow-lg rounded-lg px-4 py-3 border-l-4 border-green-500 z-50 animate-slide-in max-w-sm">
     <div className="flex items-center gap-2">
       <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-      <span className="text-gray-800 font-medium text-sm md:text-base">{message}</span>
+      <span className="text-gray-800 font-medium text-sm md:text-base">
+        {message}
+      </span>
     </div>
   </div>
 );
@@ -28,8 +30,13 @@ const Toast = ({ message, onClose }) => (
 const DeleteModal = ({ onConfirm, onCancel }) => (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Journal Entry</h3>
-      <p className="text-gray-600 mb-6">Are you sure you want to delete this journal entry? This action cannot be undone.</p>
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        Delete Journal Entry
+      </h3>
+      <p className="text-gray-600 mb-6">
+        Are you sure you want to delete this journal entry? This action cannot
+        be undone.
+      </p>
       <div className="flex gap-3 justify-end">
         <button
           onClick={onCancel}
