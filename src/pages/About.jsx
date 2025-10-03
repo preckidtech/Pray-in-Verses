@@ -6,7 +6,7 @@ export default function About() {
   const content = getDefaultAboutContent();
 
   return (
-    <div className="md:ml-56 pt-8 bg-gray-50 min-h-screen">
+    <div className="md:ml-56 pt-8 bg-gray-50 min-h-screen font-['Poppins']">
       {/* Hero Section */}
       <section className="  text-white py-20 px-8">
         <div className="max-w-5xl mx-auto text-center">
@@ -44,10 +44,10 @@ export default function About() {
 
       {/* Vision Section */}
       <section className="py-16 px-8 max-w-5xl mx-auto">
-        <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
-          <Users size={28} className="text-blue-600" /> {content.vision.title}
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <Users size={20} className="text-blue-600" /> {content.vision.title}
         </h2>
-        <p className="text-gray-700 leading-relaxed">
+        <p className="text-gray-700 text-sm md:text-lg leading-relaxed">
           {content.vision.description}
         </p>
       </section>
