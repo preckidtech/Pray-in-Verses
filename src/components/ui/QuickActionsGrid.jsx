@@ -21,14 +21,14 @@ const actions = [
 ];
 
 const QuickActionsGrid = () => (
-  <div className="flex flex-wrap sm:grid-cols-4 justify-between gap-2 md:gap-4">
+  <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
     {actions.map((action, index) => {
       const Icon = action.icon;
       return (
         <Link
           to={action.path}
           key={index}
-          className="flex-1 min-w-[120px] max-w-[160px] bg-gray-50 p-2 flex flex-col items-center justify-center shadow hover:shadow-md cursor-pointer transition rounded-lg"
+          className="bg-gray-50 p-3 flex flex-col items-center justify-center shadow hover:shadow-md cursor-pointer transition rounded-lg"
         >
           <Icon size={20} className="text-blue-500 mb-2" />
           <span className="text-gray-900 font-medium text-sm text-center">
