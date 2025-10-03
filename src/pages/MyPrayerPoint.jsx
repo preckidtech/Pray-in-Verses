@@ -11,8 +11,51 @@ import {
   Calendar,
   Target,
   Heart,
+  Check,
+  Bookmark,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+// Toast Component
+const Toast = ({ message, onClose }) => (
+  <div className="fixed top-20 right-4 md:right-6 bg-white shadow-lg rounded-lg px-4 py-3 border-l-4 border-green-500 z-50 animate-slide-in max-w-sm">
+    <div className="flex items-center gap-2">
+      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+      <span className="text-gray-800 font-medium text-sm md:text-base">
+        {message}
+      </span>
+    </div>
+  </div>
+);
+
+// Delete Confirmation Modal
+const DeleteModal = ({ onConfirm, onCancel }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        Delete Prayer Point
+      </h3>
+      <p className="text-gray-600 mb-6">
+        Are you sure you want to delete this prayer point? This action cannot be
+        undone.
+      </p>
+      <div className="flex gap-3 justify-end">
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors rounded-lg hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+);
 
 const MyPrayerPoint = () => {
   const [prayers, setPrayers] = useState([]);
@@ -20,7 +63,8 @@ const MyPrayerPoint = () => {
   const [editingPrayer, setEditingPrayer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
-  const [showToast, setShowToast] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [deletePrayerId, setDeletePrayerId] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -32,39 +76,84 @@ const MyPrayerPoint = () => {
     if (currentUser.id && currentUser.name) {
       return currentUser;
     }
-    
+
     const legacyUserName = localStorage.getItem("userName");
     const legacyUserEmail = localStorage.getItem("userEmail");
-    
+
     if (legacyUserName && legacyUserEmail) {
       return {
         name: legacyUserName,
         email: legacyUserEmail,
-        id: legacyUserEmail
+        id: legacyUserEmail,
       };
     }
 
     return { name: "User", email: "user@example.com", id: "user" };
   };
 
+  // Show toast message
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(""), 3000);
+  };
+
+  // Handle bookmark
+  const handleBookmark = (prayer) => {
+    const userId = getCurrentUser().id;
+    const bookmarks = JSON.parse(
+      localStorage.getItem(`bookmarks_${userId}`) || "[]"
+    );
+
+    const isAlreadyBookmarked = bookmarks.some(
+      (b) => b.id === prayer.id && b.type === "prayer-point"
+    );
+
+    if (isAlreadyBookmarked) {
+      showToast("This prayer point is already bookmarked");
+      return;
+    }
+
+    const newBookmark = {
+      id: prayer.id,
+      type: "prayer-point",
+      title: prayer.title,
+      content: prayer.content,
+      verse: `"${prayer.content}"`,
+      reference: prayer.title,
+      category: "Prayer Point",
+      tags: ["personal", "prayer"],
+      dateBookmarked: new Date().toISOString(),
+      author: prayer.author,
+      status: prayer.status,
+      isAnswered: prayer.isAnswered,
+    };
+
+    localStorage.setItem(
+      `bookmarks_${userId}`,
+      JSON.stringify([...bookmarks, newBookmark])
+    );
+
+    window.dispatchEvent(new Event("bookmarkUpdated"));
+    showToast("Prayer point bookmarked!");
+  };
+
   // Load prayers from localStorage
   useEffect(() => {
     const currentUser = getCurrentUser();
-    const savedPrayers = JSON.parse(localStorage.getItem(`myPrayerPoints_${currentUser.id}`) || "[]");
+    const savedPrayers = JSON.parse(
+      localStorage.getItem(`myPrayerPoints_${currentUser.id}`) || "[]"
+    );
     setPrayers(savedPrayers);
   }, []);
 
   // Save prayers to localStorage
   const savePrayers = (prayersToSave) => {
     const currentUser = getCurrentUser();
-    localStorage.setItem(`myPrayerPoints_${currentUser.id}`, JSON.stringify(prayersToSave));
+    localStorage.setItem(
+      `myPrayerPoints_${currentUser.id}`,
+      JSON.stringify(prayersToSave)
+    );
     setPrayers(prayersToSave);
-  };
-
-  // Show toast message
-  const showToastMessage = (message) => {
-    setShowToast(message);
-    setTimeout(() => setShowToast(""), 3000);
   };
 
   // Handle form submission
@@ -85,7 +174,7 @@ const MyPrayerPoint = () => {
           : prayer
       );
       savePrayers(updatedPrayers);
-      showToastMessage("Prayer point updated successfully!");
+      showToast("Prayer point updated successfully!");
     } else {
       // Add new prayer
       const newPrayer = {
@@ -100,10 +189,10 @@ const MyPrayerPoint = () => {
         isAnswered: false,
         answeredAt: null,
       };
-      
+
       const updatedPrayers = [newPrayer, ...prayers];
       savePrayers(updatedPrayers);
-      showToastMessage("New prayer point added!");
+      showToast("New prayer point added!");
     }
 
     // Reset form
@@ -124,11 +213,16 @@ const MyPrayerPoint = () => {
 
   // Handle delete
   const handleDelete = (prayerId) => {
-    if (window.confirm("Are you sure you want to delete this prayer point?")) {
-      const updatedPrayers = prayers.filter((prayer) => prayer.id !== prayerId);
-      savePrayers(updatedPrayers);
-      showToastMessage("Prayer point deleted");
-    }
+    setDeletePrayerId(prayerId);
+  };
+
+  const confirmDelete = () => {
+    const updatedPrayers = prayers.filter(
+      (prayer) => prayer.id !== deletePrayerId
+    );
+    savePrayers(updatedPrayers);
+    setDeletePrayerId(null);
+    showToast("Prayer point deleted");
   };
 
   // Mark as answered
@@ -146,21 +240,27 @@ const MyPrayerPoint = () => {
     savePrayers(updatedPrayers);
 
     // Add to answered prayers for the answered prayers page
-    const answeredPrayer = updatedPrayers.find(p => p.id === prayerId);
+    const answeredPrayer = updatedPrayers.find((p) => p.id === prayerId);
     if (answeredPrayer) {
-      const existingAnsweredPrayers = JSON.parse(localStorage.getItem("answeredPrayers") || "[]");
+      const existingAnsweredPrayers = JSON.parse(
+        localStorage.getItem("answeredPrayers") || "[]"
+      );
       const newAnsweredPrayer = {
         ...answeredPrayer,
         category: "Personal",
         tags: ["personal", "testimony"],
         timeAgo: "Just now",
-        verse: "Philippians 4:6 - Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.",
+        verse:
+          "Philippians 4:6 - Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.",
       };
       existingAnsweredPrayers.unshift(newAnsweredPrayer);
-      localStorage.setItem("answeredPrayers", JSON.stringify(existingAnsweredPrayers));
+      localStorage.setItem(
+        "answeredPrayers",
+        JSON.stringify(existingAnsweredPrayers)
+      );
     }
 
-    showToastMessage("Marked as answered! Added to testimonies ✨");
+    showToast("Marked as answered! Added to testimonies ✨");
   };
 
   // Unmark as answered
@@ -178,11 +278,18 @@ const MyPrayerPoint = () => {
     savePrayers(updatedPrayers);
 
     // Remove from answered prayers
-    const existingAnsweredPrayers = JSON.parse(localStorage.getItem("answeredPrayers") || "[]");
-    const filteredAnsweredPrayers = existingAnsweredPrayers.filter(p => p.id !== prayerId);
-    localStorage.setItem("answeredPrayers", JSON.stringify(filteredAnsweredPrayers));
+    const existingAnsweredPrayers = JSON.parse(
+      localStorage.getItem("answeredPrayers") || "[]"
+    );
+    const filteredAnsweredPrayers = existingAnsweredPrayers.filter(
+      (p) => p.id !== prayerId
+    );
+    localStorage.setItem(
+      "answeredPrayers",
+      JSON.stringify(filteredAnsweredPrayers)
+    );
 
-    showToastMessage("Unmarked as answered");
+    showToast("Unmarked as answered");
   };
 
   // Filter prayers
@@ -190,18 +297,18 @@ const MyPrayerPoint = () => {
     const matchesSearch =
       prayer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       prayer.content.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
-      filterStatus === "All" || 
+
+    const matchesStatus =
+      filterStatus === "All" ||
       (filterStatus === "Answered" && prayer.isAnswered) ||
       (filterStatus === "Praying" && !prayer.isAnswered);
-    
+
     return matchesSearch && matchesStatus;
   });
 
   // Stats
   const totalPrayers = prayers.length;
-  const answeredPrayers = prayers.filter(p => p.isAnswered).length;
+  const answeredPrayers = prayers.filter((p) => p.isAnswered).length;
   const prayingPrayers = totalPrayers - answeredPrayers;
 
   // Format time
@@ -218,25 +325,30 @@ const MyPrayerPoint = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
       {/* Toast Notification */}
-      {showToast && (
-        <div className="fixed top-24 right-6 bg-white shadow-lg rounded-lg px-4 py-3 border-l-4 border-[#0C2E8A] z-50 animate-slide-in">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-[#0C2E8A]" />
-            <span className="text-gray-800 font-medium">{showToast}</span>
-          </div>
-        </div>
+      {toastMessage && <Toast message={toastMessage} />}
+
+      {/* Delete Confirmation Modal */}
+      {deletePrayerId && (
+        <DeleteModal
+          onConfirm={confirmDelete}
+          onCancel={() => setDeletePrayerId(null)}
+        />
       )}
 
       <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
-                  <div className="text-center mb-8">
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="p-3 bg-[#FCCF3A] rounded-full">
               <Target className="w-8 h-8 text-[#0C2E8A]" />
             </div>
           </div>
-          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2">My Prayer Points</h1>
-          <p className="text-sm md:text-lg text-[#0C2E8A]">Track your personal prayers and testimonies</p>
+          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2">
+            My Prayer Points
+          </h1>
+          <p className="text-sm md:text-lg text-[#0C2E8A]">
+            Track your personal prayers and testimonies
+          </p>
         </div>
 
         {/* Stats Cards */}
@@ -245,27 +357,33 @@ const MyPrayerPoint = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Prayers</p>
-                <p className="text-2xl font-bold text-[#0C2E8A]">{totalPrayers}</p>
+                <p className="text-2xl font-bold text-[#0C2E8A]">
+                  {totalPrayers}
+                </p>
               </div>
               <BookOpen className="w-8 h-8 text-[#0C2E8A] opacity-20" />
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Still Praying</p>
-                <p className="text-2xl font-bold text-blue-600">{prayingPrayers}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {prayingPrayers}
+                </p>
               </div>
               <Heart className="w-8 h-8 text-blue-600 opacity-20" />
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Answered</p>
-                <p className="text-2xl font-bold text-green-600">{answeredPrayers}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {answeredPrayers}
+                </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600 opacity-20" />
             </div>
@@ -273,9 +391,9 @@ const MyPrayerPoint = () => {
         </div>
 
         {/* Search and Add Button */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative flex-1">
+            <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
@@ -286,7 +404,7 @@ const MyPrayerPoint = () => {
               />
             </div>
             <button
-              className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
+              className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium w-full md:w-auto justify-center"
               onClick={() => setShowModal(true)}
             >
               <Plus className="w-5 h-5" /> Add Prayer Point
@@ -295,10 +413,12 @@ const MyPrayerPoint = () => {
         </div>
 
         {/* Filter */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <label className="text-sm font-medium text-[#0C2E8A]">Filter by Status:</label>
-            <div className="flex gap-2">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <label className="text-sm font-medium text-[#0C2E8A]">
+              Filter by Status:
+            </label>
+            <div className="flex gap-2 flex-wrap">
               {["All", "Praying", "Answered"].map((status) => (
                 <button
                   key={status}
@@ -331,14 +451,16 @@ const MyPrayerPoint = () => {
             filteredPrayers.map((prayer) => (
               <div
                 key={prayer.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-shadow duration-300"
+                className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 hover:shadow-lg transition-shadow duration-300"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-medium text-[#0C2E8A]">{prayer.title}</h3>
+                <div className="flex justify-between items-start mb-4 gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <h3 className="text-lg font-medium text-[#0C2E8A] break-words">
+                        {prayer.title}
+                      </h3>
                       <span
-                        className={`px-3 py-1 text-xs rounded-full font-medium ${
+                        className={`px-3 py-1 text-xs rounded-full font-medium flex-shrink-0 ${
                           prayer.isAnswered
                             ? "bg-green-100 text-green-800"
                             : "bg-blue-100 text-blue-800"
@@ -347,24 +469,35 @@ const MyPrayerPoint = () => {
                         {prayer.status}
                       </span>
                     </div>
-                    <p className="text-gray-600 mb-3 leading-relaxed">{prayer.content}</p>
-                    <div className="flex items-center text-sm text-gray-500 gap-4">
+                    <p className="text-gray-600 mb-3 leading-relaxed break-words">
+                      {prayer.content}
+                    </p>
+                    <div className="flex items-center text-sm text-gray-500 gap-4 flex-wrap">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
+                        <Calendar className="w-4 h-4 flex-shrink-0" />
                         {formatTimeAgo(prayer.createdAt)}
                       </span>
                       {prayer.answeredAt && (
                         <span className="flex items-center gap-1 text-green-600">
-                          <CheckCircle className="w-4 h-4" />
+                          <CheckCircle className="w-4 h-4 flex-shrink-0" />
                           Answered {formatTimeAgo(prayer.answeredAt)}
                         </span>
                       )}
                     </div>
                   </div>
+
+                  {/* Bookmark Button */}
+                  <button
+                    onClick={() => handleBookmark(prayer)}
+                    className="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition flex-shrink-0"
+                    title="Bookmark this prayer"
+                  >
+                    <Bookmark className="w-5 h-5" />
+                  </button>
                 </div>
-                
-                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                  <div className="flex gap-2">
+
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-4 border-t border-gray-100 gap-3">
+                  <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => handleEdit(prayer)}
                       className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-[#0C2E8A] hover:bg-blue-50 rounded-lg transition font-medium text-sm"
@@ -380,12 +513,12 @@ const MyPrayerPoint = () => {
                       Delete
                     </button>
                   </div>
-                  
-                  <div className="flex gap-2">
+
+                  <div className="flex gap-2 w-full sm:w-auto">
                     {prayer.isAnswered ? (
                       <button
                         onClick={() => unmarkAnswered(prayer.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm flex-1 sm:flex-initial justify-center"
                       >
                         <Clock className="w-4 h-4" />
                         Mark as Praying
@@ -393,7 +526,7 @@ const MyPrayerPoint = () => {
                     ) : (
                       <button
                         onClick={() => markAsAnswered(prayer.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition font-medium text-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition font-medium text-sm flex-1 sm:flex-initial justify-center"
                       >
                         <CheckCircle className="w-4 h-4" />
                         Mark as Answered
@@ -409,18 +542,16 @@ const MyPrayerPoint = () => {
                 <Target className="w-10 h-10 text-blue-700" />
               </div>
               <h3 className="text-xl font-medium text-gray-900 mb-2">
-                {searchTerm || filterStatus !== "All" 
+                {searchTerm || filterStatus !== "All"
                   ? "No prayers match your search"
-                  : "No prayer points yet"
-                }
+                  : "No prayer points yet"}
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-6 px-4">
                 {searchTerm || filterStatus !== "All"
                   ? "Try adjusting your search or filter"
-                  : "Start documenting your prayer journey and track God's faithfulness"
-                }
+                  : "Start documenting your prayer journey and track God's faithfulness"}
               </p>
-              {(!searchTerm && filterStatus === "All") && (
+              {!searchTerm && filterStatus === "All" && (
                 <button
                   onClick={() => setShowModal(true)}
                   className="bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
@@ -453,10 +584,12 @@ const MyPrayerPoint = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title *
+                  </label>
                   <input
                     type="text"
                     placeholder="Brief title for your prayer"
@@ -468,11 +601,15 @@ const MyPrayerPoint = () => {
                     required
                     maxLength={100}
                   />
-                  <p className="text-xs text-gray-500 mt-1">{formData.title.length}/100</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.title.length}/100
+                  </p>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Prayer Content *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Prayer Content *
+                  </label>
                   <textarea
                     placeholder="Describe what you're praying for..."
                     value={formData.content}
@@ -484,9 +621,11 @@ const MyPrayerPoint = () => {
                     required
                     maxLength={500}
                   />
-                  <p className="text-xs text-gray-500 mt-1">{formData.content.length}/500</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.content.length}/500
+                  </p>
                 </div>
-                
+
                 <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                   <button
                     type="button"

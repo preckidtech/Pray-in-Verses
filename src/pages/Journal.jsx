@@ -11,46 +11,42 @@ import {
   Trash2,
   BookOpen,
   Clock,
+  Check,
 } from "lucide-react";
 
-// Bookmark handler
-const handleBookmark = (entry) => {
-  const userId =
-    JSON.parse(localStorage.getItem("currentUser") || "{}").id || "guest";
-  const bookmarks = JSON.parse(
-    localStorage.getItem(`bookmarks_${userId}`) || "[]"
-  );
+// Toast Component
+const Toast = ({ message, onClose }) => (
+  <div className="fixed top-20 right-4 md:right-6 bg-white shadow-lg rounded-lg px-4 py-3 border-l-4 border-green-500 z-50 animate-slide-in max-w-sm">
+    <div className="flex items-center gap-2">
+      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+      <span className="text-gray-800 font-medium text-sm md:text-base">{message}</span>
+    </div>
+  </div>
+);
 
-  const isAlreadyBookmarked = bookmarks.some(
-    (b) => b.id === entry.id && b.type === "journal"
-  );
-
-  if (isAlreadyBookmarked) {
-    alert("This journal entry is already bookmarked.");
-    return;
-  }
-
-  const newBookmark = {
-    id: entry.id || Date.now().toString(),
-    type: "journal",
-    title: entry.title,
-    content: entry.content,
-    mood: entry.mood,
-    tags: entry.tags,
-    verse: entry.verse,
-    date: entry.date,
-    createdAt: entry.createdAt,
-    isPrivate: entry.isPrivate,
-  };
-
-  localStorage.setItem(
-    `bookmarks_${userId}`,
-    JSON.stringify([...bookmarks, newBookmark])
-  );
-
-  window.dispatchEvent(new Event("bookmarkUpdated"));
-  alert("Journal entry bookmarked!");
-};
+// Delete Confirmation Modal
+const DeleteModal = ({ onConfirm, onCancel }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Journal Entry</h3>
+      <p className="text-gray-600 mb-6">Are you sure you want to delete this journal entry? This action cannot be undone.</p>
+      <div className="flex gap-3 justify-end">
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors rounded-lg hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+);
 
 const Journal = () => {
   const [entries, setEntries] = useState([
@@ -96,6 +92,8 @@ const Journal = () => {
   const [editingEntry, setEditingEntry] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMood, setSelectedMood] = useState("All");
+  const [toastMessage, setToastMessage] = useState("");
+  const [deleteEntryId, setDeleteEntryId] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -133,6 +131,51 @@ const Journal = () => {
     content: "Browsing prayer journal entries",
     category: "Journal",
   });
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(""), 3000);
+  };
+
+  const handleBookmark = (entry) => {
+    const userId =
+      JSON.parse(localStorage.getItem("currentUser") || "{}").id || "guest";
+    const bookmarks = JSON.parse(
+      localStorage.getItem(`bookmarks_${userId}`) || "[]"
+    );
+
+    const isAlreadyBookmarked = bookmarks.some(
+      (b) => b.id === entry.id && b.type === "journal"
+    );
+
+    if (isAlreadyBookmarked) {
+      showToast("This journal entry is already bookmarked");
+      return;
+    }
+
+    const newBookmark = {
+      id: entry.id || Date.now().toString(),
+      type: "journal",
+      title: entry.title,
+      content: entry.content,
+      mood: entry.mood,
+      tags: entry.tags,
+      verse: entry.verse,
+      date: entry.date,
+      createdAt: entry.createdAt,
+      isPrivate: entry.isPrivate,
+      category: "Journal",
+      dateBookmarked: new Date().toISOString(),
+    };
+
+    localStorage.setItem(
+      `bookmarks_${userId}`,
+      JSON.stringify([...bookmarks, newBookmark])
+    );
+
+    window.dispatchEvent(new Event("bookmarkUpdated"));
+    showToast("Journal entry bookmarked!");
+  };
 
   const filteredEntries = entries.filter((entry) => {
     const matchesSearch =
@@ -172,6 +215,7 @@ const Journal = () => {
         formData.content.substring(0, 100),
         formData.mood
       );
+      showToast("Journal entry updated successfully!");
     } else {
       setEntries([newEntry, ...entries]);
       logJournal(
@@ -179,6 +223,7 @@ const Journal = () => {
         formData.content.substring(0, 100),
         formData.mood
       );
+      showToast("New journal entry created!");
     }
 
     setFormData({
@@ -207,9 +252,13 @@ const Journal = () => {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this journal entry?")) {
-      setEntries(entries.filter((entry) => entry.id !== id));
-    }
+    setDeleteEntryId(id);
+  };
+
+  const confirmDelete = () => {
+    setEntries(entries.filter((entry) => entry.id !== deleteEntryId));
+    setDeleteEntryId(null);
+    showToast("Journal entry deleted");
   };
 
   const formatDate = (dateString) => {
@@ -222,14 +271,25 @@ const Journal = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px]">
+      {/* Toast Notification */}
+      {toastMessage && <Toast message={toastMessage} />}
+
+      {/* Delete Confirmation Modal */}
+      {deleteEntryId && (
+        <DeleteModal
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteEntryId(null)}
+        />
+      )}
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <div className="">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div className="w-full md:w-auto">
             <h1 className="text-center md:text-left text-2xl font-bold text-[#0C2E8A] mb-2">
               My Prayer Journal
             </h1>
-            <p className="text-sm mb-2 text-[#0C2E8A]">
+            <p className="text-sm mb-2 text-[#0C2E8A] text-center md:text-left">
               Record your spiritual journey and God's faithfulness
             </p>
           </div>
@@ -246,14 +306,14 @@ const Journal = () => {
               });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-[#0C2E8A] text-white rounded-lg shadow-lg"
+            className="flex items-center gap-2 px-6 py-3 bg-[#0C2E8A] text-white rounded-lg shadow-lg hover:bg-blue-800 transition w-full md:w-auto justify-center"
           >
             <Plus className="w-5 h-5" /> New Entry
           </button>
         </div>
 
         {/* Search Filter */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -286,9 +346,9 @@ const Journal = () => {
               key={entry.id}
               className="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300"
             >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center space-x-3">
+              <div className="p-4 md:p-6">
+                <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
+                  <div className="flex items-center space-x-3 flex-wrap">
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
                         moodColors[entry.mood] || "bg-gray-100 text-gray-800"
@@ -306,20 +366,20 @@ const Journal = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleBookmark(entry)}
-                      className="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg"
+                      className="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition"
                       title="Bookmark this entry"
                     >
                       <BookOpen className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleEdit(entry)}
-                      className="p-2 text-gray-500 hover:text-blue-600 rounded-lg"
+                      className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(entry.id)}
-                      className="p-2 text-gray-500 hover:text-red-600 rounded-lg"
+                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -330,14 +390,18 @@ const Journal = () => {
                   {entry.title}
                 </h2>
 
-                <div className="flex items-center text-[#ABBC6B] text-sm mb-4">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {formatDate(entry.date)}
-                  <Clock className="w-4 h-4 ml-4 mr-2" />
-                  {new Date(entry.createdAt).toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                <div className="flex items-center text-[#ABBC6B] text-sm mb-4 flex-wrap gap-2">
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {formatDate(entry.date)}
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {new Date(entry.createdAt).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
                 </div>
 
                 <p className="text-gray-700 mb-4">{entry.content}</p>
@@ -365,6 +429,22 @@ const Journal = () => {
           ))}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
