@@ -269,7 +269,7 @@ export default function History() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <Clock className="w-8 h-8 text-[#2c3E91]" />
-              <h1 className="text-3xl font-bold text-[#2c3E91]">History</h1>
+              <h1 className="text-base md:text-lg font-bold text-[#2c3E91]">History</h1>
             </div>
             {history.length > 0 && (
               <button
