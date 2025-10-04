@@ -285,7 +285,7 @@ const Reminder = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
           <div className="text-center md:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#0C2E8A] mb-1">
+            <h1 className="text-base sm:text-2xl font-bold text-[#0C2E8A] mb-1">
               Prayer Reminders
             </h1>
             <p className="text-sm sm:text-base text-[#0C2E8A]">
@@ -385,7 +385,7 @@ const Reminder = () => {
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className="text-lg sm:text-xl font-medium text-[#0C2E8A] truncate">
+                        <h3 className="text-base sm:text-xl font-medium text-[#0C2E8A] truncate">
                           {reminder.title}
                         </h3>
 
