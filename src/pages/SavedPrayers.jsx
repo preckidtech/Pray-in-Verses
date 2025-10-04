@@ -45,7 +45,7 @@ const SavedPrayers = () => {
       {/* Header */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#0C2E8A]">Saved Prayers</h1>
+          <h1 className="text-base font-bold text-[#0C2E8A]">Saved Prayers</h1>
           <div className="relative w-full md:w-1/3 mt-4 md:mt-0">
             <input
               type="text"
@@ -83,7 +83,7 @@ const SavedPrayers = () => {
                   <Trash2 className="w-5 h-5" />
                 </button>
 
-                <h3 className="text-lg font-bold text-[#0C2E8A]">{prayer.title}</h3>
+                <h3 className="text-base font-bold text-[#0C2E8A]">{prayer.title}</h3>
 
                 {prayer.themeFocus && (
                   <div className="mb-2 p-2 bg-blue-50 rounded text-sm font-semibold text-blue-800">
