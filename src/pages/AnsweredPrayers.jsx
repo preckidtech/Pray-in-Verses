@@ -46,7 +46,7 @@ const AnsweredPrayers = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#0C2E8A]">Answered Prayers</h1>
+          <h1 className="text-base md:text-xl font-bold text-[#0C2E8A]">Answered Prayers</h1>
 
           {/* Search Input */}
           <div className="relative w-full md:w-1/3 mt-4 md:mt-0">
