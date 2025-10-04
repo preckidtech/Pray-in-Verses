@@ -241,7 +241,7 @@ export default function Bookmark() {
         <div className="mb-8">
           <div className="flex items-center justify-center gap-3 mb-2">
             <BookMarked className="w-8 h-8 text-[#2c3E91]" />
-            <h1 className="text-3xl text-center font-bold text-[#2c3E91]">My Bookmarks</h1>
+            <h1 className="text-base md:text-xl text-center font-bold text-[#2c3E91]">My Bookmarks</h1>
           </div>
           <p className="text-center text-gray-600">Save and organize your favorite prayers and verses</p>
         </div>
