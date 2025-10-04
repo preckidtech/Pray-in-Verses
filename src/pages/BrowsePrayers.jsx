@@ -143,7 +143,7 @@ const BrowsePrayers = () => {
             <BookOpen className="w-8 h-8 text-[#FCCF3A]" />
             Browse Prayers
           </h1>
-          <p className="text-sm md:text-lg text-[#0C2E8A]">
+          <p className="text-sm md:text-base text-[#0C2E8A]">
             Explore {totalPrayers} prayers across {Object.keys(prayerCounts).length} books of the Bible
           </p>
         </div>
@@ -152,7 +152,7 @@ const BrowsePrayers = () => {
           <>
             {/* Old Testament */}
             <div className="mt-8 bg-[#FFFEF0] rounded-lg shadow p-3 border-l-4 border-[#FCCF3A]">
-              <h3 className="text-xl font-bold text-[#0C2E8A] mb-4 flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#0C2E8A] mb-4 flex items-center gap-2">
                 <Book className="w-6 h-6 text-[#FCCF3A]" />
                 Old Testament
               </h3>
@@ -174,7 +174,7 @@ const BrowsePrayers = () => {
 
             {/* New Testament */}
             <div className="mt-6 bg-[#FFFEF0] rounded-lg shadow p-3 border-l-4 border-[#0C2E8A]">
-              <h3 className="text-xl font-bold text-[#0C2E8A] mb-4 flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#0C2E8A] mb-4 flex items-center gap-2">
                 <Book className="w-6 h-6 text-[#0C2E8A]" />
                 New Testament
               </h3>
