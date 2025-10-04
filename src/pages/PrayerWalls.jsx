@@ -267,10 +267,10 @@ const PrayerWalls = () => {
 
       <div className="container mx-auto px-4 py-8 space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
+          <h1 className="text-base md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
             Prayer Wall
           </h1>
-          <p className="text-sm md:text-lg text-[#0C2E8A]">
+          <p className="text-sm md:text-base text-[#0C2E8A]">
             Share prayer requests and support fellow believers
           </p>
         </div>
@@ -352,7 +352,7 @@ const PrayerWalls = () => {
                       {req.avatar}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-[#0C2E8A] break-words">
+                      <h3 className="text-base font-bold text-[#0C2E8A] break-words">
                         {req.title}
                       </h3>
                       <p className="text-sm text-gray-500">
@@ -476,7 +476,7 @@ const PrayerWalls = () => {
               <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MessageCircle className="w-10 h-10 text-blue-700" />
               </div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+              <h3 className="text-base font-medium text-gray-900 mb-2">
                 {searchTerm || selectedCategory !== "All"
                   ? "No prayer requests match your search"
                   : "No prayer requests yet"}
@@ -505,7 +505,7 @@ const PrayerWalls = () => {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-[#0C2E8A]">
+                <h2 className="text-base font-semibold text-[#0C2E8A]">
                   Add Prayer Request
                 </h2>
                 <button
