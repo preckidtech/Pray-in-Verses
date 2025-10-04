@@ -140,7 +140,7 @@ const BrowsePrayers = () => {
       <div className="container px-2 md:px-6 lg:px-6 py-6">
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
-            <BookOpen className="w-8 h-8 text-[#FCCF3A]" />
+            <BookOpen className="w-8 h-8 text-[#FCCF3A] text-base" />
             Browse Prayers
           </h1>
           <p className="text-sm md:text-base text-[#0C2E8A]">
