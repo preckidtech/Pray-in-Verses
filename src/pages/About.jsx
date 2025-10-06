@@ -8,7 +8,7 @@ export default function About() {
   return (
     <div className="pt-20 pb-8 md:ml-56 bg-gray-50 min-h-screen font-['Poppins']">
       {/* Hero Section */}
-      <section className=" text-white px-8 pb-2">
+      <section className=" text-white px-8 py-5">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-xl text-[#0C2E8A] font-bold">{content.hero.title}</h1>
           <h2 className="text-sm mt-1 font-semibold text-yellow-300">
@@ -18,7 +18,7 @@ export default function About() {
             {content.hero.description}
           </p>
           <p className="text-gray-700 text-base">
-            {content.hero.motivation}
+            {content.hero.motivation} <strong>Luke 18: 1</strong>
           </p>
           <p className="text-gray-600 text-base mt-10 ">
             {content.hero.about}
