@@ -44,7 +44,7 @@ const ChapterPage = () => {
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-          <h1 className="text-lg sm:text-2xl font-bold text-[#0C2E8A] text-center truncate">
+          <h1 className="text-base font-semibold text-[#0C2E8A] text-center truncate">
             {bookTitle} – Chapter {chapterNumber}
           </h1>
           <div className="w-20" />

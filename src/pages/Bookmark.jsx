@@ -241,9 +241,9 @@ export default function Bookmark() {
         <div className="mb-8">
           <div className="flex items-center justify-center gap-3 mb-2">
             <BookMarked className="w-8 h-8 text-[#2c3E91]" />
-            <h1 className="text-base md:text-xl text-center font-bold text-[#2c3E91]">My Bookmarks</h1>
+            <h1 className="text-base text-center font-bold text-[#2c3E91]">My Bookmarks</h1>
           </div>
-          <p className="text-center text-gray-600">Save and organize your favorite prayers and verses</p>
+          <p className="text-center text-sm text-gray-600">Save and organize your favorite prayers and verses</p>
         </div>
 
         {/* Search and Filter Bar */}
@@ -331,7 +331,7 @@ export default function Bookmark() {
                       ) : (
                         <BookMarked className="w-5 h-5 text-[#2c3E91]" />
                       )}
-                      <h3 className="text-lg font-semibold text-[#2c3E91]">
+                      <h3 className="text-base font-semibold text-[#2c3E91]">
                         {bookmark.title}
                       </h3>
                     </div>
@@ -374,7 +374,7 @@ export default function Bookmark() {
 
                 {/* Verse */}
                 <div className="mb-4 p-4 bg-gradient-to-r from-[#2c3E91]/5 to-[#FCCF3A]/10 rounded-lg border-l-4 border-[#2c3E91]">
-                  <blockquote className="text-gray-700 italic text-lg leading-relaxed mb-2">
+                  <blockquote className="text-gray-700 italic text-base leading-relaxed mb-2">
                     "{bookmark.verse}"
                   </blockquote>
                   <cite className="text-[#2c3E91] font-semibold not-italic">
@@ -429,7 +429,7 @@ export default function Bookmark() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
               <BookMarked className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-base font-semibold text-gray-700 mb-2">
               {searchQuery || selectedCategory !== "all" 
                 ? "No bookmarks found" 
                 : "No bookmarks yet"
@@ -463,7 +463,7 @@ export default function Bookmark() {
                     <Trash2 className="w-6 h-6 text-red-500" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-base font-semibold text-gray-900">
                       Delete Bookmarks
                     </h3>
                     <p className="text-gray-600 text-sm mt-1">
