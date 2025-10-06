@@ -293,7 +293,7 @@ const Journal = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div className="w-full md:w-auto">
-            <h1 className="text-center md:text-left text-base font-bold text-[#0C2E8A] mb-2">
+            <h1 className="text-center md:text-left text-base font-semibold text-[#0C2E8A] mb-2">
               My Prayer Journal
             </h1>
             <p className="text-sm mb-2 text-[#0C2E8A] text-center md:text-left">

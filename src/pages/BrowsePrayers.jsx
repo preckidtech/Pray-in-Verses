@@ -143,7 +143,7 @@ const BrowsePrayers = () => {
             <BookOpen className="w-8 h-8 text-[#FCCF3A] text-base" />
             Browse Prayers
           </h1>
-          <p className="text-sm md:text-base text-[#0C2E8A]">
+          <p className="text-sm text-[#0C2E8A]">
             Explore {totalPrayers} prayers across {Object.keys(prayerCounts).length} books of the Bible
           </p>
         </div>
