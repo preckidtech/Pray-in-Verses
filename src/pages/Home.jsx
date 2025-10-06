@@ -60,9 +60,8 @@ const Home = () => {
             <h2 className="text-base font-semibold text-gray-900 tracking-wide">
               Quick Actions
             </h2>
-            <div className="w-12 h-0.5 bg-gradient-to-r from-green-600 to-blue-500 rounded-full"></div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+          <div className="">
             <QuickActionsGrid />
           </div>
         </section>
