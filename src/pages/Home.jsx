@@ -15,7 +15,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen pt-24 pb-10 font-['Poppins']">
+    <div className="flex bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen pt-32 pb-10 font-['Poppins']">
       {/* Sidebar Spacer */}
       <div className="hidden lg:block w-56"></div>
 
