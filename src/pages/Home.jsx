@@ -14,12 +14,12 @@ const Home = () => {
   };
 
   return (
-    <div className="flex bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen pt-32 pb-10 font-['Poppins']">
-      {/* Sidebar Spacer */}
-      <div className="hidden lg:block w-56"></div>
+    <div className="flex bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen pt-32 pb-10 font-['Poppins'] lg:pl-[224px] px-4">
+      {/* Sidebar Spacer
+      <div className="hidden lg:block w-56"></div> */}
 
       {/* Main Content */}
-      <main className="flex-1 space-y-10 px-4  lg:px-6 pb-10 max-w-7xl">
+      <main className="flex-1 space-y-10  lg:px-6 pb-10 max-w-7xl">
         {/* Welcome Section */}
         <section
           className="relative rounded-xl overflow-hidden shadow-lg border border-gray-100"

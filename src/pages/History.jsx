@@ -269,7 +269,7 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pl-0 lg:pl-[224px] font-['Poppins']">
+    <div className="min-h-screen bg-gray-50 pt-24 pl-0 lg:pl-[224px] font-['Poppins']">
       <main className="flex-1 space-y-10 px-4  lg:px-6 pb-10">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {notification && (
@@ -287,7 +287,7 @@ export default function History() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <Clock className="w-8 h-8 text-[#2c3E91]" />
-                <h1 className="text-base md:text-lg font-bold text-[#2c3E91]">
+                <h1 className="text-base font-semibold text-[#2c3E91]">
                   History
                 </h1>
               </div>
@@ -301,7 +301,7 @@ export default function History() {
                 </button>
               )}
             </div>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm">
               Track your prayer journey and spiritual activities
             </p>
           </div>
@@ -363,7 +363,7 @@ export default function History() {
                 <div key={dateLabel}>
                   <div className="flex items-center gap-3 mb-4">
                     <Calendar className="w-5 h-5 text-[#2c3E91]" />
-                    <h2 className="text-lg font-semibold text-[#2c3E91]">
+                    <h2 className="text-base font-semibold text-[#2c3E91]">
                       {dateLabel}
                     </h2>
                     <div className="flex-1 h-px bg-gray-200"></div>
@@ -405,7 +405,7 @@ export default function History() {
                                   </p>
                                 )}
                                 {item.reference && (
-                                  <p className="text-sm text-[#2c3E91] font-medium">
+                                  <p className="text-sm text-[#2c3E91] font-semibold">
                                     {String(item.reference)}
                                   </p>
                                 )}
@@ -447,7 +447,7 @@ export default function History() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
                 <Clock className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-base font-semibold text-gray-700 mb-2">
                 {String(searchQuery) ||
                 selectedDate !== "all" ||
                 selectedType !== "all"
@@ -465,7 +465,7 @@ export default function History() {
           {showDeleteModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-                <h3 className="text-lg font-semibold mb-4">
+                <h3 className="text-base font-semibold mb-4">
                   Delete Selected Items
                 </h3>
                 <p className="mb-6">
