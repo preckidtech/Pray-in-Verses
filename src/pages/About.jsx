@@ -54,9 +54,10 @@ export default function About() {
 
       {/* Vision Section */}
       <section className="py-16 px-8 max-w-5xl mx-auto">
-        <h2 className="text-base font-semibold mb-4 flex items-center gap-3">
-          <Users size={20} className="text-blue-600" /> {content.vision.title}
-        </h2>
+        <div className="text-base font-semibold mb-4 flex items-center gap-3">
+          <Users size={20} className="text-blue-600" />
+          <h3 className="text-base text-gray-900 font-semibold">{content.vision.title}</h3>
+        </div>
         <p className="text-gray-700 text-sm  leading-relaxed">
           {content.vision.description}
         </p>
