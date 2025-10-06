@@ -19,7 +19,7 @@ const Toast = ({ message, onClose }) => (
   <div className="fixed top-20 right-4 md:right-6 bg-white shadow-lg rounded-lg px-4 py-3 border-l-4 border-[#0C2E8A] z-50 animate-slide-in max-w-sm">
     <div className="flex items-center gap-2">
       <Check className="w-5 h-5 text-[#0C2E8A] flex-shrink-0" />
-      <span className="text-gray-800 font-semibold text-sm md:text-base">
+      <span className="text-[#0C2E8A] font-semibold text-sm md:text-base">
         {message}
       </span>
     </div>
