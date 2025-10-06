@@ -57,7 +57,7 @@ const BookPage = () => {
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-          <h1 className="text-lg sm:text-2xl font-bold text-[#0C2E8A] text-center truncate">{bookTitle}</h1>
+          <h1 className="text-base font-semibold text-[#0C2E8A] text-center truncate">{bookTitle}</h1>
           <div className="w-20" />
         </div>
 
@@ -70,7 +70,7 @@ const BookPage = () => {
           {chapters.map((chapter) => (
             <motion.div key={chapter} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.98 }}>
               <Link to={`/book/${bookSlug}/chapter/${chapter}`} aria-label={`Chapter ${chapter}`}>
-                <div className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-200 text-[#0C2E8A] font-semibold text-sm sm:text-base transition transform hover:-translate-y-0.5 hover:bg-[#0C2E8A] hover:text-white cursor-pointer">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-200 text-[#0C2E8A] font-semibold text-base transition transform hover:-translate-y-0.5 hover:bg-[#0C2E8A] hover:text-white cursor-pointer">
                   {chapter}
                 </div>
               </Link>
