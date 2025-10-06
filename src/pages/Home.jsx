@@ -15,7 +15,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen pt-20 font-['Poppins']">
+    <div className="flex bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen pt-24 pb-10 font-['Poppins']">
       {/* Sidebar Spacer */}
       <div className="hidden lg:block w-56"></div>
 
@@ -37,11 +37,11 @@ const Home = () => {
                 Welcome to Pray in Verses
               </h1>
               <p className="italic text-base mb-2 lg:text-lg leading-relaxed text-blue-100 font-normal">
-                Turn every verse into prayers
+                Turn every verse into prayers!
               </p>
               <p className="text-sm">
                 Pray in Verses is a unique devotional platform designed to help
-                you connect deeply with God's Word through prayer
+                you connect deeply with God's Word through prayer.
               </p>
             </div>
           </div>
