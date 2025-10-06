@@ -304,6 +304,7 @@ const Reminder = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-32 pl-0 lg:pl-[224px] font-['Poppins']">
       <Toaster position="top-right" />
+      <main className="flex-1 space-y-10 px-4  lg:px-6 pb-10">
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
@@ -532,6 +533,8 @@ const Reminder = () => {
         )}
       </div>
 
+      </main>
+
       {/* Modal for creating/editing reminders */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -649,13 +652,13 @@ const Reminder = () => {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                className="px-4 py-2 rounded bg-[#FCCF3A] hover:bg-[#FCCF3A]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
-                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                className="px-4 py-2 rounded bg-[#0C2E8A] text-white hover:[#0C2E8A]"
               >
                 {editingReminder ? "Update" : "Create"}
               </button>
