@@ -3,7 +3,6 @@ import { useVerseStore } from "../store";
 import Button from "../components/ui/Button";
 import FeaturedVerseCards from "../components/ui/FeaturedVerseCards";
 import QuickActionsGrid from "../components/ui/QuickActionsGrid";
-import SuggestedVerses from "../components/ui/SuggestedVerses";
 import { Link } from "react-router-dom";
 
 import welcomeBg from "../assets/images/home/hero/a-group-of-young-christians-holding-hands-in-praye-2025-03-26-18-07-58-utc.jpg";
