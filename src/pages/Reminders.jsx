@@ -17,64 +17,8 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 
 const Reminder = () => {
-  const [reminders, setReminders] = useState([
-    {
-      id: 1,
-      title: "Morning Prayer",
-      time: "07:00",
-      days: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      isActive: true,
-      sound: "gentle-chime",
-      prayer:
-        "Lord, thank You for this new day. Guide my steps and fill my heart with Your peace.",
-      icon: "sunrise",
-      createdAt: "2024-03-10",
-    },
-    {
-      id: 2,
-      title: "Lunch Break Prayer",
-      time: "12:30",
-      days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      isActive: true,
-      sound: "soft-bell",
-      prayer:
-        "Father, bless this food and this moment of rest. Strengthen me for the rest of the day.",
-      icon: "sun",
-      createdAt: "2024-03-08",
-    },
-    {
-      id: 3,
-      title: "Evening Gratitude",
-      time: "20:00",
-      days: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      isActive: false,
-      sound: "peaceful-tone",
-      prayer:
-        "Thank You, Lord, for all Your blessings today. Help me rest in Your love.",
-      icon: "sunset",
-      createdAt: "2024-03-05",
-    },
-  ]);
-
-  const [bookmarks, setBookmarks] = useState(
-    JSON.parse(localStorage.getItem("reminderBookmarks")) || []
-  );
+  const [reminders, setReminders] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingReminder, setEditingReminder] = useState(null);
   const [formData, setFormData] = useState({
@@ -111,6 +55,85 @@ const Reminder = () => {
     "Friday",
     "Saturday",
   ];
+
+  // Load reminders from localStorage on mount
+  useEffect(() => {
+    const savedReminders = JSON.parse(localStorage.getItem("reminders") || "[]");
+    
+    // If no saved reminders, load default ones
+    if (savedReminders.length === 0) {
+      const defaultReminders = [
+        {
+          id: 1,
+          title: "Morning Prayer",
+          time: "07:00",
+          days: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+          ],
+          isActive: true,
+          sound: "gentle-chime",
+          prayer:
+            "Lord, thank You for this new day. Guide my steps and fill my heart with Your peace.",
+          icon: "sunrise",
+          createdAt: "2024-03-10",
+        },
+        {
+          id: 2,
+          title: "Lunch Break Prayer",
+          time: "12:30",
+          days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          isActive: true,
+          sound: "soft-bell",
+          prayer:
+            "Father, bless this food and this moment of rest. Strengthen me for the rest of the day.",
+          icon: "sun",
+          createdAt: "2024-03-08",
+        },
+        {
+          id: 3,
+          title: "Evening Gratitude",
+          time: "20:00",
+          days: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+          ],
+          isActive: false,
+          sound: "peaceful-tone",
+          prayer:
+            "Thank You, Lord, for all Your blessings today. Help me rest in Your love.",
+          icon: "sunset",
+          createdAt: "2024-03-05",
+        },
+      ];
+      setReminders(defaultReminders);
+      localStorage.setItem("reminders", JSON.stringify(defaultReminders));
+    } else {
+      setReminders(savedReminders);
+    }
+
+    const savedBookmarks = JSON.parse(localStorage.getItem("reminderBookmarks") || "[]");
+    setBookmarks(savedBookmarks);
+  }, []);
+
+  // Save reminders to localStorage whenever they change
+  useEffect(() => {
+    if (reminders.length > 0) {
+      localStorage.setItem("reminders", JSON.stringify(reminders));
+      // Dispatch event to notify Header component
+      window.dispatchEvent(new Event("reminderUpdated"));
+    }
+  }, [reminders]);
 
   const getIconComponent = (iconName) => {
     const iconMap = {
@@ -162,7 +185,7 @@ const Reminder = () => {
   };
 
   const trackBookmark = (reminder) => {
-    let bookmarks = JSON.parse(localStorage.getItem("reminderBookmarks")) || [];
+    let bookmarks = JSON.parse(localStorage.getItem("reminderBookmarks") || "[]");
 
     if (!bookmarks.find((b) => b.id === reminder.id)) {
       bookmarks.push({
@@ -209,7 +232,7 @@ const Reminder = () => {
       toast.success("Reminder created");
     }
 
-    trackBookmark(newReminder); // ✅ Bookmark tracking
+    trackBookmark(newReminder);
 
     setFormData({
       title: "",
@@ -511,8 +534,8 @@ const Reminder = () => {
 
       {/* Modal for creating/editing reminders */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg relative">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold text-[#0C2E8A] mb-4">
               {editingReminder ? "Edit Reminder" : "New Reminder"}
             </h2>
@@ -599,6 +622,7 @@ const Reminder = () => {
                   }
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                   placeholder="Enter your prayer"
+                  rows="3"
                 />
               </div>
 

@@ -26,6 +26,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [userName, setUserName] = useState("User");
+  const [notifications, setNotifications] = useState([]);
   const location = useLocation();
   const { user } = useAuthStore();
 
@@ -33,23 +34,19 @@ export default function Header() {
    * Get current user data from multiple sources with fallbacks
    */
   const getCurrentUser = () => {
-    // First try to get from auth store
     if (user && user.id && user.name) {
       return user;
     }
 
-    // Then try current user from localStorage
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
     if (currentUser.id && currentUser.name) {
       return currentUser;
     }
 
-    // If no current user, check if we have legacy data (backward compatibility)
     const legacyUserName = localStorage.getItem("userName");
     const legacyUserEmail = localStorage.getItem("userEmail");
     
     if (legacyUserName && legacyUserEmail) {
-      // Try to find this user in the users array
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       const foundUser = users.find(u => 
         u.email.toLowerCase() === legacyUserEmail.toLowerCase()
@@ -59,7 +56,6 @@ export default function Header() {
         return foundUser;
       }
       
-      // If not found in users array, create a basic user object
       return {
         name: legacyUserName,
         email: legacyUserEmail,
@@ -77,44 +73,136 @@ export default function Header() {
     const currentUser = getCurrentUser();
     
     if (currentUser) {
-      // Update user name
       setUserName(currentUser.name || "User");
       
-      // Update profile image with multiple fallback options
       const userId = currentUser.id || currentUser.email;
       let savedProfileImage = null;
       
-      // Try user ID-based storage first
       if (userId) {
         savedProfileImage = localStorage.getItem(`profileImage_${userId}`);
       }
       
-      // Fallback to email-based storage for backward compatibility
       if (!savedProfileImage && currentUser.email) {
         savedProfileImage = localStorage.getItem(`profileImage_${currentUser.email}`);
       }
       
-      // Final fallback to legacy storage
       if (!savedProfileImage) {
         savedProfileImage = localStorage.getItem("profileImage");
       }
       
       setProfileImage(savedProfileImage);
     } else {
-      // Reset to defaults if no user found
       setUserName("User");
       setProfileImage(null);
     }
   };
 
   /**
+   * Generate notifications from reminders
+   */
+  const generateNotificationsFromReminders = () => {
+    const reminders = JSON.parse(localStorage.getItem("reminders") || "[]");
+    const readNotifications = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const currentDay = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
+    
+    const newNotifications = [];
+
+    // Filter active reminders for today
+    const todayReminders = reminders.filter(r => 
+      r.isActive && r.days && r.days.includes(currentDay)
+    );
+
+    todayReminders.forEach(reminder => {
+      if (!reminder.time) return;
+      
+      const [hours, minutes] = reminder.time.split(':').map(Number);
+      const reminderTime = hours * 60 + minutes;
+      const timeDiff = reminderTime - currentTime;
+      
+      // Create notification for reminders within the next 60 minutes
+      if (timeDiff > 0 && timeDiff <= 60) {
+        const notifId = `reminder_${reminder.id}_${now.toDateString()}`;
+        const isRead = readNotifications.includes(notifId);
+        
+        newNotifications.push({
+          id: notifId,
+          title: "Upcoming Prayer Reminder",
+          description: `${reminder.title} at ${formatTime(reminder.time)}`,
+          link: "/reminders",
+          time: `in ${timeDiff} min`,
+          read: isRead,
+          type: "reminder"
+        });
+      }
+      // Show notification for reminders that are happening now (within 5 minutes)
+      else if (timeDiff >= -5 && timeDiff <= 0) {
+        const notifId = `reminder_now_${reminder.id}_${now.toDateString()}`;
+        const isRead = readNotifications.includes(notifId);
+        
+        newNotifications.push({
+          id: notifId,
+          title: "Prayer Time Now!",
+          description: reminder.title,
+          link: "/reminders",
+          time: "now",
+          read: isRead,
+          type: "reminder"
+        });
+      }
+    });
+
+    // Add sample static notifications
+    const staticNotifications = [
+      {
+        id: "static_1",
+        title: "New Prayer Added",
+        description: "Check today's new prayer in Browse section.",
+        link: "/browse-prayers",
+        time: "2h ago",
+        read: readNotifications.includes("static_1"),
+        type: "general"
+      },
+      {
+        id: "static_2",
+        title: "Answered Prayer",
+        description: "Your prayer 'Faith & Strength' was answered.",
+        link: "/answered-prayers",
+        time: "1d ago",
+        read: readNotifications.includes("static_2"),
+        type: "general"
+      }
+    ];
+
+    // Combine and sort notifications (unread first, then by time)
+    const allNotifications = [...newNotifications, ...staticNotifications];
+    allNotifications.sort((a, b) => {
+      if (a.read !== b.read) return a.read ? 1 : -1;
+      return 0;
+    });
+
+    setNotifications(allNotifications);
+  };
+
+  /**
+   * Format time to 12-hour format
+   */
+  const formatTime = (time24) => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(":");
+    const hour = parseInt(hours || "0", 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  /**
    * Initialize and listen for profile updates
    */
   useEffect(() => {
-    // Initial profile data load
     updateProfileData();
     
-    // Listen for storage changes (when user updates profile in another tab)
     const handleStorageChange = (e) => {
       if (e.key === "profileImage" || 
           e.key === "userName" || 
@@ -125,7 +213,6 @@ export default function Header() {
       }
     };
     
-    // Listen for custom profile update events (from within the same tab)
     const handleCustomEvent = () => {
       updateProfileData();
     };
@@ -137,43 +224,46 @@ export default function Header() {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("profileUpdated", handleCustomEvent);
     };
-  }, [user]); // Re-run when user from auth store changes
+  }, [user]);
 
-  // Sample notifications data
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "New Prayer Added",
-      description: "Check today's new prayer in Browse section.",
-      link: "/browse-prayers",
-      time: "2m ago",
-      read: false,
-    },
-    {
-      id: 2,
-      title: "Answered Prayer",
-      description: "Your prayer 'Faith & Strength' was answered.",
-      link: "/answered-prayers",
-      time: "1h ago",
-      read: false,
-    },
-    {
-      id: 3,
-      title: "Reminder",
-      description: "Prayer reminder set for 6:00 PM.",
-      link: "/reminders",
-      time: "Yesterday",
-      read: true,
-    },
-  ]);
+  /**
+   * Initialize and update notifications
+   */
+  useEffect(() => {
+    generateNotificationsFromReminders();
+    
+    // Update notifications every minute to keep them fresh
+    const interval = setInterval(generateNotificationsFromReminders, 60000);
+    
+    // Listen for reminder updates
+    const handleReminderUpdate = () => {
+      generateNotificationsFromReminders();
+    };
+    
+    window.addEventListener("reminderUpdated", handleReminderUpdate);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("reminderUpdated", handleReminderUpdate);
+    };
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllRead = () => {
+    const readNotifications = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+    const allNotifIds = notifications.map(n => n.id);
+    const updatedReadNotifs = [...new Set([...readNotifications, ...allNotifIds])];
+    localStorage.setItem("readNotifications", JSON.stringify(updatedReadNotifs));
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const markAsRead = (id) => {
+    const readNotifications = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+    if (!readNotifications.includes(id)) {
+      readNotifications.push(id);
+      localStorage.setItem("readNotifications", JSON.stringify(readNotifications));
+    }
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
@@ -392,7 +482,6 @@ export default function Header() {
                 item.path !== "#" && item.path !== "#about" && item.path !== "#prayer-wall" && location.pathname === item.path;
 
               if (item.hasDropdown) {
-                // About dropdown
                 if (item.id === "about") {
                   return (
                     <li key={item.id} className="w-full px-2">
@@ -450,7 +539,6 @@ export default function Header() {
                   );
                 }
 
-                // Prayer Wall dropdown
                 if (item.id === "prayer-wall") {
                   return (
                     <li key={item.id} className="w-full px-2">
