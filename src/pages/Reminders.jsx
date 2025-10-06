@@ -308,10 +308,10 @@ const Reminder = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
           <div className="text-center md:text-left">
-            <h1 className="text-base sm:text-2xl font-bold text-[#0C2E8A] mb-1">
+            <h1 className="text-base font-semibold text-[#0C2E8A] mb-1">
               Prayer Reminders
             </h1>
-            <p className="text-sm sm:text-base text-[#0C2E8A]">
+            <p className="text-sm  text-[#0C2E8A]">
               Set regular reminders for Scripture-based prayer time
             </p>
           </div>
@@ -408,7 +408,7 @@ const Reminder = () => {
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className="text-base sm:text-xl font-medium text-[#0C2E8A] truncate">
+                        <h3 className="text-base sm:text-xl font-semibold text-[#0C2E8A] truncate">
                           {reminder.title}
                         </h3>
 
@@ -536,7 +536,7 @@ const Reminder = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold text-[#0C2E8A] mb-4">
+            <h2 className="text-base font-semibold text-[#0C2E8A] mb-4">
               {editingReminder ? "Edit Reminder" : "New Reminder"}
             </h2>
 
@@ -582,7 +582,7 @@ const Reminder = () => {
                       onClick={() => handleDayToggle(day)}
                       className={`px-3 py-1 rounded-full border ${
                         formData.days.includes(day)
-                          ? "bg-blue-600 text-white"
+                          ? "bg-[#0C2E8A] text-white"
                           : "bg-white text-gray-700 border-gray-300"
                       }`}
                     >
