@@ -4,16 +4,24 @@
 
 /* index.css */
 /* global.css */
-::-webkit-scrollbar {
+/* Works on Chrome, Edge, Safari, and Firefox */
+.custom-scrollbar {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #2c3e91 transparent;
+}
+
+/* Chrome, Edge, Safari */
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background: #2c3E91; /* gray-400 */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2c3e91;
   border-radius: 8px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #2c3E91; /* gray-500 */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2c3e91;
 }
