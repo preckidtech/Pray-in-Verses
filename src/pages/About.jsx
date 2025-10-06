@@ -6,9 +6,9 @@ export default function About() {
   const content = getDefaultAboutContent();
 
   return (
-    <div className="pt-20 pb-8 md:ml-56 bg-gray-50 min-h-screen font-['Poppins']">
+    <div className="pt-24 pb-8 md:ml-56 bg-gray-50 min-h-screen font-['Poppins']">
       {/* Hero Section */}
-      <section className=" text-white px-8 py-5">
+      <section className=" text-white px-8 pb-7 ">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-xl text-[#0C2E8A] font-bold">{content.hero.title}</h1>
           <h2 className="text-sm mt-1 font-semibold text-yellow-300">
