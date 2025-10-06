@@ -29,7 +29,7 @@ export default function About() {
       {/* Features Section */}
       <section className="bg-white py-20 px-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-base text-gray-900 font-bold text-center mb-10">
+          <h2 className="text-base text-gray-900 font-semibold text-center mb-10">
             What You Will Get
           </h2>
           <div className="w-10 h-0.5 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
@@ -42,7 +42,7 @@ export default function About() {
             >
               <div className="flex items-center gap-3 mb-3">
                 <CheckCircle2 size={24} className="text-blue-600" />
-                <h3 className="text-base font-semibold">{feature.title}</h3>
+                <h3 className="text-base text-gray-900 font-semibold">{feature.title}</h3>
               </div>
               <p className=" text-sm  text-gray-600">
                 {feature.description}
