@@ -313,12 +313,6 @@ export default function Header() {
 
   const sidebarItems = [
     { id: "dashboard", title: "Dashboard", icon: Home, path: "/home" },
-    {
-      id: "about",
-      title: "About PIV",
-      icon: Info,
-      path: "/about",
-    },
 
     {
       id: "browse-prayers",
@@ -326,7 +320,12 @@ export default function Header() {
       icon: BookMarked,
       path: "/browse-prayers",
     },
-    { id: "journal", title: "My Journal", icon: BookOpen, path: "/journal" },
+    {
+      id: "saved-prayers",
+      title: "Saved Prayer (s)",
+      icon: BookmarkCheck,
+      path: "/saved-prayers",
+    },
     {
       id: "prayer-wall",
       title: "Prayer Wall",
@@ -334,17 +333,25 @@ export default function Header() {
       path: "#prayer-wall",
       hasDropdown: true,
     },
+    { id: "journal", title: "My Journal", icon: BookOpen, path: "/journal" },
+    {
+      id: "answered-prayers",
+      title: "Answered Prayer",
+      icon: BookmarkCheck,
+      path: "/answered-prayers",
+    },
     {
       id: "reminder",
       title: "Prayer Reminder",
       icon: Clock,
       path: "/reminders",
     },
+
     {
-      id: "saved-prayers",
-      title: "Saved Prayer",
-      icon: BookmarkCheck,
-      path: "/saved-prayers",
+      id: "bookmarks",
+      title: "Bookmarks",
+      icon: BookMarked,
+      path: "/bookmarks",
     },
     {
       id: "history",
@@ -353,16 +360,10 @@ export default function Header() {
       path: "/history",
     },
     {
-      id: "bookmarks",
-      title: "Bookmarks",
-      icon: BookMarked,
-      path: "/bookmarks",
-    },
-    {
-      id: "answered-prayers",
-      title: "Answered Prayer",
-      icon: BookmarkCheck,
-      path: "/answered-prayers",
+      id: "about",
+      title: "About PIV",
+      icon: Info,
+      path: "/about",
     },
     { id: "profile", title: "Profile", icon: User, path: "/profile" },
   ];
@@ -497,7 +498,7 @@ export default function Header() {
 
       {/* Sidebar */}
       <aside
-        className={`bg-[#2c3E91] shadow-md w-56 h-screen fixed top-16 left-0 z-40 pt-10 pb-28
+        className={`bg-[#2c3E91] shadow-md w-56 h-screen fixed top-16 left-0 z-40 sm:pt-4 md:pt-10 pb-28
               border-r border-gray-200 overflow-y-auto custom-scrollbar
               transform lg:translate-x-0
               ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}

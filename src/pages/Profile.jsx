@@ -526,7 +526,7 @@ const Profile = () => {
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Bookmark className="w-6 h-6 text-[#0C2E8A]" />
                   </div>
-                  <p className="text-2xl font-bold text-[#0C2E8A]">
+                  <p className="text-base font-semibold text-[#0C2E8A]">
                     {profile.savedPrayers}
                   </p>
                   <p className="text-gray-600">Saved Prayers</p>
