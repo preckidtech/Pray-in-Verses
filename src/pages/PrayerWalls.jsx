@@ -75,7 +75,9 @@ const PrayerWalls = () => {
 
   const getCurrentUser = () => {
     try {
-      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "{}"
+      );
       if (currentUser.id) return currentUser;
     } catch (e) {
       console.error("Error parsing user data:", e);
@@ -102,7 +104,9 @@ const PrayerWalls = () => {
       const savedPrayers = JSON.parse(
         localStorage.getItem("prayerRequests") || "[]"
       );
-      const savedComments = JSON.parse(localStorage.getItem("comments") || "{}");
+      const savedComments = JSON.parse(
+        localStorage.getItem("comments") || "{}"
+      );
       setPrayerRequests(savedPrayers);
       setComments(savedComments);
     } catch (e) {
@@ -296,10 +300,9 @@ const PrayerWalls = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-24 pl-0 lg:pl-[224px] font-['Poppins']">
       {/* Toast Notification */}
       {toastMessage && <Toast message={toastMessage} />}
-      
+
       <main className="flex-1 space-y-10 px-4 lg:px-6 pb-10">
         <div className="container mx-auto px-4 py-8 space-y-6">
-          
           {/* Header Section with Clear Context */}
           <div className="bg-gradient-to-r from-[#0C2E8A] to-blue-700 rounded-2xl shadow-lg p-6 md:p-8 text-white mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -313,42 +316,38 @@ const PrayerWalls = () => {
               </div>
               <div className="hidden md:block">
                 <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                  <p className="text-sm font-medium">{sortedRequests.length} Active Requests</p>
+                  <p className="text-sm font-medium">
+                    {sortedRequests.length} Active Requests
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             {/* Action Card */}
-            <div className="bg-white rounded-xl p-4 mt-6">
-              <div className="flex items-start gap-4">
-                <div className="bg-[#FCCF3A] rounded-full p-3 flex-shrink-0">
-                  <Plus className="w-6 h-6 text-[#0C2E8A]" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-[#0C2E8A] font-semibold text-base mb-1">
-                    Need Prayer?
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-3">
-                    Share your prayer request with our loving community
-                  </p>
-                  <button
-                    className="bg-[#0C2E8A] text-white px-6 py-2.5 rounded-lg hover:bg-blue-800 transition font-medium text-sm flex items-center gap-2"
-                    onClick={() => setShowModal(true)}
-                  >
-                    <Plus className="w-4 h-4" />
-                    Post Your Prayer Request
-                  </button>
-                </div>
+          </div>
+          <div className="bg-[#FCCF3A] rounded-xl p-4 mt-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <h3 className="text-[#0C2E8A] font-semibold text-base mb-1">
+                  Need Prayer?
+                </h3>
+                <p className="text-gray-600 text-sm mb-3">
+                  Share your prayer request with our loving community
+                </p>
+                <button
+                  className="bg-[#0C2E8A] text-white px-6 py-2.5 rounded-lg hover:bg-blue-800 transition font-medium text-sm flex items-center gap-2"
+                  onClick={() => setShowModal(true)}
+                >
+                  <Plus className="w-4 h-4" />
+                  Post Your Prayer Request
+                </button>
               </div>
             </div>
           </div>
 
           {/* Browse Section Header */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-blue-100 rounded-full p-2">
-              <MessageCircle className="w-5 h-5 text-[#0C2E8A]" />
-            </div>
-            <div>
+          <div className="flex items-center pt-8 justify-between gap-3 mb-4">
+            <div className="grid">
               <h2 className="text-base font-semibold text-[#0C2E8A]">
                 Browse Prayer Requests
               </h2>
@@ -356,6 +355,7 @@ const PrayerWalls = () => {
                 Support others through prayer and encouragement
               </p>
             </div>
+            <div className="w-10 h-0.5 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
           </div>
 
           {/* Search Bar */}
@@ -586,9 +586,6 @@ const PrayerWalls = () => {
               <div className="bg-gradient-to-r from-[#0C2E8A] to-blue-700 p-6 rounded-t-2xl">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-4">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
-                      <Plus className="w-6 h-6 text-white" />
-                    </div>
                     <div>
                       <h2 className="text-xl font-bold text-white mb-1">
                         Share Your Prayer Request
