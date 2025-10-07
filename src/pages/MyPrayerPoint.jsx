@@ -352,8 +352,8 @@ const MyPrayerPoint = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Prayers</p>
@@ -365,7 +365,7 @@ const MyPrayerPoint = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Still Praying</p>
@@ -377,7 +377,7 @@ const MyPrayerPoint = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Answered</p>
