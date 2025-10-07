@@ -10,8 +10,17 @@ import {
   X,
   Check,
 } from "lucide-react";
-import { usePageLogger } from "../hooks/usePageLogger";
-import { logPrayer } from "../utils/historyLogger";
+
+// Mock hooks for demonstration
+const usePageLogger = (data) => {
+  useEffect(() => {
+    console.log("Page logged:", data);
+  }, []);
+};
+
+const logPrayer = (title, content, category) => {
+  console.log("Prayer logged:", { title, content, category });
+};
 
 // Toast Component
 const Toast = ({ message, onClose }) => (
@@ -65,8 +74,12 @@ const PrayerWalls = () => {
   };
 
   const getCurrentUser = () => {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-    if (currentUser.id) return currentUser;
+    try {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      if (currentUser.id) return currentUser;
+    } catch (e) {
+      console.error("Error parsing user data:", e);
+    }
     return { id: "guest", name: "User" };
   };
 
@@ -85,60 +98,79 @@ const PrayerWalls = () => {
   });
 
   useEffect(() => {
-    const savedPrayers = JSON.parse(
-      localStorage.getItem("prayerRequests") || "[]"
-    );
-    const savedComments = JSON.parse(localStorage.getItem("comments") || "{}");
-    setPrayerRequests(savedPrayers);
-    setComments(savedComments);
+    try {
+      const savedPrayers = JSON.parse(
+        localStorage.getItem("prayerRequests") || "[]"
+      );
+      const savedComments = JSON.parse(localStorage.getItem("comments") || "{}");
+      setPrayerRequests(savedPrayers);
+      setComments(savedComments);
+    } catch (e) {
+      console.error("Error loading data:", e);
+      setPrayerRequests([]);
+      setComments({});
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("prayerRequests", JSON.stringify(prayerRequests));
+    try {
+      localStorage.setItem("prayerRequests", JSON.stringify(prayerRequests));
+    } catch (e) {
+      console.error("Error saving prayer requests:", e);
+    }
   }, [prayerRequests]);
 
   useEffect(() => {
-    localStorage.setItem("comments", JSON.stringify(comments));
+    try {
+      localStorage.setItem("comments", JSON.stringify(comments));
+    } catch (e) {
+      console.error("Error saving comments:", e);
+    }
   }, [comments]);
 
   const handleBookmark = (request) => {
-    const userId = getCurrentUser().id;
-    const bookmarks = JSON.parse(
-      localStorage.getItem(`bookmarks_${userId}`) || "[]"
-    );
+    try {
+      const userId = getCurrentUser().id;
+      const bookmarks = JSON.parse(
+        localStorage.getItem(`bookmarks_${userId}`) || "[]"
+      );
 
-    const isAlreadyBookmarked = bookmarks.some(
-      (b) => b.id === request.id && b.type === "prayer-wall"
-    );
+      const isAlreadyBookmarked = bookmarks.some(
+        (b) => b.id === request.id && b.type === "prayer-wall"
+      );
 
-    if (isAlreadyBookmarked) {
-      showToast("This prayer request is already bookmarked");
-      return;
+      if (isAlreadyBookmarked) {
+        showToast("This prayer request is already bookmarked");
+        return;
+      }
+
+      const newBookmark = {
+        id: request.id,
+        type: "prayer-wall",
+        title: request.title,
+        content: request.content,
+        verse: `"${request.content}"`,
+        reference: request.title,
+        category: request.category,
+        tags: [request.category.toLowerCase(), "prayer-wall"],
+        dateBookmarked: new Date().toISOString(),
+        author: request.author,
+        isUrgent: request.isUrgent,
+        prayers: request.prayers,
+        createdAt: request.createdAt,
+      };
+
+      localStorage.setItem(
+        `bookmarks_${userId}`,
+        JSON.stringify([...bookmarks, newBookmark])
+      );
+
+      window.dispatchEvent(new Event("bookmarkUpdated"));
+      showToast("Prayer request bookmarked!");
+    } catch (e) {
+      console.error("Error bookmarking:", e);
+      showToast("Failed to bookmark request");
     }
-
-    const newBookmark = {
-      id: request.id,
-      type: "prayer-wall",
-      title: request.title,
-      content: request.content,
-      verse: `"${request.content}"`,
-      reference: request.title,
-      category: request.category,
-      tags: [request.category.toLowerCase(), "prayer-wall"],
-      dateBookmarked: new Date().toISOString(),
-      author: request.author,
-      isUrgent: request.isUrgent,
-      prayers: request.prayers,
-      createdAt: request.createdAt,
-    };
-
-    localStorage.setItem(
-      `bookmarks_${userId}`,
-      JSON.stringify([...bookmarks, newBookmark])
-    );
-
-    window.dispatchEvent(new Event("bookmarkUpdated"));
-    showToast("Prayer request bookmarked!");
   };
 
   const filteredRequests = prayerRequests.filter((request) => {
@@ -264,35 +296,80 @@ const PrayerWalls = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-24 pl-0 lg:pl-[224px] font-['Poppins']">
       {/* Toast Notification */}
       {toastMessage && <Toast message={toastMessage} />}
-      <main className="flex-1 space-y-10 px-4  lg:px-6 pb-10">
+      
+      <main className="flex-1 space-y-10 px-4 lg:px-6 pb-10">
         <div className="container mx-auto px-4 py-8 space-y-6">
-          <div className="text-center mb-8">
-            <h1 className="text-base font-semibold text-[#0C2E8A] mb-2 flex items-center justify-center gap-3">
-              Prayer Wall
-            </h1>
-            <p className="text-sm text-[#0C2E8A]">
-              Share prayer requests and support fellow believers
-            </p>
+          
+          {/* Header Section with Clear Context */}
+          <div className="bg-gradient-to-r from-[#0C2E8A] to-blue-700 rounded-2xl shadow-lg p-6 md:p-8 text-white mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-base font-semibold mb-2">
+                  Community Prayer Wall
+                </h1>
+                <p className="text-blue-100 text-sm ">
+                  Join {prayerRequests.length} believers in prayer and support
+                </p>
+              </div>
+              <div className="hidden md:block">
+                <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                  <p className="text-sm font-medium">{sortedRequests.length} Active Requests</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Action Card */}
+            <div className="bg-white rounded-xl p-4 mt-6">
+              <div className="flex items-start gap-4">
+                <div className="bg-[#FCCF3A] rounded-full p-3 flex-shrink-0">
+                  <Plus className="w-6 h-6 text-[#0C2E8A]" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-[#0C2E8A] font-semibold text-base mb-1">
+                    Need Prayer?
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-3">
+                    Share your prayer request with our loving community
+                  </p>
+                  <button
+                    className="bg-[#0C2E8A] text-white px-6 py-2.5 rounded-lg hover:bg-blue-800 transition font-medium text-sm flex items-center gap-2"
+                    onClick={() => setShowModal(true)}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Post Your Prayer Request
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Search + Add Button */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 mb-6 flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
+          {/* Browse Section Header */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-blue-100 rounded-full p-2">
+              <MessageCircle className="w-5 h-5 text-[#0C2E8A]" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-[#0C2E8A]">
+                Browse Prayer Requests
+              </h2>
+              <p className="text-sm text-gray-600">
+                Support others through prayer and encouragement
+              </p>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search prayer requests..."
+                placeholder="Search prayer requests by title or content..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
               />
             </div>
-            <button
-              className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium justify-center"
-              onClick={() => setShowModal(true)}
-            >
-              <Plus className="w-5 h-5" /> Add Request
-            </button>
           </div>
 
           {/* Filters */}
@@ -503,13 +580,24 @@ const PrayerWalls = () => {
 
         {/* Add Request Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-base font-semibold text-[#0C2E8A]">
-                    Add Prayer Request
-                  </h2>
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              {/* Modal Header with Clear Context */}
+              <div className="bg-gradient-to-r from-[#0C2E8A] to-blue-700 p-6 rounded-t-2xl">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                      <Plus className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1">
+                        Share Your Prayer Request
+                      </h2>
+                      <p className="text-blue-100 text-sm">
+                        Our community is here to pray with you
+                      </p>
+                    </div>
+                  </div>
                   <button
                     onClick={() => {
                       setShowModal(false);
@@ -521,133 +609,146 @@ const PrayerWalls = () => {
                         isAnonymous: false,
                       });
                     }}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition"
+                    className="p-2 hover:bg-white/20 rounded-lg transition text-white"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
+              </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Title *
-                    </label>
+              <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Prayer Request Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Healing for my mother, Job interview tomorrow..."
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-[#0C2E8A] transition"
+                    required
+                    maxLength={100}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.title.length}/100 characters
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Describe Your Request *
+                  </label>
+                  <textarea
+                    placeholder="Share the details of what you need prayer for. Be as open as you're comfortable..."
+                    value={formData.content}
+                    onChange={(e) =>
+                      setFormData({ ...formData, content: e.target.value })
+                    }
+                    rows="5"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-[#0C2E8A] resize-none transition"
+                    required
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.content.length}/500 characters
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Category
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-[#0C2E8A] transition"
+                  >
+                    {categories.slice(1).map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                    Additional Options
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer group">
                     <input
-                      type="text"
-                      placeholder="Brief title for your prayer request"
-                      value={formData.title}
+                      type="checkbox"
+                      checked={formData.isUrgent}
                       onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
+                        setFormData({
+                          ...formData,
+                          isUrgent: e.target.checked,
+                        })
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
-                      required
-                      maxLength={100}
+                      className="w-5 h-5 text-[#0C2E8A] focus:ring-[#0C2E8A] border-gray-300 rounded mt-0.5"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formData.title.length}/100
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Prayer Request *
-                    </label>
-                    <textarea
-                      placeholder="Describe your prayer request..."
-                      value={formData.content}
-                      onChange={(e) =>
-                        setFormData({ ...formData, content: e.target.value })
-                      }
-                      rows="4"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent resize-none"
-                      required
-                      maxLength={500}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formData.content.length}/500
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category
-                    </label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) =>
-                        setFormData({ ...formData, category: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
-                    >
-                      {categories.slice(1).map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.isUrgent}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            isUrgent: e.target.checked,
-                          })
-                        }
-                        className="w-4 h-4 text-[#0C2E8A] focus:ring-[#0C2E8A] border-gray-300 rounded"
-                      />
-                      <span className="text-sm text-gray-700">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 group-hover:text-[#0C2E8A]">
                         Mark as urgent
                       </span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.isAnonymous}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            isAnonymous: e.target.checked,
-                          })
-                        }
-                        className="w-4 h-4 text-[#0C2E8A] focus:ring-[#0C2E8A] border-gray-300 rounded"
-                      />
-                      <span className="text-sm text-gray-700">
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Urgent requests appear at the top
+                      </p>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={formData.isAnonymous}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          isAnonymous: e.target.checked,
+                        })
+                      }
+                      className="w-5 h-5 text-[#0C2E8A] focus:ring-[#0C2E8A] border-gray-300 rounded mt-0.5"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 group-hover:text-[#0C2E8A]">
                         Post anonymously
                       </span>
-                    </label>
-                  </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Your name won't be shown on this request
+                      </p>
+                    </div>
+                  </label>
+                </div>
 
-                  <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowModal(false);
-                        setFormData({
-                          title: "",
-                          content: "",
-                          category: "General",
-                          isUrgent: false,
-                          isAnonymous: false,
-                        });
-                      }}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-blue-800 transition font-medium"
-                    >
-                      Submit Request
-                    </button>
-                  </div>
-                </form>
-              </div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowModal(false);
+                      setFormData({
+                        title: "",
+                        content: "",
+                        category: "General",
+                        isUrgent: false,
+                        isAnonymous: false,
+                      });
+                    }}
+                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-blue-800 transition font-medium shadow-lg shadow-blue-500/30"
+                  >
+                    Submit Prayer Request
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
