@@ -304,7 +304,7 @@ const PrayerWalls = () => {
       <main className="flex-1 space-y-10 px-4 lg:px-6 pb-10">
         <div className="container mx-auto px-4 py-8 space-y-6">
           {/* Header Section with Clear Context */}
-          <div className="bg-gradient-to-r from-[#0C2E8A] to-blue-700 rounded-2xl shadow-lg p-6 md:p-8 text-white mb-8">
+          <div className="bg-gradient-to-r from-[#0C2E8A] to-blue-700 rounded-lg shadow-lg p-6 md:p-8 text-white mb-8">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-base font-semibold mb-2">
