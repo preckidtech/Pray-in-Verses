@@ -325,7 +325,7 @@ const PrayerWalls = () => {
 
             {/* Action Card */}
           </div>
-          <div className="bg-[#FCCF3A] rounded-xl p-4 mt-6">
+          <div className="bg-[#FCCF3A] rounded-lg p-4 mt-6">
             <div className="flex items-start gap-4">
               <div className="flex-1">
                 <h3 className="text-[#0C2E8A] font-semibold text-base mb-1">
@@ -581,7 +581,7 @@ const PrayerWalls = () => {
         {/* Add Request Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               {/* Modal Header with Clear Context */}
               <div className="bg-gradient-to-r from-[#0C2E8A] to-blue-700 p-6 rounded-t-2xl">
                 <div className="flex justify-between items-start">
