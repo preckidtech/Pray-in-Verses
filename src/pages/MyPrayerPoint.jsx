@@ -391,7 +391,7 @@ const MyPrayerPoint = () => {
           </div>
 
           {/* Search and Add Button */}
-          <div className="bg-white rounded-lg shadow-sm border mt-[50px] border-gray-100 p-4 md:p-6 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 mb-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="relative flex-1 w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
