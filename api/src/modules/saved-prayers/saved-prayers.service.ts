@@ -13,11 +13,13 @@ export class SavedPrayersService {
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       orderBy: { createdAt: 'desc' },
     });
+
     let nextCursor: string | null = null;
     if (rows.length > limit) {
       const next = rows.pop()!;
       nextCursor = next.id;
     }
+
     return {
       data: rows.map(r => ({
         id: r.curatedPrayer.id,
@@ -37,9 +39,9 @@ export class SavedPrayersService {
   }
 
   async save(userId: string, curatedPrayerId: string) {
-    // ensure exists
     const exists = await this.prisma.curatedPrayer.findUnique({ where: { id: curatedPrayerId }, select: { id: true } });
     if (!exists) throw new BadRequestException('Curated prayer not found');
+
     await this.prisma.savedPrayer.upsert({
       where: { userId_curatedPrayerId: { userId, curatedPrayerId } },
       update: {},

@@ -11,7 +11,7 @@ export class CuratedPrayersService {
     chapter?: number;
     limit?: number;
     cursor?: string | null;
-    userId?: string | null; // to annotate isSaved
+    userId?: string | null;
   }) {
     const { q, book, chapter, limit = 20, cursor, userId } = params;
 
@@ -58,8 +58,8 @@ export class CuratedPrayersService {
   async byId(id: string, userId?: string | null) {
     const prayer = await this.prisma.curatedPrayer.findUnique({ where: { id } });
     if (!prayer) return null;
-
     if (!userId) return { ...prayer, isSaved: false };
+
     const saved = await this.prisma.savedPrayer.findUnique({
       where: { userId_curatedPrayerId: { userId, curatedPrayerId: id } },
       select: { id: true },
