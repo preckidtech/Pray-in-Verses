@@ -415,8 +415,8 @@ const Profile = () => {
       <div className="container mx-auto px-4 py-6">
         {/* Page Title */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-[#0C2E8A] mb-2">My Profile</h1>
-          <p className="text-[#0C2E8A] text-lg">Manage your prayer journey</p>
+          <h1 className="text-base font-semibold text-[#0C2E8A] mb-2">My Profile</h1>
+          <p className="text-[#0C2E8A] text-base">Manage your prayer journey</p>
         </div>
 
         <div className="max-w-4xl mx-auto">
@@ -506,7 +506,7 @@ const Profile = () => {
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Heart className="w-6 h-6 text-[#0C2E8A]" />
                   </div>
-                  <p className="text-2xl font-bold text-[#0C2E8A]">
+                  <p className="text-base font-semibold text-[#0C2E8A]">
                     {profile.totalPrayers}
                   </p>
                   <p className="text-gray-600">Total Prayers</p>
@@ -516,7 +516,7 @@ const Profile = () => {
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <CheckCircle className="w-6 h-6 text-[#0C2E8A]" />
                   </div>
-                  <p className="text-2xl font-bold text-[#0C2E8A]">
+                  <p className="text-base font-semibold text-[#0C2E8A]">
                     {profile.answeredPrayers}
                   </p>
                   <p className="text-gray-600">Answered Prayers</p>
@@ -526,7 +526,7 @@ const Profile = () => {
                   <div className="w-12 h-12 bg-[#FCCF3A] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Bookmark className="w-6 h-6 text-[#0C2E8A]" />
                   </div>
-                  <p className="text-2xl font-bold text-[#0C2E8A]">
+                  <p className="text-base font-semibold text-[#0C2E8A]">
                     {profile.savedPrayers}
                   </p>
                   <p className="text-gray-600">Saved Prayers</p>
@@ -538,7 +538,7 @@ const Profile = () => {
             <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl shadow border p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-[#0C2E8A] flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-[#0C2E8A] flex items-center gap-2">
                     <User className="w-5 h-5" />
                     Account Information
                   </h2>
@@ -642,7 +642,7 @@ const Profile = () => {
             {/* Settings Card */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow border p-6">
-                <h2 className="text-xl font-bold text-[#0C2E8A] mb-6 flex items-center gap-2">
+                <h2 className="text-base font-semibold text-[#0C2E8A] mb-6 flex items-center gap-2">
                   <Settings className="w-5 h-5" />
                   Settings
                 </h2>

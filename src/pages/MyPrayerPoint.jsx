@@ -323,7 +323,7 @@ const MyPrayerPoint = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-16 pl-0 lg:pl-[224px] font-['Poppins']">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 pt-24 pl-0 lg:pl-[224px] font-['Poppins']">
       {/* Toast Notification */}
       {toastMessage && <Toast message={toastMessage} />}
 
@@ -334,322 +334,323 @@ const MyPrayerPoint = () => {
           onCancel={() => setDeletePrayerId(null)}
         />
       )}
-
-      <div className="container mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-[#FCCF3A] rounded-full">
-              <Target className="w-8 h-8 text-[#0C2E8A]" />
-            </div>
-          </div>
-          <h1 className="text-2xl md:text-2xl font-bold text-[#0C2E8A] mb-2">
-            My Prayer Points
-          </h1>
-          <p className="text-sm md:text-lg text-[#0C2E8A]">
-            Track your personal prayers and testimonies
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Total Prayers</p>
-                <p className="text-2xl font-bold text-[#0C2E8A]">
-                  {totalPrayers}
-                </p>
+      <main className="flex-1 space-y-10 px-4  lg:px-6 pb-10">
+        <div className="container mx-auto px-4 py-8 space-y-6">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="p-3 bg-[#FCCF3A] rounded-full">
+                <Target className="w-8 h-8 text-[#0C2E8A]" />
               </div>
-              <BookOpen className="w-8 h-8 text-[#0C2E8A] opacity-20" />
             </div>
+            <h1 className="text-base font-semibold text-[#0C2E8A] mb-2">
+              My Prayer Points
+            </h1>
+            <p className="text-sm  text-[#0C2E8A]">
+              Track your personal prayers and testimonies
+            </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Still Praying</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {prayingPrayers}
-                </p>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Total Prayers</p>
+                  <p className="text-2xl font-bold text-[#0C2E8A]">
+                    {totalPrayers}
+                  </p>
+                </div>
+                <BookOpen className="w-8 h-8 text-[#0C2E8A] opacity-20" />
               </div>
-              <Heart className="w-8 h-8 text-blue-600 opacity-20" />
             </div>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Answered</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {answeredPrayers}
-                </p>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Still Praying</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {prayingPrayers}
+                  </p>
+                </div>
+                <Heart className="w-8 h-8 text-blue-600 opacity-20" />
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600 opacity-20" />
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Answered</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {answeredPrayers}
+                  </p>
+                </div>
+                <CheckCircle className="w-8 h-8 text-green-600 opacity-20" />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Search and Add Button */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 mb-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search your prayers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
-              />
-            </div>
-            <button
-              className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium w-full md:w-auto justify-center"
-              onClick={() => setShowModal(true)}
-            >
-              <Plus className="w-5 h-5" /> Add Prayer Point
-            </button>
-          </div>
-        </div>
-
-        {/* Filter */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-            <label className="text-sm font-medium text-[#0C2E8A]">
-              Filter by Status:
-            </label>
-            <div className="flex gap-2 flex-wrap">
-              {["All", "Praying", "Answered"].map((status) => (
-                <button
-                  key={status}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                    filterStatus === status
-                      ? "bg-[#0C2E8A] text-white"
-                      : "bg-[#FCCF3A] text-[#0C2E8A] font-bold hover:bg-[#ABBC6B]"
-                  }`}
-                  onClick={() => setFilterStatus(status)}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-            {answeredPrayers > 0 && (
-              <Link
-                to="/answered-prayers"
-                className="ml-auto flex items-center gap-2 text-[#0C2E8A] hover:text-blue-800 font-medium text-sm"
+          {/* Search and Add Button */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search your prayers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
+                />
+              </div>
+              <button
+                className="flex items-center gap-2 bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium w-full md:w-auto justify-center"
+                onClick={() => setShowModal(true)}
               >
-                <CheckCircle className="w-4 h-4" />
-                View All Testimonies
-              </Link>
+                <Plus className="w-5 h-5" /> Add Prayer Point
+              </button>
+            </div>
+          </div>
+
+          {/* Filter */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+              <label className="text-sm font-medium text-[#0C2E8A]">
+                Filter by Status:
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                {["All", "Praying", "Answered"].map((status) => (
+                  <button
+                    key={status}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                      filterStatus === status
+                        ? "bg-[#0C2E8A] text-white"
+                        : "bg-[#FCCF3A] text-[#0C2E8A] font-bold hover:bg-[#ABBC6B]"
+                    }`}
+                    onClick={() => setFilterStatus(status)}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+              {answeredPrayers > 0 && (
+                <Link
+                  to="/answered-prayers"
+                  className="ml-auto flex items-center gap-2 text-[#0C2E8A] hover:text-blue-800 font-medium text-sm"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  View All Testimonies
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Prayer Points */}
+          <div className="space-y-4">
+            {filteredPrayers.length > 0 ? (
+              filteredPrayers.map((prayer) => (
+                <div
+                  key={prayer.id}
+                  className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 hover:shadow-lg transition-shadow duration-300"
+                >
+                  <div className="flex justify-between items-start mb-4 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <h3 className="text-base font-semibold text-[#0C2E8A] break-words">
+                          {prayer.title}
+                        </h3>
+                        <span
+                          className={`px-3 py-1 text-sm rounded-full font-medium flex-shrink-0 ${
+                            prayer.isAnswered
+                              ? "bg-green-100 text-green-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {prayer.status}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3 leading-relaxed break-words">
+                        {prayer.content}
+                      </p>
+                      <div className="flex items-center text-sm text-gray-500 gap-4 flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          {formatTimeAgo(prayer.createdAt)}
+                        </span>
+                        {prayer.answeredAt && (
+                          <span className="flex items-center gap-1 text-green-600">
+                            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                            Answered {formatTimeAgo(prayer.answeredAt)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bookmark Button */}
+                    <button
+                      onClick={() => handleBookmark(prayer)}
+                      className="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition flex-shrink-0"
+                      title="Bookmark this prayer"
+                    >
+                      <Bookmark className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-4 border-t border-gray-100 gap-3">
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => handleEdit(prayer)}
+                        className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-[#0C2E8A] hover:bg-blue-50 rounded-lg transition font-medium text-sm"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(prayer.id)}
+                        className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition font-medium text-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      {prayer.isAnswered ? (
+                        <button
+                          onClick={() => unmarkAnswered(prayer.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm flex-1 sm:flex-initial justify-center"
+                        >
+                          <Clock className="w-4 h-4" />
+                          Mark as Praying
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => markAsAnswered(prayer.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition font-medium text-sm flex-1 sm:flex-initial justify-center"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Mark as Answered
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-10 h-10 text-blue-700" />
+                </div>
+                <h3 className="text-xl font-medium text-gray-900 mb-2">
+                  {searchTerm || filterStatus !== "All"
+                    ? "No prayers match your search"
+                    : "No prayer points yet"}
+                </h3>
+                <p className="text-gray-600 mb-6 px-4">
+                  {searchTerm || filterStatus !== "All"
+                    ? "Try adjusting your search or filter"
+                    : "Start documenting your prayer journey and track God's faithfulness"}
+                </p>
+                {!searchTerm && filterStatus === "All" && (
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
+                  >
+                    Add First Prayer Point
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
 
-        {/* Prayer Points */}
-        <div className="space-y-4">
-          {filteredPrayers.length > 0 ? (
-            filteredPrayers.map((prayer) => (
-              <div
-                key={prayer.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 hover:shadow-lg transition-shadow duration-300"
-              >
-                <div className="flex justify-between items-start mb-4 gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h3 className="text-lg font-medium text-[#0C2E8A] break-words">
-                        {prayer.title}
-                      </h3>
-                      <span
-                        className={`px-3 py-1 text-xs rounded-full font-medium flex-shrink-0 ${
-                          prayer.isAnswered
-                            ? "bg-green-100 text-green-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {prayer.status}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mb-3 leading-relaxed break-words">
-                      {prayer.content}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500 gap-4 flex-wrap">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4 flex-shrink-0" />
-                        {formatTimeAgo(prayer.createdAt)}
-                      </span>
-                      {prayer.answeredAt && (
-                        <span className="flex items-center gap-1 text-green-600">
-                          <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                          Answered {formatTimeAgo(prayer.answeredAt)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Bookmark Button */}
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold text-[#0C2E8A]">
+                    {editingPrayer ? "Edit Prayer Point" : "New Prayer Point"}
+                  </h2>
                   <button
-                    onClick={() => handleBookmark(prayer)}
-                    className="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition flex-shrink-0"
-                    title="Bookmark this prayer"
-                  >
-                    <Bookmark className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-4 border-t border-gray-100 gap-3">
-                  <div className="flex gap-2 flex-wrap">
-                    <button
-                      onClick={() => handleEdit(prayer)}
-                      className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-[#0C2E8A] hover:bg-blue-50 rounded-lg transition font-medium text-sm"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(prayer.id)}
-                      className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition font-medium text-sm"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </div>
-
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    {prayer.isAnswered ? (
-                      <button
-                        onClick={() => unmarkAnswered(prayer.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm flex-1 sm:flex-initial justify-center"
-                      >
-                        <Clock className="w-4 h-4" />
-                        Mark as Praying
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => markAsAnswered(prayer.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition font-medium text-sm flex-1 sm:flex-initial justify-center"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Mark as Answered
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Target className="w-10 h-10 text-blue-700" />
-              </div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
-                {searchTerm || filterStatus !== "All"
-                  ? "No prayers match your search"
-                  : "No prayer points yet"}
-              </h3>
-              <p className="text-gray-600 mb-6 px-4">
-                {searchTerm || filterStatus !== "All"
-                  ? "Try adjusting your search or filter"
-                  : "Start documenting your prayer journey and track God's faithfulness"}
-              </p>
-              {!searchTerm && filterStatus === "All" && (
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="bg-[#0C2E8A] text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition font-medium"
-                >
-                  Add First Prayer Point
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-[#0C2E8A]">
-                  {editingPrayer ? "Edit Prayer Point" : "New Prayer Point"}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                    setEditingPrayer(null);
-                    setFormData({ title: "", content: "" });
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Brief title for your prayer"
-                    value={formData.title}
-                    onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
-                    required
-                    maxLength={100}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.title.length}/100
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prayer Content *
-                  </label>
-                  <textarea
-                    placeholder="Describe what you're praying for..."
-                    value={formData.content}
-                    onChange={(e) =>
-                      setFormData({ ...formData, content: e.target.value })
-                    }
-                    rows="4"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent resize-none"
-                    required
-                    maxLength={500}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.content.length}/500
-                  </p>
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
                     onClick={() => {
                       setShowModal(false);
                       setEditingPrayer(null);
                       setFormData({ title: "", content: "" });
                     }}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-blue-800 transition font-medium"
-                  >
-                    {editingPrayer ? "Update Prayer" : "Add Prayer"}
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
-              </form>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Brief title for your prayer"
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent"
+                      required
+                      maxLength={100}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.title.length}/100
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Prayer Content *
+                    </label>
+                    <textarea
+                      placeholder="Describe what you're praying for..."
+                      value={formData.content}
+                      onChange={(e) =>
+                        setFormData({ ...formData, content: e.target.value })
+                      }
+                      rows="4"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2E8A] focus:border-transparent resize-none"
+                      required
+                      maxLength={500}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.content.length}/500
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowModal(false);
+                        setEditingPrayer(null);
+                        setFormData({ title: "", content: "" });
+                      }}
+                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-[#0C2E8A] text-white rounded-lg hover:bg-blue-800 transition font-medium"
+                    >
+                      {editingPrayer ? "Update Prayer" : "Add Prayer"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
 
       <style jsx>{`
         @keyframes slide-in {

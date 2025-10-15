@@ -29,7 +29,9 @@ export default function History() {
     setLoading(true);
     try {
       const userId = getCurrentUser();
-      const savedHistory = JSON.parse(localStorage.getItem(`history_${userId}`) || "[]");
+      const savedHistory = JSON.parse(
+        localStorage.getItem(`history_${userId}`) || "[]"
+      );
       setHistory(savedHistory);
     } catch (error) {
       console.error("Error loading history:", error);
@@ -72,10 +74,10 @@ export default function History() {
       yesterday: 0,
       lastWeek: 0,
       lastMonth: 0,
-      older: 0
+      older: 0,
     };
 
-    history.forEach(item => {
+    history.forEach((item) => {
       const itemDate = new Date(item.timestamp);
       if (itemDate.toDateString() === today.toDateString()) {
         counts.today++;
@@ -111,9 +113,15 @@ export default function History() {
   const filteredHistory = history
     .filter((item) => {
       const matchesSearch =
-        String(item.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        String(item.content || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        String(item.reference || "").toLowerCase().includes(searchQuery.toLowerCase());
+        String(item.title || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        String(item.content || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        String(item.reference || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
 
       const matchesType = selectedType === "all" || item.type === selectedType;
 
@@ -170,7 +178,8 @@ export default function History() {
       label = date.toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
-        year: date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
+        year:
+          date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
       });
     }
 
@@ -214,7 +223,11 @@ export default function History() {
     saveHistory(updatedHistory);
     setSelectedItems([]);
     setShowDeleteModal(false);
-    showNotification(`Deleted ${selectedItems.length} item${selectedItems.length > 1 ? "s" : ""}`);
+    showNotification(
+      `Deleted ${selectedItems.length} item${
+        selectedItems.length > 1 ? "s" : ""
+      }`
+    );
   };
 
   const handleDeleteSingle = (id) => {
@@ -224,7 +237,11 @@ export default function History() {
   };
 
   const handleClearAll = () => {
-    if (window.confirm("Are you sure you want to clear all history? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to clear all history? This action cannot be undone."
+      )
+    ) {
       saveHistory([]);
       setSelectedItems([]);
       showNotification("History cleared");
@@ -252,214 +269,228 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pl-0 lg:pl-56 font-['Poppins']">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {notification && (
-          <div
-            className={`fixed top-24 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
-              notification.type === "success" ? "bg-green-500" : "bg-red-500"
-            } text-white`}
-          >
-            <Check className="w-5 h-5" />
-            <span>{String(notification.message)}</span>
-          </div>
-        )}
-
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 text-[#2c3E91]" />
-              <h1 className="text-base md:text-lg font-bold text-[#2c3E91]">History</h1>
-            </div>
-            {history.length > 0 && (
-              <button
-                onClick={handleClearAll}
-                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                Clear All
-              </button>
-            )}
-          </div>
-          <p className="text-gray-600">Track your prayer journey and spiritual activities</p>
-        </div>
-
-        {/* Search & Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                value={String(searchQuery)}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search history..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
-              />
-            </div>
-
-            <select
-              value={String(selectedDate)}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
+    <div className="min-h-screen bg-gray-50 pt-24 pl-0 lg:pl-[224px] font-['Poppins']">
+      <main className="flex-1 space-y-10 px-4  lg:px-6 pb-10">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {notification && (
+            <div
+              className={`fixed top-24 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+                notification.type === "success" ? "bg-green-500" : "bg-red-500"
+              } text-white`}
             >
-              {getDateRanges().map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label} ({range.count})
-                </option>
-              ))}
-            </select>
+              <Check className="w-5 h-5" />
+              <span>{String(notification.message)}</span>
+            </div>
+          )}
 
-            <select
-              value={String(selectedType)}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
-            >
-              {typeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            {selectedItems.length > 0 && (
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete ({selectedItems.length})
-              </button>
-            )}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Clock className="w-8 h-8 text-[#2c3E91]" />
+                <h1 className="text-base font-semibold text-[#2c3E91]">
+                  History
+                </h1>
+              </div>
+              {history.length > 0 && (
+                <button
+                  onClick={handleClearAll}
+                  className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear All
+                </button>
+              )}
+            </div>
+            <p className="text-gray-600 text-sm">
+              Track your prayer journey and spiritual activities
+            </p>
           </div>
-        </div>
 
-        {/* History Timeline */}
-        {Object.keys(groupedHistory).length > 0 ? (
-          <div className="space-y-8">
-            {Object.entries(groupedHistory).map(([dateLabel, items]) => (
-              <div key={dateLabel}>
-                <div className="flex items-center gap-3 mb-4">
-                  <Calendar className="w-5 h-5 text-[#2c3E91]" />
-                  <h2 className="text-lg font-semibold text-[#2c3E91]">{dateLabel}</h2>
-                  <div className="flex-1 h-px bg-gray-200"></div>
-                </div>
+          {/* Search & Filters */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  value={String(searchQuery)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search history..."
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
+                />
+              </div>
 
-                <div className="space-y-3">
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.includes(item.id)}
-                          onChange={() => handleSelectItem(item.id)}
-                          className="w-4 h-4 text-[#2c3E91] focus:ring-[#2c3E91] border-gray-300 rounded mt-1"
-                        />
+              <select
+                value={String(selectedDate)}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
+              >
+                {getDateRanges().map((range) => (
+                  <option key={range.value} value={range.value}>
+                    {range.label} ({range.count})
+                  </option>
+                ))}
+              </select>
 
-                        <div className="flex-shrink-0 w-10 h-10 bg-[#2c3E91]/10 rounded-full flex items-center justify-center">
-                          {item.type === "prayer" ? (
-                            <BookOpen className="w-5 h-5 text-[#2c3E91]" />
-                          ) : item.type === "verse" ? (
-                            <BookMarked className="w-5 h-5 text-[#2c3E91]" />
-                          ) : (
-                            <Clock className="w-5 h-5 text-[#2c3E91]" />
-                          )}
-                        </div>
+              <select
+                value={String(selectedType)}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2c3E91] focus:border-transparent"
+              >
+                {typeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <h3 className="text-base font-semibold text-gray-900 mb-1">
-                                {String(item.title || "Untitled")}
-                              </h3>
-                              {item.content && (
-                                <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                  {String(item.content)}
-                                </p>
-                              )}
-                              {item.reference && (
-                                <p className="text-sm text-[#2c3E91] font-medium">
-                                  {String(item.reference)}
-                                </p>
-                              )}
-                            </div>
+              {selectedItems.length > 0 && (
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete ({selectedItems.length})
+                </button>
+              )}
+            </div>
+          </div>
 
-                            <button
-                              onClick={() => handleDeleteSingle(item.id)}
-                              className="p-2 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors flex-shrink-0"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+          {/* History Timeline */}
+          {Object.keys(groupedHistory).length > 0 ? (
+            <div className="space-y-8">
+              {Object.entries(groupedHistory).map(([dateLabel, items]) => (
+                <div key={dateLabel}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <Calendar className="w-5 h-5 text-[#2c3E91]" />
+                    <h2 className="text-base font-semibold text-[#2c3E91]">
+                      {dateLabel}
+                    </h2>
+                    <div className="flex-1 h-px bg-gray-200"></div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.id)}
+                            onChange={() => handleSelectItem(item.id)}
+                            className="w-4 h-4 text-[#2c3E91] focus:ring-[#2c3E91] border-gray-300 rounded mt-1"
+                          />
+
+                          <div className="flex-shrink-0 w-10 h-10 bg-[#2c3E91]/10 rounded-full flex items-center justify-center">
+                            {item.type === "prayer" ? (
+                              <BookOpen className="w-5 h-5 text-[#2c3E91]" />
+                            ) : item.type === "verse" ? (
+                              <BookMarked className="w-5 h-5 text-[#2c3E91]" />
+                            ) : (
+                              <Clock className="w-5 h-5 text-[#2c3E91]" />
+                            )}
                           </div>
 
-                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {formatTimestamp(item.timestamp)}
-                            </span>
-                            <span className="capitalize px-2 py-0.5 bg-gray-100 rounded">
-                              {String(item.type || "page")}
-                            </span>
-                            {item.category && (
-                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
-                                {String(item.category)}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <h3 className="text-base font-semibold text-gray-900 mb-1">
+                                  {String(item.title || "Untitled")}
+                                </h3>
+                                {item.content && (
+                                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                                    {String(item.content)}
+                                  </p>
+                                )}
+                                {item.reference && (
+                                  <p className="text-sm text-[#2c3E91] font-semibold">
+                                    {String(item.reference)}
+                                  </p>
+                                )}
+                              </div>
+
+                              <button
+                                onClick={() => handleDeleteSingle(item.id)}
+                                className="p-2 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors flex-shrink-0"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatTimestamp(item.timestamp)}
                               </span>
-                            )}
+                              <span className="capitalize px-2 py-0.5 bg-gray-100 rounded">
+                                {String(item.type || "page")}
+                              </span>
+                              {item.category && (
+                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                                  {String(item.category)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+                <Clock className="w-10 h-10 text-gray-400" />
+              </div>
+              <h3 className="text-base font-semibold text-gray-700 mb-2">
+                {String(searchQuery) ||
+                selectedDate !== "all" ||
+                selectedType !== "all"
+                  ? "No history found"
+                  : "No history yet"}
+              </h3>
+              <p className="text-gray-500">
+                Start browsing prayers, verses, and journal entries to see your
+                history here.
+              </p>
+            </div>
+          )}
+
+          {/* Delete Confirmation Modal */}
+          {showDeleteModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+                <h3 className="text-base font-semibold mb-4">
+                  Delete Selected Items
+                </h3>
+                <p className="mb-6">
+                  Are you sure you want to delete {selectedItems.length}{" "}
+                  item(s)? This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
-              <Clock className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              {String(searchQuery) || selectedDate !== "all" || selectedType !== "all"
-                ? "No history found"
-                : "No history yet"}
-            </h3>
-            <p className="text-gray-500">
-              Start browsing prayers, verses, and journal entries to see your history here.
-            </p>
-          </div>
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-              <h3 className="text-lg font-semibold mb-4">Delete Selected Items</h3>
-              <p className="mb-6">
-                Are you sure you want to delete {selectedItems.length} item(s)? This action cannot be undone.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteSelected}
-                  className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

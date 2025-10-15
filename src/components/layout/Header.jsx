@@ -45,21 +45,21 @@ export default function Header() {
 
     const legacyUserName = localStorage.getItem("userName");
     const legacyUserEmail = localStorage.getItem("userEmail");
-    
+
     if (legacyUserName && legacyUserEmail) {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const foundUser = users.find(u => 
-        u.email.toLowerCase() === legacyUserEmail.toLowerCase()
+      const foundUser = users.find(
+        (u) => u.email.toLowerCase() === legacyUserEmail.toLowerCase()
       );
-      
+
       if (foundUser) {
         return foundUser;
       }
-      
+
       return {
         name: legacyUserName,
         email: legacyUserEmail,
-        id: legacyUserEmail
+        id: legacyUserEmail,
       };
     }
 
@@ -71,25 +71,27 @@ export default function Header() {
    */
   const updateProfileData = () => {
     const currentUser = getCurrentUser();
-    
+
     if (currentUser) {
       setUserName(currentUser.name || "User");
-      
+
       const userId = currentUser.id || currentUser.email;
       let savedProfileImage = null;
-      
+
       if (userId) {
         savedProfileImage = localStorage.getItem(`profileImage_${userId}`);
       }
-      
+
       if (!savedProfileImage && currentUser.email) {
-        savedProfileImage = localStorage.getItem(`profileImage_${currentUser.email}`);
+        savedProfileImage = localStorage.getItem(
+          `profileImage_${currentUser.email}`
+        );
       }
-      
+
       if (!savedProfileImage) {
         savedProfileImage = localStorage.getItem("profileImage");
       }
-      
+
       setProfileImage(savedProfileImage);
     } else {
       setUserName("User");
@@ -102,30 +104,40 @@ export default function Header() {
    */
   const generateNotificationsFromReminders = () => {
     const reminders = JSON.parse(localStorage.getItem("reminders") || "[]");
-    const readNotifications = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+    const readNotifications = JSON.parse(
+      localStorage.getItem("readNotifications") || "[]"
+    );
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
-    const currentDay = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
-    
+    const currentDay = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ][now.getDay()];
+
     const newNotifications = [];
 
     // Filter active reminders for today
-    const todayReminders = reminders.filter(r => 
-      r.isActive && r.days && r.days.includes(currentDay)
+    const todayReminders = reminders.filter(
+      (r) => r.isActive && r.days && r.days.includes(currentDay)
     );
 
-    todayReminders.forEach(reminder => {
+    todayReminders.forEach((reminder) => {
       if (!reminder.time) return;
-      
-      const [hours, minutes] = reminder.time.split(':').map(Number);
+
+      const [hours, minutes] = reminder.time.split(":").map(Number);
       const reminderTime = hours * 60 + minutes;
       const timeDiff = reminderTime - currentTime;
-      
+
       // Create notification for reminders within the next 60 minutes
       if (timeDiff > 0 && timeDiff <= 60) {
         const notifId = `reminder_${reminder.id}_${now.toDateString()}`;
         const isRead = readNotifications.includes(notifId);
-        
+
         newNotifications.push({
           id: notifId,
           title: "Upcoming Prayer Reminder",
@@ -133,14 +145,14 @@ export default function Header() {
           link: "/reminders",
           time: `in ${timeDiff} min`,
           read: isRead,
-          type: "reminder"
+          type: "reminder",
         });
       }
       // Show notification for reminders that are happening now (within 5 minutes)
       else if (timeDiff >= -5 && timeDiff <= 0) {
         const notifId = `reminder_now_${reminder.id}_${now.toDateString()}`;
         const isRead = readNotifications.includes(notifId);
-        
+
         newNotifications.push({
           id: notifId,
           title: "Prayer Time Now!",
@@ -148,7 +160,7 @@ export default function Header() {
           link: "/reminders",
           time: "now",
           read: isRead,
-          type: "reminder"
+          type: "reminder",
         });
       }
     });
@@ -162,7 +174,7 @@ export default function Header() {
         link: "/browse-prayers",
         time: "2h ago",
         read: readNotifications.includes("static_1"),
-        type: "general"
+        type: "general",
       },
       {
         id: "static_2",
@@ -171,8 +183,8 @@ export default function Header() {
         link: "/answered-prayers",
         time: "1d ago",
         read: readNotifications.includes("static_2"),
-        type: "general"
-      }
+        type: "general",
+      },
     ];
 
     // Combine and sort notifications (unread first, then by time)
@@ -202,24 +214,26 @@ export default function Header() {
    */
   useEffect(() => {
     updateProfileData();
-    
+
     const handleStorageChange = (e) => {
-      if (e.key === "profileImage" || 
-          e.key === "userName" || 
-          e.key === "currentUser" || 
-          e.key === "userEmail" ||
-          e.key?.startsWith("profileImage_")) {
+      if (
+        e.key === "profileImage" ||
+        e.key === "userName" ||
+        e.key === "currentUser" ||
+        e.key === "userEmail" ||
+        e.key?.startsWith("profileImage_")
+      ) {
         updateProfileData();
       }
     };
-    
+
     const handleCustomEvent = () => {
       updateProfileData();
     };
-    
+
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("profileUpdated", handleCustomEvent);
-    
+
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("profileUpdated", handleCustomEvent);
@@ -231,17 +245,17 @@ export default function Header() {
    */
   useEffect(() => {
     generateNotificationsFromReminders();
-    
+
     // Update notifications every minute to keep them fresh
     const interval = setInterval(generateNotificationsFromReminders, 60000);
-    
+
     // Listen for reminder updates
     const handleReminderUpdate = () => {
       generateNotificationsFromReminders();
     };
-    
+
     window.addEventListener("reminderUpdated", handleReminderUpdate);
-    
+
     return () => {
       clearInterval(interval);
       window.removeEventListener("reminderUpdated", handleReminderUpdate);
@@ -251,18 +265,30 @@ export default function Header() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllRead = () => {
-    const readNotifications = JSON.parse(localStorage.getItem("readNotifications") || "[]");
-    const allNotifIds = notifications.map(n => n.id);
-    const updatedReadNotifs = [...new Set([...readNotifications, ...allNotifIds])];
-    localStorage.setItem("readNotifications", JSON.stringify(updatedReadNotifs));
+    const readNotifications = JSON.parse(
+      localStorage.getItem("readNotifications") || "[]"
+    );
+    const allNotifIds = notifications.map((n) => n.id);
+    const updatedReadNotifs = [
+      ...new Set([...readNotifications, ...allNotifIds]),
+    ];
+    localStorage.setItem(
+      "readNotifications",
+      JSON.stringify(updatedReadNotifs)
+    );
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const markAsRead = (id) => {
-    const readNotifications = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+    const readNotifications = JSON.parse(
+      localStorage.getItem("readNotifications") || "[]"
+    );
     if (!readNotifications.includes(id)) {
       readNotifications.push(id);
-      localStorage.setItem("readNotifications", JSON.stringify(readNotifications));
+      localStorage.setItem(
+        "readNotifications",
+        JSON.stringify(readNotifications)
+      );
     }
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
@@ -272,31 +298,34 @@ export default function Header() {
   // Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (notifOpen && !event.target.closest('.notification-dropdown') && !event.target.closest('.notification-button')) {
+      if (
+        notifOpen &&
+        !event.target.closest(".notification-dropdown") &&
+        !event.target.closest(".notification-button")
+      ) {
         setNotifOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [notifOpen]);
 
   const sidebarItems = [
     { id: "dashboard", title: "Dashboard", icon: Home, path: "/home" },
-    {
-      id: "about",
-      title: "About",
-      icon: Info,
-      path: "#about",
-      hasDropdown: true,
-    },
+
     {
       id: "browse-prayers",
       title: "Browse Prayers",
       icon: BookMarked,
       path: "/browse-prayers",
     },
-    { id: "journal", title: "My Journal", icon: BookOpen, path: "/journal" },
+    {
+      id: "saved-prayers",
+      title: "Saved Prayer (s)",
+      icon: BookmarkCheck,
+      path: "/saved-prayers",
+    },
     {
       id: "prayer-wall",
       title: "Prayer Wall",
@@ -304,17 +333,25 @@ export default function Header() {
       path: "#prayer-wall",
       hasDropdown: true,
     },
+    { id: "journal", title: "My Journal", icon: BookOpen, path: "/journal" },
+    {
+      id: "answered-prayers",
+      title: "Answered Prayer",
+      icon: BookmarkCheck,
+      path: "/answered-prayers",
+    },
     {
       id: "reminder",
       title: "Prayer Reminder",
       icon: Clock,
       path: "/reminders",
     },
+
     {
-      id: "saved-prayers",
-      title: "Saved Prayer",
-      icon: BookmarkCheck,
-      path: "/saved-prayers",
+      id: "bookmarks",
+      title: "Bookmarks",
+      icon: BookMarked,
+      path: "/bookmarks",
     },
     {
       id: "history",
@@ -323,16 +360,10 @@ export default function Header() {
       path: "/history",
     },
     {
-      id: "bookmarks",
-      title: "Bookmarks",
-      icon: BookMarked,
-      path: "/bookmarks",
-    },
-    {
-      id: "answered-prayers",
-      title: "Answered Prayer",
-      icon: BookmarkCheck,
-      path: "/answered-prayers",
+      id: "about",
+      title: "About PIV",
+      icon: Info,
+      path: "/about",
     },
     { id: "profile", title: "Profile", icon: User, path: "/profile" },
   ];
@@ -355,7 +386,7 @@ export default function Header() {
         </div>
 
         {/* Middle: Search */}
-        <div className="hidden md:flex flex-1 max-w-lg mx-4 relative">
+        {/* <div className="hidden md:flex flex-1 max-w-lg mx-4 relative">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -366,7 +397,7 @@ export default function Header() {
               className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-all duration-200"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Right: Notifications + User */}
         <div className="flex items-center space-x-3 relative">
@@ -379,7 +410,7 @@ export default function Header() {
             <Bell className="w-6 h-6 text-white" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full font-semibold">
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </button>
@@ -467,74 +498,38 @@ export default function Header() {
 
       {/* Sidebar */}
       <aside
-  className={`bg-[#2c3E91] shadow-md w-56 h-screen fixed top-16 left-0 z-40 pt-10 pb-28
+        className={`bg-[#2c3E91] shadow-md w-56 h-screen fixed top-16 left-0 z-40 sm:pt-4 md:pt-10 pb-28
               border-r border-gray-200 overflow-y-auto custom-scrollbar
               transform lg:translate-x-0
               ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
               transition-transform duration-300 flex flex-col justify-between`}
->
-
+      >
         <nav className="mt-6 flex-1 relative">
           <ul className="flex flex-col items-center space-y-4 pb-6">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const isActive =
-                item.path !== "#" && item.path !== "#about" && item.path !== "#prayer-wall" && location.pathname === item.path;
+                item.path !== "#" &&
+                item.path !== "#about" &&
+                item.path !== "#prayer-wall" &&
+                location.pathname === item.path;
 
               if (item.hasDropdown) {
                 if (item.id === "about") {
                   return (
                     <li key={item.id} className="w-full px-2">
-                      <button
-                        onClick={() => setAboutOpen((prev) => !prev)}
-                        className={`w-full flex items-center justify-between gap-2 px-3 py-2 transition-all duration-200 hover:bg-[#FCCF3A] hover:text-[#0C2E8A] rounded-md ${
-                          aboutOpen || isActive
-                            ? "text-white font-semibold"
+                      <Link
+                        to="/about"
+                        onClick={() => setSidebarOpen(false)}
+                        className={`w-full flex gap-2 pl-3 items-center py-2 transition-all duration-200 hover:bg-[#FCCF3A] hover:text-[#0C2E8A] rounded-md ${
+                          location.pathname === "/about"
+                            ? "text-[#0C2E8A] font-semibold bg-[#FCCF3A]"
                             : "text-white"
                         }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <Icon size={14} />
-                          <span className="text-xs">{item.title}</span>
-                        </div>
-                        <ChevronDown 
-                          size={14} 
-                          className={`transition-transform duration-200 ${aboutOpen ? 'rotate-180' : ''}`}
-                        />
-                      </button>
-
-                      {aboutOpen && (
-                        <ul className="ml-6 mt-2 space-y-2">
-                          <li>
-                            <Link
-                              to="/about"
-                              className={`block px-2 py-1 text-xs text-white hover:bg-[#3C4FA3] rounded transition-colors ${
-                                location.pathname === "/about" ? "bg-[#3C4FA3] font-semibold" : ""
-                              }`}
-                              onClick={() => {
-                                setAboutOpen(false);
-                                setSidebarOpen(false);
-                              }}
-                            >
-                              About PIV
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              to="/mission"
-                              className={`block px-2 py-1 text-xs text-white hover:bg-[#3C4FA3] rounded transition-colors ${
-                                location.pathname === "/mission" ? "bg-[#3C4FA3] font-semibold" : ""
-                              }`}
-                              onClick={() => {
-                                setAboutOpen(false);
-                                setSidebarOpen(false);
-                              }}
-                            >
-                              Mission
-                            </Link>
-                          </li>
-                        </ul>
-                      )}
+                        <Icon size={14} />
+                        <span className="text-xs">{item.title}</span>
+                      </Link>
                     </li>
                   );
                 }
@@ -545,7 +540,10 @@ export default function Header() {
                       <button
                         onClick={() => setPrayerWallOpen((prev) => !prev)}
                         className={`w-full flex items-center justify-between gap-2 px-3 py-2 transition-all duration-200 hover:bg-[#FCCF3A] hover:text-[#0C2E8A] rounded-md ${
-                          prayerWallOpen || ["/prayer-wall", "/my-prayer-point"].includes(location.pathname)
+                          prayerWallOpen ||
+                          ["/prayer-wall", "/my-prayer-point"].includes(
+                            location.pathname
+                          )
                             ? "text-white font-semibold"
                             : "text-white"
                         }`}
@@ -554,9 +552,11 @@ export default function Header() {
                           <Icon size={14} />
                           <span className="text-xs">{item.title}</span>
                         </div>
-                        <ChevronDown 
-                          size={14} 
-                          className={`transition-transform duration-200 ${prayerWallOpen ? 'rotate-180' : ''}`}
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform duration-200 ${
+                            prayerWallOpen ? "rotate-180" : ""
+                          }`}
                         />
                       </button>
 
@@ -566,7 +566,9 @@ export default function Header() {
                             <Link
                               to="/prayer-wall"
                               className={`block px-2 py-1 text-xs text-white hover:bg-[#3C4FA3] rounded transition-colors ${
-                                location.pathname === "/prayer-wall" ? "bg-[#3C4FA3] font-semibold" : ""
+                                location.pathname === "/prayer-wall"
+                                  ? "bg-[#3C4FA3] font-semibold"
+                                  : ""
                               }`}
                               onClick={() => {
                                 setPrayerWallOpen(false);
@@ -580,7 +582,9 @@ export default function Header() {
                             <Link
                               to="/my-prayer-point"
                               className={`block px-2 py-1 text-xs text-white hover:bg-[#3C4FA3] rounded transition-colors ${
-                                location.pathname === "/my-prayer-point" ? "bg-[#3C4FA3] font-semibold" : ""
+                                location.pathname === "/my-prayer-point"
+                                  ? "bg-[#3C4FA3] font-semibold"
+                                  : ""
                               }`}
                               onClick={() => {
                                 setPrayerWallOpen(false);
@@ -625,6 +629,6 @@ export default function Header() {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-    </> 
+    </>
   );
 }
