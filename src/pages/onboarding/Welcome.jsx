@@ -38,8 +38,6 @@ const Welcome = () => {
       className="w-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center overflow-hidden"
       style={{
         height: "100vh",
-        height: "calc(var(--vh, 1vh) * 100)",
-        minHeight: "100vh",
         minHeight: "calc(var(--vh, 1vh) * 100)",
       }}
     >

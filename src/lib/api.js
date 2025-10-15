@@ -1,6 +1,6 @@
 import { Rss } from "lucide-react";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
 export async function api(path, { method = 'GET', body, headers } = {}) {
     const res = await fetch(`${BASE_URL}${path}`, {
