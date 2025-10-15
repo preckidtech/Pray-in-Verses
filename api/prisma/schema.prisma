@@ -20,6 +20,13 @@ enum Role {
   USER
 }
 
+enum PublishState {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -28,4 +35,55 @@ model User {
   role         Role     @default(USER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // NEW Back-relations
+
+  savedPrayers SavedPrayer[] // ← NOTE: array of SavedPrayer, not "UserSavedPrayer"
+  journals     Journal[]
+}
+
+model CuratedPrayer {
+  id      String @id @default(cuid())
+  book    String
+  chapter Int
+  verse   Int
+
+  theme         String // Theme/Focus
+  scriptureText String // Verse text
+  insight       String // Short Insight / Reflection
+  prayerPoints  String[] // List of prayer points
+  closing       String // Closing prayer / confession
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // who saved this curated item
+  savedBy SavedPrayer[]
+}
+
+model SavedPrayer {
+  id              String   @id @default(cuid())
+  userId          String
+  curatedPrayerId String
+  createdAt       DateTime @default(now())
+
+  // relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  curatedPrayer CuratedPrayer @relation(fields: [curatedPrayerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, curatedPrayerId]) // a user can save a curated prayer only once
+  @@index([userId, createdAt])
+}
+
+model Journal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  mood      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
 }
