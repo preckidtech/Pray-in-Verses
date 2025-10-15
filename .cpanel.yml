@@ -1,0 +1,13 @@
+---
+deployment:
+  tasks:
+    - export REPO_DIR="$DEPLOYMENT_SOURCE"
+    - cd "$REPO_DIR/api"
+
+    # Install dependencies inside the api folder and build
+    - npm ci
+    - npm run build
+
+    # Restart Passenger for the Node app (app root = api/)
+    - mkdir -p tmp
+    - /bin/touch tmp/restart.txt
