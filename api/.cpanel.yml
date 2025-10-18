@@ -1,10 +1,18 @@
 ---
 deployment:
   tasks:
-    - export APPDIR="/home/prayinverses/api.prayinverses/api"      # change if you like
-    - /bin/bash -lc "cd $APPDIR && npm ci"
-    - /bin/bash -lc "cd $APPDIR && npm run build"
-    - /bin/bash -lc "cd $APPDIR && npx prisma generate"
-    - /bin/bash -lc "cd $APPDIR && npx prisma migrate deploy"
-    # Restart Passenger so new build goes live
-    - /bin/bash -lc "cd $APPDIR && mkdir -p tmp && touch tmp/restart.txt"
+    - export REPO_DIR="/home/prayinverses/api.prayinverses"          # where the repo was cloned
+    - export APP_DIR="$REPO_DIR/api"                                  # your API subfolder
+    - export NODE_ENV=production
+
+    # Activate cPanel's Node virtualenv for this app (Node 20)
+    - . "/home/prayinverses/nodevenv/api.prayinverses/api/20/bin/activate"
+
+    # Install, build, Prisma
+    - /bin/bash -lc "cd $APP_DIR && npm ci"
+    - /bin/bash -lc "cd $APP_DIR && npm run build"
+    - /bin/bash -lc "cd $APP_DIR && npx prisma generate"
+    - /bin/bash -lc "cd $APP_DIR && npx prisma migrate deploy"
+
+    # Restart Passenger (Node App) so new build goes live
+    - /bin/bash -lc "cd $APP_DIR && mkdir -p tmp && touch tmp/restart.txt"
