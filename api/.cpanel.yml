@@ -1,0 +1,10 @@
+---
+deployment:
+  tasks:
+    - export APPDIR="$HOME/apps/pray-in-verses-api"      # change if you like
+    - /bin/bash -lc "cd $APPDIR && npm ci"
+    - /bin/bash -lc "cd $APPDIR && npm run build"
+    - /bin/bash -lc "cd $APPDIR && npx prisma generate"
+    - /bin/bash -lc "cd $APPDIR && npx prisma migrate deploy"
+    # Restart Passenger so new build goes live
+    - /bin/bash -lc "cd $APPDIR && mkdir -p tmp && touch tmp/restart.txt"
