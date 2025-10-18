@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export APPDIR="$HOME/apps/pray-in-verses-api"      # change if you like
+    - export APPDIR="/home/prayinverses/api.prayinverses.com"      # change if you like
     - /bin/bash -lc "cd $APPDIR && npm ci"
     - /bin/bash -lc "cd $APPDIR && npm run build"
     - /bin/bash -lc "cd $APPDIR && npx prisma generate"
