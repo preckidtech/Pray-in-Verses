@@ -88,3 +88,16 @@ model Journal {
 
   @@index([userId, createdAt])
 }
+
+model AdminInvite {
+  id         String   @id @default(cuid())
+  email      String
+  role       Role
+  token      String   @unique
+  invitedBy  String
+  acceptedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+}

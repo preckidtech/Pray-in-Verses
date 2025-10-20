@@ -4,8 +4,16 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CuratedPrayersModule } from './modules/curated-prayers/curated-prayers.module';
 import { SavedPrayersModule } from './modules/saved-prayers/saved-prayers.module';
 import { JournalsModule } from './modules/journals/journals.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CuratedPrayersModule, SavedPrayersModule, JournalsModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    CuratedPrayersModule,
+    SavedPrayersModule,
+    JournalsModule,
+    AdminModule,
+  ],
 })
 export class AppModule {}
