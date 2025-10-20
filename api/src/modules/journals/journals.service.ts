@@ -11,7 +11,7 @@ export class JournalsService {
     if (q) {
       where.OR = [
         { title: { contains: q, mode: 'insensitive' } },
-        { body: { contains: q, mode: 'insensitive' } },
+        { body:  { contains: q, mode: 'insensitive' } },
       ];
     }
     const rows = await this.prisma.journal.findMany({
@@ -30,7 +30,8 @@ export class JournalsService {
   }
 
   async create(userId: string, dto: CreateJournalDto) {
-    return { data: await this.prisma.journal.create({ data: { ...dto, userId } }) };
+    const data = await this.prisma.journal.create({ data: { ...dto, userId } });
+    return { data };
   }
 
   async get(userId: string, id: string) {
@@ -44,7 +45,8 @@ export class JournalsService {
     const row = await this.prisma.journal.findUnique({ where: { id } });
     if (!row) throw new NotFoundException();
     if (row.userId !== userId) throw new ForbiddenException();
-    return { data: await this.prisma.journal.update({ where: { id }, data: dto }) };
+    const data = await this.prisma.journal.update({ where: { id }, data: dto });
+    return { data };
   }
 
   async remove(userId: string, id: string) {

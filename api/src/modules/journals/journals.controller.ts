@@ -10,7 +10,12 @@ export class JournalsController {
   constructor(private service: JournalsService) {}
 
   @Get()
-  async list(@Req() req: Request, @Query('q') q?: string, @Query('limit') limit?: string, @Query('cursor') cursor?: string) {
+  async list(
+    @Req() req: Request,
+    @Query('q') q?: string,
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+  ) {
     // @ts-ignore
     const userId = req.user.id as string;
     return this.service.list(userId, q, limit ? Number(limit) : 20, cursor ?? null);

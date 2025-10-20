@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { JournalsController } from './journals.controller';
 import { JournalsService } from './journals.service';
-import { JwtCookieAuthGuard } from '../auth/jwt.guard';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [JwtModule.register({})],          // <-- add
+  imports: [AuthModule],
   controllers: [JournalsController],
-  providers: [JournalsService, JwtCookieAuthGuard], // <-- add guard
+  providers: [JournalsService],
 })
 export class JournalsModule {}
