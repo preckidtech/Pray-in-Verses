@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { SavedPrayersController } from './saved-prayers.controller';
 import { SavedPrayersService } from './saved-prayers.service';
-import { JwtCookieAuthGuard } from '../auth/jwt.guard';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [JwtModule.register({})],          // <-- add
+  imports: [AuthModule], // for JwtCookieAuthGuard + JwtService
   controllers: [SavedPrayersController],
-  providers: [SavedPrayersService, JwtCookieAuthGuard], // <-- add guard
+  providers: [SavedPrayersService],
 })
 export class SavedPrayersModule {}
