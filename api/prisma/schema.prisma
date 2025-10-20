@@ -58,6 +58,7 @@ model CuratedPrayer {
   updatedAt DateTime @updatedAt
 
   // who saved this curated item
+  @@unique([book, chapter, verse])
   savedBy SavedPrayer[]
 }
 

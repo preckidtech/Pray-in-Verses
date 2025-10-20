@@ -1,69 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class CuratedPrayersService {
   constructor(private prisma: PrismaService) {}
 
-  async list(params: {
-    q?: string;
-    book?: string;
-    chapter?: number;
-    limit?: number;
-    cursor?: string | null;
-    userId?: string | null;
-  }) {
-    const { q, book, chapter, limit = 20, cursor, userId } = params;
-
-    const where: any = {};
-    if (book) where.book = { equals: book, mode: 'insensitive' };
-    if (typeof chapter === 'number') where.chapter = chapter;
-    if (q) {
-      where.OR = [
-        { theme: { contains: q, mode: 'insensitive' } },
-        { scriptureText: { contains: q, mode: 'insensitive' } },
-        { insight: { contains: q, mode: 'insensitive' } },
-      ];
-    }
-
-    const items = await this.prisma.curatedPrayer.findMany({
-      where,
-      take: limit + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      orderBy: { createdAt: 'desc' },
+  async listBooks() {
+    const rows = await this.prisma.curatedPrayer.groupBy({
+      by: ['book'],
+      _count: { _all: true },
     });
-
-    let nextCursor: string | null = null;
-    if (items.length > limit) {
-      const next = items.pop()!;
-      nextCursor = next.id;
-    }
-
-    if (userId) {
-      const ids = items.map((i) => i.id);
-      const saved = await this.prisma.savedPrayer.findMany({
-        where: { userId, curatedPrayerId: { in: ids } },
-        select: { curatedPrayerId: true },
-      });
-      const savedSet = new Set(saved.map((s) => s.curatedPrayerId));
-      return {
-        data: items.map((i) => ({ ...i, isSaved: savedSet.has(i.id) })),
-        nextCursor,
-      };
-    }
-
-    return { data: items, nextCursor };
+    return rows.map(r => r.book).sort((a, b) => a.localeCompare(b));
   }
 
-  async byId(id: string, userId?: string | null) {
-    const prayer = await this.prisma.curatedPrayer.findUnique({ where: { id } });
-    if (!prayer) return null;
-    if (!userId) return { ...prayer, isSaved: false };
+  async listChapters(book: string) {
+    const rows = await this.prisma.curatedPrayer.groupBy({
+      by: ['chapter'],
+      where: { book: { equals: book, mode: 'insensitive' } },
+      _count: { _all: true },
+    });
+    return rows.map(r => r.chapter).sort((a, b) => a - b);
+  }
+
+  async listVerses(book: string, chapter: number) {
+    const rows = await this.prisma.curatedPrayer.findMany({
+      where: { book: { equals: book, mode: 'insensitive' }, chapter },
+      select: { verse: true },
+      orderBy: { verse: 'asc' },
+    });
+    return rows.map(r => r.verse);
+  }
+
+  async getByRef(book: string, chapter: number, verse: number, userId: string) {
+    const item = await this.prisma.curatedPrayer.findFirst({
+      where: { book: { equals: book, mode: 'insensitive' }, chapter, verse },
+    });
+    if (!item) throw new NotFoundException('Verse content not found');
 
     const saved = await this.prisma.savedPrayer.findUnique({
-      where: { userId_curatedPrayerId: { userId, curatedPrayerId: id } },
+      where: { userId_curatedPrayerId: { userId, curatedPrayerId: item.id } },
       select: { id: true },
     });
-    return { ...prayer, isSaved: !!saved };
+
+    return {
+      id: item.id,
+      reference: `${item.book} ${item.chapter}:${item.verse}`,
+      theme: item.theme,
+      scriptureText: item.scriptureText,
+      insight: item.insight,
+      prayerPoints: item.prayerPoints,
+      closing: item.closing,
+      isSaved: !!saved,
+    };
   }
 }
