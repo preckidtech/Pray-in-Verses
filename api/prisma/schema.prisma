@@ -20,13 +20,6 @@ enum Role {
   USER
 }
 
-enum PublishState {
-  DRAFT
-  REVIEW
-  PUBLISHED
-  ARCHIVED
-}
-
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -36,30 +29,13 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // NEW Back-relations
-
-  savedPrayers SavedPrayer[] // ← NOTE: array of SavedPrayer, not "UserSavedPrayer"
+  // existing
+  savedPrayers SavedPrayer[]
   journals     Journal[]
-}
 
-model CuratedPrayer {
-  id      String @id @default(cuid())
-  book    String
-  chapter Int
-  verse   Int
-
-  theme         String // Theme/Focus
-  scriptureText String // Verse text
-  insight       String // Short Insight / Reflection
-  prayerPoints  String[] // List of prayer points
-  closing       String // Closing prayer / confession
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // who saved this curated item
-  @@unique([book, chapter, verse])
-  savedBy SavedPrayer[]
+  // NEW back-relations for curated workflow
+  curatedCreated CuratedPrayer[] @relation("CuratedCreatedBy")
+  curatedUpdated CuratedPrayer[] @relation("CuratedUpdatedBy")
 }
 
 model SavedPrayer {
@@ -90,14 +66,47 @@ model Journal {
 }
 
 model AdminInvite {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   email      String
   role       Role
-  token      String   @unique
+  token      String    @unique
   invitedBy  String
   acceptedAt DateTime?
   expiresAt  DateTime
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@index([email])
+}
+
+enum PublishState {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+model CuratedPrayer {
+  id            String   @id @default(cuid())
+  book          String
+  chapter       Int
+  verse         Int
+  theme         String
+  scriptureText String
+  insight       String
+  prayerPoints  String[]
+  closing       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // workflow
+  state       PublishState @default(DRAFT)
+  createdById String? // <-- nullable for now
+  updatedById String? // <-- nullable for now
+  publishedAt DateTime?
+
+  createdBy User?         @relation("CuratedCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy User?         @relation("CuratedUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  savedBy   SavedPrayer[]
+
+  @@unique([book, chapter, verse])
 }
