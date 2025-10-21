@@ -8,6 +8,7 @@ export class CuratedPrayersService {
   async listBooks() {
     const rows = await this.prisma.curatedPrayer.groupBy({
       by: ['book'],
+      where: { state: 'PUBLISHED' }, // ← only published
       _count: { _all: true },
     });
     return rows.map(r => r.book).sort((a, b) => a.localeCompare(b));
@@ -16,7 +17,10 @@ export class CuratedPrayersService {
   async listChapters(book: string) {
     const rows = await this.prisma.curatedPrayer.groupBy({
       by: ['chapter'],
-      where: { book: { equals: book, mode: 'insensitive' } },
+      where: {
+        state: 'PUBLISHED', // ← only published
+        book: { equals: book, mode: 'insensitive' },
+      },
       _count: { _all: true },
     });
     return rows.map(r => r.chapter).sort((a, b) => a - b);
@@ -24,7 +28,11 @@ export class CuratedPrayersService {
 
   async listVerses(book: string, chapter: number) {
     const rows = await this.prisma.curatedPrayer.findMany({
-      where: { book: { equals: book, mode: 'insensitive' }, chapter },
+      where: {
+        state: 'PUBLISHED', // ← only published
+        book: { equals: book, mode: 'insensitive' },
+        chapter,
+      },
       select: { verse: true },
       orderBy: { verse: 'asc' },
     });
@@ -33,7 +41,12 @@ export class CuratedPrayersService {
 
   async getByRef(book: string, chapter: number, verse: number, userId: string) {
     const item = await this.prisma.curatedPrayer.findFirst({
-      where: { book: { equals: book, mode: 'insensitive' }, chapter, verse },
+      where: {
+        state: 'PUBLISHED', // ← only published
+        book: { equals: book, mode: 'insensitive' },
+        chapter,
+        verse,
+      },
     });
     if (!item) throw new NotFoundException('Verse content not found');
 
