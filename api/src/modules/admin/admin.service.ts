@@ -4,12 +4,13 @@ import { CreateInviteDto, AcceptInviteDto, UpdateUserRoleDto } from './dto';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { MailService } from '../mail/mail.service';
 
 const INVITE_DAYS = 7;
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private mailService: MailService) {}
 
   async createInvite(inviterId: string, dto: CreateInviteDto) {
     const token = crypto.randomBytes(24).toString('hex');
@@ -24,6 +25,12 @@ export class AdminService {
         expiresAt,
       },
     });
+
+    const base = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
+    const link = `${base}/admin/accept?token=${encodeURIComponent(token)}`;
+
+    this.mailService.sendInvite(invite.email, link, invite.role).catch(console.error);
+    
     return { data: { id: invite.id, email: invite.email, role: invite.role, token, expiresAt } };
   }
 

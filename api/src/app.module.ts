@@ -6,6 +6,7 @@ import { SavedPrayersModule } from './modules/saved-prayers/saved-prayers.module
 import { JournalsModule } from './modules/journals/journals.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AdminCuratedModule } from './modules/admin-curated/admin-curated.module';
+import { BibleModule } from './modules/bible/bible.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { AdminCuratedModule } from './modules/admin-curated/admin-curated.module
     SavedPrayersModule,
     JournalsModule,
     AdminModule,
-    AdminCuratedModule
+    AdminCuratedModule,
+    BibleModule
   ],
 })
 export class AppModule {}

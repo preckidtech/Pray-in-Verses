@@ -1,30 +1,46 @@
-import { Rss } from "lucide-react";
+// src/lib/api.js
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+async function request(path, { method = "GET", body, headers = {} } = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...headers },
+    body: body ? JSON.stringify(body) : undefined,
+  });
 
-export async function api(path, { method = 'GET', body, headers } = {}) {
-    const res = await fetch(`${BASE_URL}${path}`, {
-        method,
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(headers || {}),
-        },
-        body: body ? JSON.stringify(body) : undefined,
-    });
+  // Optionally handle 401 globally
+  // if (res.status === 401) window.location.assign("/login");
 
-    const text = await res.text();
-    const data = text ? JSON.parse(text) : null;
+  const text = await res.text();
+  try { return text ? JSON.parse(text) : {}; } catch { return { data: text }; }
+}
 
-    if (!res.ok) {
-        const err = data?.error || { code: 'HTTP_ERROR', message: res.statusText};
-        err.status = res.status;
-        throw err;
-    }
-    return data;
-}    
+export async function get(path) {
+  return request(path, { method: "GET" });
+}
 
-export const get = (p, opts) => api(p, { ...(opts|| {}), method: 'GET'});
-export const post = (p, body, opts) => api(p, { ...(opts||{}), method: 'POST', body });
-export const patch= (p, body, opts) => api(p, { ...(opts||{}), method: 'PATCH', body });
-export const del  = (p, opts) => api(p, { ...(opts||{}), method: 'DELETE' });
+export async function post(path, body) {
+  return request(path, { method: "POST", body });
+}
+
+export async function patch(path, body) {
+  return request(path, { method: "PATCH", body });
+}
+
+export async function del(path) {
+  return request(path, { method: "DELETE" });
+}
+
+// If you also want an object-style API:
+export const api = { get, post, patch, del };
+export default api; // optional default export
+
+export const journals = {
+  list: () => request("/journals"),
+  get: (id) => request(`/journals/${id}`),
+  create: (payload) => request("/journals", { method: "POST", body: payload}),
+  update: (id, payload) => request(`/journals/${id}`, {method: "PATCH", body: payload}),
+  remove: (id) => request(`/journals/${id}`, {method: "DELETE"}),
+};
+

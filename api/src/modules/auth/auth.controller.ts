@@ -23,7 +23,8 @@ export class AuthController {
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: false, // set true in production behind HTTPS
+      secure: false,
+      path: '/', // set true in production behind HTTPS
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return { user };
