@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PublishState } from '@prisma/client';
 
 @Injectable()
 export class CuratedPrayersService {
@@ -66,4 +67,34 @@ export class CuratedPrayersService {
       isSaved: !!saved,
     };
   }
+
+  /**
+   * Deterministic "Verse of the day":
+   * - Pick a stable index based on today's YYYYMMDD
+   * - Return 1 published curated entry
+   */
+  async verseofTheDay(){
+    const count = await this.prisma.curatedPrayer.count({
+      where: { state: PublishState.PUBLISHED},
+    });
+    if (!count) return null;
+
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+
+    const index = seed % count;
+
+    const rows = await this.prisma.curatedPrayer.findMany({
+      where: { state: PublishState.PUBLISHED },
+      orderBy: [{ book: 'asc'}, { chapter: 'asc'}, { verse: 'asc'}, {updatedAt: 'desc' }],
+      skip: index,
+      take: 1,
+      select: {
+        id:true, book:true, chapter:true, verse:true, theme: true, scriptureText: true, insight: true, prayerPoints: true, closing: true,
+      },
+    });
+    return rows[0] ?? null;
+  
+  }
+
 }

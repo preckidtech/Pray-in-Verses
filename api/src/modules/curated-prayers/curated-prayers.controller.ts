@@ -47,6 +47,12 @@ export class CuratedPrayersController {
     return { data };
   }
 
+  @Get('verse-of-the-day')
+  async verseOfTheDay() {
+    const data = await this.service.verseofTheDay();
+    return {data};
+  }
+  
   // New: count of published curated prayers (for the Browse banner)
   @Get('published-count')
   async publishedCount() {
