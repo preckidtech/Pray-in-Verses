@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { api } from "../api";
 import toast from "react-hot-toast";
-import VERSE_COUNTS from "../../../api/src/modules/bible/verse-counts.json";
+import VERSE_COUNTS from "../../constants/verse-counts.json";
 
 const Field = ({ label, children }) => (
   <label className="block space-y-1">

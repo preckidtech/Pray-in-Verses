@@ -1,3 +1,4 @@
+// vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -22,12 +23,14 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
-      // Add whichever API roots you use
-      "/auth": { target: "http://localhost:4000", changeOrigin: true, secure: false },
-      "/browse": { target: "http://localhost:4000", changeOrigin: true, secure: false },
-      "/saved-prayers": { target: "http://localhost:4000", changeOrigin: true, secure: false },
-      "/journals": { target: "http://localhost:4000", changeOrigin: true, secure: false },
-      "/admin/": { target: "http://localhost:4000", changeOrigin: true, secure: false },
+      // everything under /api will be forwarded to Nest at :4000
+      "/api": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+        secure: false,
+        // strip /api before forwarding so /api/prayer-wall -> /prayer-wall
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
     },
   },
   build: {

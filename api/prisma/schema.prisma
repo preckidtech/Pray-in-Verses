@@ -36,6 +36,13 @@ model User {
   // NEW back-relations for curated workflow
   curatedCreated CuratedPrayer[] @relation("CuratedCreatedBy")
   curatedUpdated CuratedPrayer[] @relation("CuratedUpdatedBy")
+
+  // Back-relations for the prayer wall features:
+  prayerRequests  PrayerRequest[] // requests this user created
+  prayerLikes     PrayerLike[] // requests this user liked
+  prayerBookmarks PrayerBookmark[] // requests this user bookmarked
+  prayerComments  PrayerComment[] // comments this user posted
+  prayerPoints    PrayerPoint[]
 }
 
 model SavedPrayer {
@@ -109,4 +116,88 @@ model CuratedPrayer {
   savedBy   SavedPrayer[]
 
   @@unique([book, chapter, verse])
+}
+
+model PrayerRequest {
+  id          String  @id @default(cuid())
+  title       String
+  description String
+  category    String
+  urgent      Boolean @default(false)
+  anonymous   Boolean @default(false)
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  likes     PrayerLike[]
+  bookmarks PrayerBookmark[]
+  comments  PrayerComment[]
+
+  @@index([createdById])
+}
+
+model PrayerLike {
+  id        String        @id @default(cuid())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  request   PrayerRequest @relation(fields: [requestId], references: [id])
+  requestId String
+
+  createdAt DateTime @default(now())
+
+  // One like per user per request
+  @@unique([userId, requestId])
+  @@index([userId])
+  @@index([requestId])
+}
+
+model PrayerBookmark {
+  id        String        @id @default(cuid())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  request   PrayerRequest @relation(fields: [requestId], references: [id])
+  requestId String
+
+  createdAt DateTime @default(now())
+
+  // One bookmark per user per request
+  @@unique([userId, requestId])
+  @@index([userId])
+  @@index([requestId])
+}
+
+model PrayerComment {
+  id        String        @id @default(cuid())
+  body      String
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  request   PrayerRequest @relation(fields: [requestId], references: [id])
+  requestId String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([requestId])
+}
+
+enum PrayerStatus {
+  OPEN
+  ANSWERED
+}
+
+model PrayerPoint {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  title      String
+  body       String
+  status     PrayerStatus @default(OPEN)
+  answeredAt DateTime?
+  tags       String[]     @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

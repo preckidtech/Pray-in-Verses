@@ -2,7 +2,7 @@ import React from "react";
 import { Book, BookOpen } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import VERSE_COUNTS from "../../api/src/modules/bible/verse-counts.json"; // ← keep a copy in src/data
+import VERSE_COUNTS from "../constants/verse-counts.json"
 
 // Backend base (optional). Set VITE_API_BASE=http://localhost:4000 in .env if not using a proxy.
 const API_BASE = import.meta.env.VITE_API_BASE || "";

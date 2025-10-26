@@ -7,7 +7,7 @@ import { JournalsModule } from './modules/journals/journals.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AdminCuratedModule } from './modules/admin-curated/admin-curated.module';
 import { BibleModule } from './modules/bible/bible.module';
-
+import { PrayerWallModule } from './modules/prayer-wall/prayer-wall.module';
 @Module({
   imports: [
     PrismaModule,
@@ -17,7 +17,8 @@ import { BibleModule } from './modules/bible/bible.module';
     JournalsModule,
     AdminModule,
     AdminCuratedModule,
-    BibleModule
+    BibleModule,
+    PrayerWallModule
   ],
 })
 export class AppModule {}
