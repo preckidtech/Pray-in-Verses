@@ -22,6 +22,7 @@ import Welcome from "./pages/onboarding/Welcome";
 import Login from "./pages/onboarding/Login";
 import SignUp from "./pages/onboarding/Signup";
 import ForgotPassword from "./pages/onboarding/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 // Pages (app, require auth)
 import Home from "./pages/Home";
@@ -85,6 +86,7 @@ function AppContent() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />}/>
 
             {/* Protected APP routes */}
             <Route element={<RequireAuth />}>

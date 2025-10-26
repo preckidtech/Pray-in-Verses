@@ -4,12 +4,25 @@ import { AuthService } from './auth.service';
 import { SignupDto, LoginDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtCookieAuthGuard } from './jwt.guard';
-
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 const COOKIE_NAME = 'access_token';
 
 @Controller('auth')
 export class AuthController {
   constructor(private auth: AuthService, private jwt: JwtService) {}
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.auth.createPasswordReset(dto.email);
+    return { ok: true};
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.auth.resetPasswordWithToken(dto.token, dto.newPassword);
+    return { ok:true};
+  }
 
   @Post('signup')
   async signup(@Body() dto: SignupDto) {
