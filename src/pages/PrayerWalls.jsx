@@ -112,6 +112,7 @@ const PrayerWalls = () => {
   // server-backed items
   const [prayerRequests, setPrayerRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalUsers, setTotalUsers] = useState(null);
 
   // UI state
   const [showModal, setShowModal] = useState(false);
@@ -184,6 +185,19 @@ const PrayerWalls = () => {
   useEffect(() => {
     loadList();
   }, [loadList]);
+
+  useEffect(() =>{
+    let alive = true;
+    (async () => {
+      try { 
+        const res = await request("/stats/users-count");
+        if (alive) setTotalUsers(Number(res?.count ?? 0));
+      } catch (e){
+
+      }
+    })();
+    return () => {alive = false};
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -401,7 +415,9 @@ const PrayerWalls = () => {
               <div>
                 <h1 className="text-base font-semibold mb-2">Community Prayer Wall</h1>
                 <p className="text-blue-100 text-sm">
-                  Join {stats.users.toLocaleString()}+ believers in prayer and support
+                  {totalUsers == null
+                    ? "Join believers in prayer and support"
+                    : <>Join <span className="font-semibold">{totalUsers.toLocaleString()}</span>+ believers in prayer and support</>}
                 </p>
               </div>
               <div className="hidden md:block">

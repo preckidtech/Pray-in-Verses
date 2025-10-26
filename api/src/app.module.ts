@@ -8,6 +8,9 @@ import { AdminModule } from './modules/admin/admin.module';
 import { AdminCuratedModule } from './modules/admin-curated/admin-curated.module';
 import { BibleModule } from './modules/bible/bible.module';
 import { PrayerWallModule } from './modules/prayer-wall/prayer-wall.module';
+import { MyPrayersModule } from './modules/my-prayers/my-prayers.module';
+import { StatsModule } from './modules/stats/stats.module';
+
 @Module({
   imports: [
     PrismaModule,
@@ -18,7 +21,9 @@ import { PrayerWallModule } from './modules/prayer-wall/prayer-wall.module';
     AdminModule,
     AdminCuratedModule,
     BibleModule,
-    PrayerWallModule
+    PrayerWallModule,
+    MyPrayersModule,
+    StatsModule
   ],
 })
 export class AppModule {}
