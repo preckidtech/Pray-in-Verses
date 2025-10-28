@@ -1,11 +1,19 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+  Req,
+  Query,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { CuratedPrayersService } from './curated-prayers.service';
 import { JwtCookieAuthGuard } from '../auth/jwt.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PublishState } from '@prisma/client';
 
-@UseGuards(JwtCookieAuthGuard) // login required for all routes
+@UseGuards(JwtCookieAuthGuard)
 @Controller('browse')
 export class CuratedPrayersController {
   constructor(
@@ -13,6 +21,7 @@ export class CuratedPrayersController {
     private readonly prisma: PrismaService,
   ) {}
 
+  // Books / Chapters / Verses
   @Get('books')
   async books() {
     const data = await this.service.listBooks();
@@ -34,6 +43,7 @@ export class CuratedPrayersController {
     return { data };
   }
 
+  // One verse (includes saved flag)
   @Get('verse/:book/:chapter/:verse')
   async verseContent(
     @Req() req: Request,
@@ -41,24 +51,42 @@ export class CuratedPrayersController {
     @Param('chapter', ParseIntPipe) chapter: number,
     @Param('verse', ParseIntPipe) verse: number,
   ) {
-    // @ts-ignore - set by JwtCookieAuthGuard
+    // @ts-ignore set by JwtCookieAuthGuard
     const userId = req.user.id as string;
     const data = await this.service.getByRef(book, chapter, verse, userId);
     return { data };
   }
 
+  // Verse of the Day
   @Get('verse-of-the-day')
   async verseOfTheDay() {
-    const data = await this.service.verseofTheDay();
-    return {data};
+    const data = await this.service.verseOfTheDay();
+    return { data };
   }
-  
-  // New: count of published curated prayers (for the Browse banner)
+
+  // Published curated-prayer count (for Browse banner)
   @Get('published-count')
   async publishedCount() {
     const count = await this.prisma.curatedPrayer.count({
       where: { state: PublishState.PUBLISHED },
     });
     return { count };
+  }
+
+  // Per-verse prayer-points count for a chapter
+  @Get('books/:book/chapters/:chapter/counts')
+  async chapterCounts(
+    @Param('book') book: string,
+    @Param('chapter', ParseIntPipe) chapter: number,
+  ) {
+    const data = await this.service.chapterCounts(book, chapter);
+    return { data };
+  }
+
+  // Search (books, theme, insight, scriptureText + prayerPoints exact item)
+  @Get('search')
+  async search(@Query('q') q?: string) {
+    const data = await this.service.search(q || '');
+    return { data };
   }
 }

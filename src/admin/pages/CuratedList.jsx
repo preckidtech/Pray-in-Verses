@@ -28,21 +28,41 @@ export default function CuratedList() {
   const state = sp.get("state") || "";
   const book = sp.get("book") || "";
 
-  async function load(listCursor) {
+  async function load(listCursor = null, { append = false } = {}) {
     setLoading(true);
-    const res = await api.listCurated(q, state, book, 50, listCursor || undefined);
-    setLoading(false);
-    if (res?.data) {
-      setItems(res.data.items || res.data || []);
-      setCursor(res.data.nextCursor || null);
-    } else {
-      setItems([]);
+    try {
+      const res = await api.listCurated(q, state, book, 50, listCursor || undefined);
+      setLoading(false);
+
+      if (!res) {
+        // 401 is already redirected by request(), but just in case:
+        setItems([]);
+        setCursor(null);
+        return;
+      }
+
+      if (res.status && res.status >= 400) {
+        toast.error(`Failed to load (${res.status})`);
+        setItems(append ? items : []);
+        setCursor(null);
+        return;
+      }
+
+      const nextItems = Array.isArray(res.items) ? res.items : [];
+      const nextCursor = res.nextCursor || null;
+
+      setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
+      setCursor(nextCursor);
+    } catch (e) {
+      setLoading(false);
+      toast.error("Failed to load curated prayers");
+      setItems(append ? items : []);
       setCursor(null);
     }
   }
 
   React.useEffect(() => {
-    load(null);
+    load(null, { append: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, state, book]);
 
@@ -60,7 +80,7 @@ export default function CuratedList() {
     const res = await api.deleteCurated(id);
     if (res?.ok) {
       toast.success("Deleted");
-      load(null);
+      load(null, { append: false });
     } else {
       toast.error(res?.message || "Delete failed");
     }
@@ -159,12 +179,12 @@ export default function CuratedList() {
         </table>
       </div>
 
-      {/* Pagination (cursor) */}
+      {/* Pagination */}
       <div className="flex justify-end">
-        {cursor && (
+        {cursor && !loading && (
           <button
             className="px-3 py-2 border rounded-md"
-            onClick={() => load(cursor)}
+            onClick={() => load(cursor, { append: true })}
           >
             Load more
           </button>

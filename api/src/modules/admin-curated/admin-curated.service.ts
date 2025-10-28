@@ -1,3 +1,4 @@
+// src/modules/admin-curated/admin-curated.service.ts
 import {
   BadRequestException,
   ForbiddenException,
@@ -8,10 +9,19 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCuratedPrayerDto, UpdateCuratedPrayerDto } from './dto';
 import { PublishState, Role } from '@prisma/client';
 
+function asPublishState(val?: string): PublishState | undefined {
+  if (!val) return undefined;
+  const up = String(val).toUpperCase().trim();
+  return (Object.keys(PublishState) as string[]).includes(up)
+    ? (up as PublishState)
+    : undefined;
+}
+
 @Injectable()
 export class AdminCuratedService {
   constructor(private prisma: PrismaService) {}
 
+  // ---------- list / create / read / update / transition / remove ----------
   async list(
     userRole: Role,
     q?: string,
@@ -29,11 +39,15 @@ export class AdminCuratedService {
         { insight: { contains: q, mode: 'insensitive' } },
       ];
     }
-    if (state) where.state = state;
+    const st = asPublishState(state as string | undefined);
+    if (st) where.state = st;
+
+    // defend limit
+    const take = Math.min(Math.max(Number(limit) || 20, 1), 100);
 
     const rows = await this.prisma.curatedPrayer.findMany({
       where,
-      take: limit + 1,
+      take: take + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       orderBy: [{ state: 'asc' }, { updatedAt: 'desc' }],
       select: {
@@ -51,11 +65,12 @@ export class AdminCuratedService {
     });
 
     let nextCursor: string | null = null;
-    if (rows.length > limit) {
+    if (rows.length > take) {
       const next = rows.pop()!;
       nextCursor = next.id;
     }
-    return { data: rows, nextCursor };
+    // Return envelope your Admin UI expects
+    return { items: rows, nextCursor };
   }
 
   async create(userId: string, dto: CreateCuratedPrayerDto) {
@@ -71,7 +86,6 @@ export class AdminCuratedService {
       return { data };
     } catch (e: any) {
       if (e.code === 'P2002') {
-        // Assuming @@unique([book, chapter, verse]) in schema
         throw new BadRequestException(
           'A curated entry already exists for this book/chapter/verse.',
         );
@@ -86,25 +100,41 @@ export class AdminCuratedService {
     return { data: row };
   }
 
-  async update(userId: string, userRole: Role, id: string, dto: UpdateCuratedPrayerDto) {
-    const row = await this.prisma.curatedPrayer.findUnique({ where: { id } });
-    if (!row) throw new NotFoundException();
-
+  private assertCanEditRow(row: any, userId: string, userRole: Role) {
     const isElevated = userRole === 'MODERATOR' || userRole === 'SUPER_ADMIN';
     const owns = row.createdById === userId;
 
-    // Editors can edit only DRAFT/REVIEW they created
     if (!isElevated) {
-      if (!owns) throw new ForbiddenException('You can only edit your own drafts');
+      if (!owns) {
+        throw new ForbiddenException('You can only edit your own drafts');
+      }
       if (!(row.state === 'DRAFT' || row.state === 'REVIEW')) {
-        throw new ForbiddenException('Only DRAFT/REVIEW items can be edited by editors');
+        throw new ForbiddenException(
+          'Only DRAFT/REVIEW items can be edited by editors',
+        );
       }
     }
     if (row.state === 'ARCHIVED' && !isElevated) {
       throw new ForbiddenException('Archived item cannot be edited by editor');
     }
+  }
 
-    // if changing reference, keep it unique
+  private async getRowForEdit(id: string, userId: string, userRole: Role) {
+    const row = await this.prisma.curatedPrayer.findUnique({ where: { id } });
+    if (!row) throw new NotFoundException();
+    this.assertCanEditRow(row, userId, userRole);
+    return row;
+  }
+
+  async update(
+    userId: string,
+    userRole: Role,
+    id: string,
+    dto: UpdateCuratedPrayerDto,
+  ) {
+    const row = await this.getRowForEdit(id, userId, userRole);
+
+    // keep reference unique if changing
     if (dto.book || dto.chapter || dto.verse) {
       const book = dto.book ?? row.book;
       const chapter = dto.chapter ?? row.chapter;
@@ -118,19 +148,27 @@ export class AdminCuratedService {
         },
         select: { id: true },
       });
-      if (dupe) throw new BadRequestException('Another entry already exists for that reference');
+      if (dupe)
+        throw new BadRequestException(
+          'Another entry already exists for that reference',
+        );
+    }
+
+    // IMPORTANT: String[] fields must use { set: [...] } when replacing
+    const dataUpdate: any = { ...dto, updatedById: userId };
+    if (dto.prayerPoints) {
+      const cleaned = dto.prayerPoints.map((s) => s?.trim()).filter(Boolean);
+      dataUpdate.prayerPoints = { set: cleaned };
     }
 
     const updated = await this.prisma.curatedPrayer.update({
       where: { id },
-      data: { ...dto, updatedById: userId },
+      data: dataUpdate,
     });
     return { data: updated };
   }
 
-  /**
-   * Publish preconditions – all the content fields must be present.
-   */
+  /** Preconditions for publishing */
   private ensurePublishPreconditions(row: {
     book?: string;
     chapter?: number;
@@ -149,57 +187,65 @@ export class AdminCuratedService {
     if (!row.scriptureText?.trim()) errs.push('scriptureText');
     if (!row.insight?.trim()) errs.push('insight');
     if (!row.closing?.trim()) errs.push('closing');
-    if (!row.prayerPoints || row.prayerPoints.length === 0) errs.push('prayerPoints (at least one)');
+    if (!row.prayerPoints || row.prayerPoints.length === 0)
+      errs.push('prayerPoints (at least one)');
     if (errs.length) {
       throw new BadRequestException(
-        `Cannot publish: missing/empty fields → ${errs.join(', ')}`
+        `Cannot publish: missing/empty fields → ${errs.join(', ')}`,
       );
     }
   }
 
-  async transition(userId: string, userRole: Role, id: string, target: PublishState) {
+  async transition(
+    userId: string,
+    userRole: Role,
+    id: string,
+    target: PublishState,
+  ) {
     const row = await this.prisma.curatedPrayer.findUnique({ where: { id } });
     if (!row) throw new NotFoundException();
 
     const isElevated = userRole === 'MODERATOR' || userRole === 'SUPER_ADMIN';
     const owns = row.createdById === userId;
 
-    // --- REVIEW ---
+    // REVIEW
     if (target === 'REVIEW') {
-      // Case A: submit DRAFT → REVIEW (owner or elevated)
       if (row.state === 'DRAFT') {
-        if (!owns && !isElevated) throw new ForbiddenException('Only the owner can submit draft to review');
+        if (!owns && !isElevated)
+          throw new ForbiddenException(
+            'Only the owner can submit draft to review',
+          );
         return this._setState(id, 'REVIEW', userId);
       }
-      // Case B: unpublish PUBLISHED → REVIEW (elevated only)
       if (row.state === 'PUBLISHED') {
-        if (!isElevated) throw new ForbiddenException('Only moderator/super admin can unpublish');
-        return this._setState(id, 'REVIEW', userId, false /* publishFlag */);
+        if (!isElevated)
+          throw new ForbiddenException(
+            'Only moderator/super admin can unpublish',
+          );
+        return this._setState(id, 'REVIEW', userId, false);
       }
-      // Already in REVIEW – no-op
-      if (row.state === 'REVIEW') {
-        return { data: row };
-      }
-      // ARCHIVED → REVIEW (restore; elevated only)
+      if (row.state === 'REVIEW') return { data: row, ok: true };
       if (row.state === 'ARCHIVED') {
-        if (!isElevated) throw new ForbiddenException('Only moderator/super admin can restore from archive');
+        if (!isElevated)
+          throw new ForbiddenException(
+            'Only moderator/super admin can restore from archive',
+          );
         return this._setState(id, 'REVIEW', userId);
       }
       throw new BadRequestException(`Invalid transition: ${row.state} → REVIEW`);
     }
 
-    // --- PUBLISHED ---
+    // PUBLISHED
     if (target === 'PUBLISHED') {
-      if (!isElevated) throw new ForbiddenException('Only moderator/super admin can publish');
+      if (!isElevated)
+        throw new ForbiddenException('Only moderator/super admin can publish');
       if (!(row.state === 'REVIEW' || row.state === 'DRAFT')) {
         throw new BadRequestException('Only DRAFT/REVIEW can be published');
       }
 
-      // Preconditions
       this.ensurePublishPreconditions(row);
 
-      // If your schema allows multiple rows per reference, enforce uniqueness for PUBLISHED here.
-      // (If you already have @@unique([book, chapter, verse]), this is redundant but harmless.)
+      // uniqueness among PUBLISHED
       const conflict = await this.prisma.curatedPrayer.findFirst({
         where: {
           state: 'PUBLISHED',
@@ -212,16 +258,17 @@ export class AdminCuratedService {
       });
       if (conflict) {
         throw new BadRequestException(
-          `Another published entry already exists for ${row.book} ${row.chapter}:${row.verse}. Unpublish it first.`
+          `Another published entry already exists for ${row.book} ${row.chapter}:${row.verse}. Unpublish it first.`,
         );
       }
 
-      return this._setState(id, 'PUBLISHED', userId, true /* publishFlag */);
+      return this._setState(id, 'PUBLISHED', userId, true);
     }
 
-    // --- ARCHIVED ---
+    // ARCHIVED
     if (target === 'ARCHIVED') {
-      if (!isElevated) throw new ForbiddenException('Only moderator/super admin can archive');
+      if (!isElevated)
+        throw new ForbiddenException('Only moderator/super admin can archive');
       return this._setState(id, 'ARCHIVED', userId);
     }
 
@@ -237,13 +284,7 @@ export class AdminCuratedService {
     publish = false,
   ) {
     const data: any = { state, updatedById: userId, updatedAt: new Date() };
-    if (publish) {
-      // set first publish timestamp if not yet set
-      data.publishedAt = new Date();
-    } else if (state === 'REVIEW') {
-      // optional: keep publishedAt as historical, or null it out – choose your policy.
-      // data.publishedAt = null;
-    }
+    if (publish) data.publishedAt = new Date();
     const updated = await this.prisma.curatedPrayer.update({ where: { id }, data });
     return { data: updated, ok: true };
   }
@@ -266,5 +307,103 @@ export class AdminCuratedService {
     await this.prisma.savedPrayer.deleteMany({ where: { curatedPrayerId: id } });
     await this.prisma.curatedPrayer.delete({ where: { id } });
     return { ok: true };
+  }
+
+  // ---------- Per-point editing (PRISMA array operators) ----------
+
+  /** Replace the entire prayerPoints array (may be empty). */
+  async replacePrayerPoints(id: string, items: string[]) {
+    const clean = (items || [])
+      .map((s) => (s ?? '').trim())
+      .filter(Boolean);
+    const updated = await this.prisma.curatedPrayer.update({
+      where: { id },
+      data: { prayerPoints: { set: clean } },
+      select: { id: true, prayerPoints: true, updatedAt: true },
+    });
+    return { ok: true, data: updated };
+  }
+
+  /** Append a new point to the end of the list. */
+  async appendPrayerPoint(id: string, text: string) {
+    const t = (text ?? '').trim();
+    if (!t) throw new BadRequestException('Text is required');
+    const updated = await this.prisma.curatedPrayer.update({
+      where: { id },
+      data: { prayerPoints: { push: t } },
+      select: { id: true, prayerPoints: true },
+    });
+    return { ok: true, data: updated };
+  }
+
+  /** Update a specific index (0-based). */
+  async updatePrayerPointAt(id: string, index: number, text: string) {
+    const t = (text ?? '').trim();
+    if (!t) throw new BadRequestException('Text is required');
+
+    const row = await this.prisma.curatedPrayer.findUnique({
+      where: { id },
+      select: { prayerPoints: true },
+    });
+    if (!row) throw new NotFoundException();
+
+    const pts = [...(row.prayerPoints || [])];
+    if (index < 0 || index >= pts.length)
+      throw new BadRequestException('Index out of range');
+
+    pts[index] = t;
+
+    const updated = await this.prisma.curatedPrayer.update({
+      where: { id },
+      data: { prayerPoints: { set: pts } },
+      select: { id: true, prayerPoints: true },
+    });
+    return { ok: true, data: updated };
+  }
+
+  /** Remove a point at index. */
+  async removePrayerPointAt(id: string, index: number) {
+    const row = await this.prisma.curatedPrayer.findUnique({
+      where: { id },
+      select: { prayerPoints: true },
+    });
+    if (!row) throw new NotFoundException();
+
+    const pts = [...(row.prayerPoints || [])];
+    if (index < 0 || index >= pts.length)
+      throw new BadRequestException('Index out of range');
+
+    pts.splice(index, 1);
+
+    const updated = await this.prisma.curatedPrayer.update({
+      where: { id },
+      data: { prayerPoints: { set: pts } },
+      select: { id: true, prayerPoints: true },
+    });
+    return { ok: true, data: updated };
+  }
+
+  /** Move a point from index `from` to `to`. */
+  async reorderPrayerPoints(id: string, from: number, to: number) {
+    const row = await this.prisma.curatedPrayer.findUnique({
+      where: { id },
+      select: { prayerPoints: true },
+    });
+    if (!row) throw new NotFoundException();
+
+    const pts = [...(row.prayerPoints || [])];
+    if (from < 0 || from >= pts.length || to < 0 || to >= pts.length) {
+      throw new BadRequestException('Index out of range');
+    }
+
+    const [moved] = pts.splice(from, 1);
+    pts.splice(to, 0, moved);
+
+    const updated = await this.prisma.curatedPrayer.update({
+      where: { id },
+      data: { prayerPoints: { set: pts } },
+      select: { id: true, prayerPoints: true },
+    });
+    return { ok: true, data: updated };
   }
 }

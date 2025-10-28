@@ -4,6 +4,7 @@ import { api } from "../api";
 import toast from "react-hot-toast";
 import VERSE_COUNTS from "../../constants/verse-counts.json";
 
+// tiny label wrapper
 const Field = ({ label, children }) => (
   <label className="block space-y-1">
     <div className="text-sm text-gray-700">{label}</div>
@@ -104,10 +105,13 @@ export default function CuratedEdit() {
     theme: "",
     scriptureText: "",
     insight: "",
-    prayerPointsMultiline: "",
     closing: "",
-    state: "REVIEW", // default state for new entries
+    state: "REVIEW",
   });
+
+  // per-point array editing (new)
+  const [points, setPoints] = React.useState([""]); // at least one row in UI
+  const [pointsDirty, setPointsDirty] = React.useState(false);
 
   const [chapters, setChapters] = React.useState([]);
   const [verses, setVerses] = React.useState([]);
@@ -127,13 +131,18 @@ export default function CuratedEdit() {
             theme: it.theme || "",
             scriptureText: it.scriptureText || "",
             insight: it.insight || "",
-            prayerPointsMultiline: (it.prayerPoints || []).join("\n"),
             closing: it.closing || "",
             state: it.state || "REVIEW",
           });
+          const pp = Array.isArray(it.prayerPoints) ? it.prayerPoints : [];
+          setPoints(pp.length ? pp : [""]);
+          setPointsDirty(false);
         } else {
           toast.error(res?.message || "Not found");
         }
+      } else {
+        setPoints([""]);
+        setPointsDirty(false);
       }
       setLoading(false);
     })();
@@ -144,6 +153,7 @@ export default function CuratedEdit() {
     setData((d) => ({ ...d, ...partial }));
   }
 
+  // Book → chapters
   React.useEffect(() => {
     let alive = true;
     (async () => {
@@ -184,6 +194,7 @@ export default function CuratedEdit() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.book]);
 
+  // Chapter → verses
   React.useEffect(() => {
     let alive = true;
     (async () => {
@@ -224,6 +235,71 @@ export default function CuratedEdit() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.book, data.chapter]);
 
+  // ---------- Prayer points UI helpers ----------
+  const updatePoint = (i, val) => {
+    setPoints((arr) => {
+      const copy = [...arr];
+      copy[i] = val;
+      return copy;
+    });
+    setPointsDirty(true);
+  };
+  const addPointRow = (i) => {
+    setPoints((arr) => {
+      const copy = [...arr];
+      copy.splice(Number.isInteger(i) ? i + 1 : arr.length, 0, "");
+      return copy;
+    });
+    setPointsDirty(true);
+  };
+  const removePointRow = (i) => {
+    setPoints((arr) => {
+      const copy = [...arr];
+      copy.splice(i, 1);
+      if (copy.length === 0) copy.push("");
+      return copy;
+    });
+    setPointsDirty(true);
+  };
+  const moveUp = (i) => {
+    if (i <= 0) return;
+    setPoints((arr) => {
+      const copy = [...arr];
+      [copy[i - 1], copy[i]] = [copy[i], copy[i - 1]];
+      return copy;
+    });
+    setPointsDirty(true);
+  };
+  const moveDown = (i) => {
+    setPoints((arr) => {
+      if (i >= arr.length - 1) return arr;
+      const copy = [...arr];
+      [copy[i + 1], copy[i]] = [copy[i], copy[i + 1]];
+      return copy;
+    });
+    setPointsDirty(true);
+  };
+
+  // Persist only the points array (replace) – only when editing an existing record
+  const savePointsOnly = async () => {
+    if (isCreate) {
+      return toast("Create the entry first, then you can save points inline.", { icon: "ℹ️" });
+    }
+    const cleaned = points.map((s) => (s || "").trim()).filter(Boolean);
+    try {
+      const res = await api.replaceCuratedPoints(id, cleaned);
+      if (res?.data || res?.ok) {
+        toast.success("Prayer points saved");
+        setPointsDirty(false);
+      } else {
+        toast.error(res?.message || "Failed to save points");
+      }
+    } catch {
+      toast.error("Failed to save points");
+    }
+  };
+
+  // full payload builder
   function buildPayload() {
     if (!data.book.trim()) return toast.error("Please select a book");
     const chapterNum = Number(data.chapter);
@@ -231,10 +307,7 @@ export default function CuratedEdit() {
     if (!chapterNum) return toast.error("Please select a chapter");
     if (!verseNum) return toast.error("Please select a verse");
 
-    const pp = data.prayerPointsMultiline
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const pp = points.map((s) => (s || "").trim()).filter(Boolean);
 
     return {
       book: data.book.trim(),
@@ -243,7 +316,7 @@ export default function CuratedEdit() {
       theme: data.theme.trim(),
       scriptureText: data.scriptureText.trim(),
       insight: data.insight.trim(),
-      prayerPoints: pp,
+      prayerPoints: pp, // sent with save/publish too
       closing: data.closing.trim(),
     };
   }
@@ -261,6 +334,8 @@ export default function CuratedEdit() {
       if (isCreate) {
         const newId = res?.data?.id || res?.id;
         return nav(`/admin/curated/${newId}`, { replace: true });
+      } else {
+        setPointsDirty(false);
       }
     } else {
       toast.error(res?.message || "Save failed");
@@ -271,7 +346,6 @@ export default function CuratedEdit() {
     setSaving(true);
     let currentId = id;
 
-    // 1) create or update
     const payload = buildPayload();
     if (!payload) { setSaving(false); return; }
 
@@ -282,7 +356,6 @@ export default function CuratedEdit() {
         return toast.error(created?.message || "Create failed");
       }
       currentId = created?.data?.id || created?.id;
-      // no navigate to edit; we’ll go to the list after publishing
     } else {
       const updated = await api.updateCurated(id, payload);
       if (!(updated?.data || updated?.ok)) {
@@ -291,13 +364,11 @@ export default function CuratedEdit() {
       }
     }
 
-    // 2) publish
     const res = await api.transitionCurated(currentId, "PUBLISHED");
     setSaving(false);
 
     if (res?.ok) {
       toast.success("Published");
-      // redirect to curated dashboard after publish
       nav("/admin/curated", { replace: true });
     } else {
       toast.error(res?.message || "Publish failed");
@@ -305,7 +376,6 @@ export default function CuratedEdit() {
   }
 
   async function onPublishToggle() {
-    // For new entries, do save+publish
     if (isCreate) return saveAndPublish();
 
     const target = data.state === "PUBLISHED" ? "REVIEW" : "PUBLISHED";
@@ -317,10 +387,7 @@ export default function CuratedEdit() {
       const nextState = target === "PUBLISHED" ? "PUBLISHED" : "REVIEW";
       write({ state: nextState });
       toast.success(nextState === "PUBLISHED" ? "Published" : "Sent to Review");
-      if (nextState === "PUBLISHED") {
-        // go back to the curated dashboard after publishing
-        nav("/admin/curated", { replace: true });
-      }
+      if (nextState === "PUBLISHED") nav("/admin/curated", { replace: true });
     } else {
       toast.error(res?.message || "Action failed");
     }
@@ -342,7 +409,6 @@ export default function CuratedEdit() {
             Back
           </Link>
 
-          {/* Publish: available on create and edit */}
           <button
             onClick={onPublishToggle}
             className="px-3 py-2 rounded-md bg-green-600 text-white"
@@ -365,6 +431,7 @@ export default function CuratedEdit() {
         <div>Loading…</div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
+          {/* Left column */}
           <div className="space-y-4">
             <Field label="Book">
               <select
@@ -441,6 +508,7 @@ export default function CuratedEdit() {
             </Field>
           </div>
 
+          {/* Right column */}
           <div className="space-y-4">
             <Field label="Short Insight / Reflection">
               <textarea
@@ -451,14 +519,84 @@ export default function CuratedEdit() {
               />
             </Field>
 
-            <Field label="Prayer Points (one per line)">
-              <textarea
-                className="w-full border rounded-md px-3 py-2 h-32"
-                value={data.prayerPointsMultiline}
-                onChange={(e) => write({ prayerPointsMultiline: e.target.value })}
-                placeholder={"Thank God for...\nAsk for...\nPray that..."}
-              />
-            </Field>
+            {/* Per-point editor */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-sm text-gray-700">Prayer Points</div>
+                <div className="flex items-center gap-2">
+                  {!isCreate && (
+                    <button
+                      onClick={savePointsOnly}
+                      disabled={!pointsDirty}
+                      className={`px-2 py-1 text-sm rounded-md ${pointsDirty ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500"}`}
+                      title="Save only the prayer points array"
+                    >
+                      Save points
+                    </button>
+                  )}
+                  <button
+                    onClick={() => addPointRow()}
+                    className="px-2 py-1 text-sm rounded-md border"
+                    title="Add point"
+                  >
+                    + Add
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {points.map((val, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="mt-2 w-6 text-right text-xs text-gray-500">{i + 1}.</span>
+                    <textarea
+                      className="flex-1 border rounded-md px-3 py-2 h-16"
+                      value={val}
+                      onChange={(e) => updatePoint(i, e.target.value)}
+                      placeholder="One short prayer point…"
+                    />
+                    <div className="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-xs border rounded-md"
+                        onClick={() => moveUp(i)}
+                        disabled={i === 0}
+                        title="Move up"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-xs border rounded-md"
+                        onClick={() => moveDown(i)}
+                        disabled={i === points.length - 1}
+                        title="Move down"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-xs border rounded-md text-red-600"
+                        onClick={() => removePointRow(i)}
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-xs border rounded-md"
+                        onClick={() => addPointRow(i)}
+                        title="Add below"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Reorder with ↑/↓. Click “Save points” to persist the array (or use Save/Publish to save everything).
+              </p>
+            </div>
 
             <Field label="Closing Prayer / Confession">
               <textarea

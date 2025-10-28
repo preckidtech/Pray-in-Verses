@@ -7,6 +7,7 @@ import { JwtCookieAuthGuard } from '../auth/jwt.guard';
 
 @UseGuards(JwtCookieAuthGuard, RolesGuard)
 @Roles(Role.EDITOR, Role.MODERATOR, Role.SUPER_ADMIN)
+
 @Controller('admin/bible')
 export class BibleController {
   constructor(private readonly bible: BibleService) {}

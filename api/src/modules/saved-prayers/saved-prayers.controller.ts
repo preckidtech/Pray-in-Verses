@@ -48,23 +48,30 @@ export class SavedPrayersController {
 
   @Post(':curatedPrayerId')
   async save(@Req() req: Request, @Param('curatedPrayerId') curatedPrayerId: string) {
-    // @ts-ignore
+  // @ts-ignore
     const userId = req.user.id as string;
+
     await this.prisma.savedPrayer.upsert({
-      where: { userId_curatedPrayerId: { userId, curatedPrayerId } },
-      update: {},
+      where: {
+        // this name is auto-generated from @@unique([userId, curatedPrayerId])
+        userId_curatedPrayerId: { userId, curatedPrayerId },
+      },
+      update: {},               // nothing to update; existence is the goal
       create: { userId, curatedPrayerId },
     });
+
     return { ok: true };
   }
 
   @Delete(':curatedPrayerId')
-  async remove(@Req() req: Request, @Param('curatedPrayerId') curatedPrayerId: string) {
+  async unsave(@Req() req: Request, @Param('curatedPrayerId') curatedPrayerId: string) {
     // @ts-ignore
     const userId = req.user.id as string;
-    await this.prisma.savedPrayer.delete({
-      where: { userId_curatedPrayerId: { userId, curatedPrayerId } },
+
+    await this.prisma.savedPrayer.deleteMany({
+      where: { userId, curatedPrayerId },
     });
+
     return { ok: true };
   }
 }
