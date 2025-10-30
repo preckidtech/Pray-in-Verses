@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, UseGuards, Req, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtCookieAuthGuard } from '../auth/jwt.guard';
 import type { Request } from 'express';
@@ -19,57 +19,91 @@ export class SavedPrayersController {
       include: {
         curatedPrayer: {
           select: {
-            id: true,
-            book: true,
-            chapter: true,
-            verse: true,
-            theme: true,
-            scriptureText: true,
-            insight: true,
-            prayerPoints: true,
-            closing: true,
-            state: true,
-            publishedAt: true,
+            id: true, book: true, chapter: true, verse: true, theme: true,
+            scriptureText: true, insight: true, prayerPoints: true, closing: true,
+            state: true, publishedAt: true,
           },
         },
       },
     });
 
-    // shape the response the frontend expects
     return {
       data: rows.map((r) => ({
         id: r.id,
         curatedPrayerId: r.curatedPrayerId,
+        pointIndex: r.pointIndex,        // 👈 include which point (if any)
         createdAt: r.createdAt,
-        curatedPrayer: r.curatedPrayer, // contains book/chapter/verse/etc
+        curatedPrayer: r.curatedPrayer,
       })),
     };
   }
 
+  /** Legacy: save whole entry (pointIndex = null) */
   @Post(':curatedPrayerId')
   async save(@Req() req: Request, @Param('curatedPrayerId') curatedPrayerId: string) {
-  // @ts-ignore
+    // @ts-ignore
     const userId = req.user.id as string;
 
-    await this.prisma.savedPrayer.upsert({
-      where: {
-        // this name is auto-generated from @@unique([userId, curatedPrayerId])
-        userId_curatedPrayerId: { userId, curatedPrayerId },
-      },
-      update: {},               // nothing to update; existence is the goal
-      create: { userId, curatedPrayerId },
+    // With the new @@unique([userId, curatedPrayerId, pointIndex]),
+    // upsert needs the full composite. We emulate “ensure exists”.
+    await this.prisma.savedPrayer.create({
+      data: { userId, curatedPrayerId, pointIndex: null },
+    }).catch((e) => {
+      // duplicate → no-op
+      if (e?.code !== 'P2002') throw e;
     });
 
     return { ok: true };
   }
 
+  /** Save a specific prayer point by index (0-based) */
+  @Post(':curatedPrayerId/points/:index')
+  async savePoint(
+    @Req() req: Request,
+    @Param('curatedPrayerId') curatedPrayerId: string,
+    @Param('index') index: string,
+  ) {
+    // @ts-ignore
+    const userId = req.user.id as string;
+    const idx = Number(index);
+    if (!Number.isInteger(idx) || idx < 0) throw new BadRequestException('Invalid index');
+
+    await this.prisma.savedPrayer.create({
+      data: { userId, curatedPrayerId, pointIndex: idx },
+    }).catch((e) => {
+      if (e?.code !== 'P2002') throw e; // duplicate → no-op
+    });
+
+    return { ok: true };
+  }
+
+  /** Unsave whole entry */
   @Delete(':curatedPrayerId')
   async unsave(@Req() req: Request, @Param('curatedPrayerId') curatedPrayerId: string) {
     // @ts-ignore
     const userId = req.user.id as string;
 
     await this.prisma.savedPrayer.deleteMany({
-      where: { userId, curatedPrayerId },
+      where: { userId, curatedPrayerId, pointIndex: null },
+    });
+
+    return { ok: true };
+  }
+
+  /** Unsave a specific prayer point */
+  @Delete(':curatedPrayerId/points/:index')
+  async unsavePoint(
+    @Req() req: Request,
+    @Param('curatedPrayerId') curatedPrayerId: string,
+    @Param('index') index: string,
+  ) {
+    // @ts-ignore
+    const userId = req.user.id as string;
+    const idx = Number(index);
+    if (!Number.isInteger(idx) || idx < 0) throw new BadRequestException('Invalid index');
+
+    await this.prisma.savedPrayer.deleteMany({
+      where: { userId, curatedPrayerId, pointIndex: idx },
     });
 
     return { ok: true };

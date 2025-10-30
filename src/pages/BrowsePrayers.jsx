@@ -85,6 +85,7 @@ export default function BrowsePrayers() {
   const [q, setQ] = React.useState("");
 
   // banner count
+  const [totalPrayerPoints, setTotalPrayerPoints]= React.useState(0);
   const [publishedCount, setPublishedCount] = React.useState(0);
   const totalVerses = React.useMemo(() => computeTotalVerses(), []);
 
@@ -146,6 +147,24 @@ export default function BrowsePrayers() {
     };
   }, []);
 
+  // fetch total prayer-points count
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/browse/prayer-points-count`, {
+          credentials: "include",
+          headers: { "Content-Type": "application/json"},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (alive) setTotalPrayerPoints(Number(data?.count ?? 0) || 0);
+        }
+      } catch {}
+    })();
+    return () => { alive = false; };
+  }, []);
+
   // Debounced server search
   React.useEffect(() => {
     let alive = true;
@@ -163,7 +182,11 @@ export default function BrowsePrayers() {
           { credentials: "include", headers: { "Content-Type": "application/json" } }
         );
         if (!res.ok) {
-          if (res.status === 401) return nav("/login", { replace: true });
+          // IMPORTANT: Do not redirect on 401 here—just clear results.
+          if (res.status === 401) {
+            if (alive) setResults([]);
+            return;
+          }
           throw new Error(`HTTP ${res.status}`);
         }
         const data = await res.json();
@@ -180,7 +203,7 @@ export default function BrowsePrayers() {
       alive = false;
       clearTimeout(t);
     };
-  }, [q, nav]);
+  }, [q]);
 
   // Local filter on book list (kept for quick book lookup)
   const filtered = React.useMemo(() => {
@@ -218,11 +241,11 @@ export default function BrowsePrayers() {
             Browse Prayers
           </h1>
           <p className="text-sm text-[#0C2E8A]">
-            Explore over <span className="font-semibold">{publishedCount}</span> curated prayers across{" "}
-            <span className="font-semibold">{totalVerses.toLocaleString()}</span> verses
+            Explore <span className="font-semibold">{totalPrayerPoints.toLocaleString()}+</span> prayers,
+            across <span className="font-semibold">{totalVerses.toLocaleString()}</span> verses
           </p>
 
-          {/* Search */}
+          {/**  Search */}
           <div className="mx-auto mt-4 max-w-xl relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -232,7 +255,6 @@ export default function BrowsePrayers() {
               placeholder="Search books or prayer points…"
               className="w-full border rounded-md pl-10 pr-9 py-2 bg-white"
             />
-            <span className="absolute right-2 top-2.5 text-gray-400 text-xs">⌘K</span>
 
             {/* Search results panel */}
             {q.trim() && (
@@ -240,35 +262,50 @@ export default function BrowsePrayers() {
                 {searching ? (
                   <div className="p-3 text-sm text-gray-500">Searching…</div>
                 ) : results.length === 0 ? (
-                  <div className="p-3 text-sm text-gray-500">No matches found.</div>
-                ) : (
-                  <ul className="divide-y divide-gray-100">
-                    {results.map((r) => {
-                      const ref = `${r.book} ${r.chapter}:${r.verse}`;
-                      const pointsCount = Array.isArray(r.prayerPoints) ? r.prayerPoints.length : 0;
-                      return (
-                        <li key={`${r.book}-${r.chapter}-${r.verse}`}>
-                          <Link
-                            className="flex items-start justify-between gap-3 p-3 hover:bg-gray-50"
-                            to={`/browse/verse/${encodeURIComponent(r.book)}/${r.chapter}/${r.verse}`}
-                          >
-                            <div>
-                              <div className="text-sm font-semibold text-[#0C2E8A]">{ref}</div>
-                              {r.theme ? (
-                                <div className="text-xs text-gray-600 mt-0.5">{r.theme}</div>
-                              ) : null}
-                            </div>
-                            <div className="text-xs text-gray-500 whitespace-nowrap">
-                              {pointsCount} point{pointsCount === 1 ? "" : "s"}
-                            </div>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            )}
+                <div className="p-3 text-sm text-gray-500">No matches found.</div>
+              ) : (
+              <ul className="divide-y divide-gray-100">
+                {results.map((r) => {
+                  const ref = `${r.book} ${r.chapter}:${r.verse}`;
+                  const pointsCount = Array.isArray(r.prayerPoints) ? r.prayerPoints.length : 0;
+                  const goto = () => {
+            // Clear the query first so the panel closes cleanly, then navigate
+                setQ("");
+            // IMPORTANT: use the CANONICAL book name (encoded), NOT the slug
+                nav(`/browse/verse/${slugifyBook(r.book)}/${r.chapter}/${r.verse}`);
+                  };
+
+                  const onKey = (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      goto();
+                    }
+                  };
+                  return (
+                  <li
+                  key={`${r.book}-${r.chapter}-${r.verse}`}
+                  className="flex items-start justify-between gap-3 p-3 hover:bg-gray-50 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  onClick={goto}
+                  onKeyDown={onKey}
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-[#0C2E8A]">{ref}</div>
+                      {r.theme ? (
+                        <div className="text-xs text-gray-600 mt-0.5">{r.theme}</div>
+                        ) : null}
+                        </div>
+                        <div className="text-xs text-gray-500 whitespace-nowrap">
+                          {pointsCount} point{pointsCount === 1 ? "" : "s"}
+                          </div>
+                          </li>
+                          );
+                          })}
+                          </ul>
+                        )}
+                      </div>
+                    )}
           </div>
         </div>
 

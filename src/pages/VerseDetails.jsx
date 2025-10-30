@@ -7,7 +7,6 @@ import banner from "../assets/images/suggest/two-lovers-studying-the-bible-it-is
 import { usePageLogger } from "../hooks/usePageLogger";
 import { logPrayer } from "../utils/historyLogger";
 
-// ---- Small local fetch helper with cookie auth ----
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 async function request(path, { method = "GET", body, headers = {} } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -30,7 +29,6 @@ async function request(path, { method = "GET", body, headers = {} } = {}) {
   return payload;
 }
 
-// ---- Book helpers to resolve clean display names from slugs or aliases ----
 const CANONICAL_BOOKS = [
   "Genesis","Exodus","Leviticus","Numbers","Deuteronomy",
   "Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles",
@@ -45,7 +43,7 @@ const CANONICAL_BOOKS = [
 
 const BOOK_ALIASES = {
   "Song of Solomon": ["Song of Songs", "Canticles"],
-  "Psalms": ["Psalm"],
+  Psalms: ["Psalm"],
 };
 
 function slugifyBook(name) {
@@ -57,31 +55,18 @@ function slugifyBook(name) {
     .toLowerCase();
 }
 
-// Turn "genesis" → "Genesis", "song-of-solomon" → "Song of Solomon"
 function resolveBookName(slugOrName) {
   if (!slugOrName) return "";
   const lower = slugOrName.toLowerCase();
-
-  // 1) exact canonical match
   const exact = CANONICAL_BOOKS.find((b) => b.toLowerCase() === lower);
   if (exact) return exact;
-
-  // 2) match by canonical slug
   const bySlug = CANONICAL_BOOKS.find((b) => slugifyBook(b) === lower);
   if (bySlug) return bySlug;
-
-  // 3) alias support
   for (const [canon, aliases] of Object.entries(BOOK_ALIASES)) {
-    if (
-      aliases.some(
-        (a) => a.toLowerCase() === lower || slugifyBook(a) === lower
-      )
-    ) {
+    if (aliases.some((a) => a.toLowerCase() === lower || slugifyBook(a) === lower)) {
       return canon;
     }
   }
-
-  // 4) fallback: title-case the slug
   return String(slugOrName)
     .split("-")
     .map((t) => (t.length ? t[0].toUpperCase() + t.slice(1).toLowerCase() : ""))
@@ -93,13 +78,13 @@ const VerseDetails = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [curated, setCurated] = useState(null); // { id, book, chapter, verse, theme, scriptureText, insight, prayerPoints[], closing }
+  const [curated, setCurated] = useState(null);
   const [error, setError] = useState("");
+  const [needsAuth, setNeedsAuth] = useState(false); // NEW: soft auth gate
 
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Local toast
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
   const showToast = (msg) => {
@@ -108,49 +93,47 @@ const VerseDetails = () => {
     setTimeout(() => setToastVisible(false), 3000);
   };
 
-  // ---- Clean, display-first reference values (ALWAYS from route) ----
   const bookNameFromRoute = useMemo(() => resolveBookName(bookSlug), [bookSlug]);
   const chapterFromRoute = useMemo(() => Number(chapterNumber), [chapterNumber]);
-  const verseFromRoute = useMemo(() => Number(verseNumber), [verseNumber]);
+  const verseFromRoute   = useMemo(() => Number(verseNumber), [verseNumber]);
 
-  // ---- Compute final display reference (prefer route; fall back to API if needed) ----
-  const displayBook = bookNameFromRoute || curated?.book || "";
-  const displayChapter = Number.isFinite(chapterFromRoute)
-    ? chapterFromRoute
-    : Number(curated?.chapter);
-  const displayVerse = Number.isFinite(verseFromRoute)
-    ? verseFromRoute
-    : Number(curated?.verse);
+  // IMPORTANT: use canonical name for API param
+  const apiBookParam = useMemo(
+    () => resolveBookName(bookSlug) || String(bookSlug || ""),
+    [bookSlug]
+  );
 
-  // Fetch curated verse + saved status
+  const displayBook    = bookNameFromRoute || curated?.book || "";
+  const displayChapter = Number.isFinite(chapterFromRoute) ? chapterFromRoute : Number(curated?.chapter);
+  const displayVerse   = Number.isFinite(verseFromRoute)   ? verseFromRoute   : Number(curated?.verse);
+
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
+      setNeedsAuth(false);
       setError("");
       setCurated(null);
       setIsSaved(false);
 
       try {
-        // Load curated/published content for this verse
         const chStr = String(chapterNumber || "").trim();
         const vsStr = String(verseNumber || "").trim();
         if (!/^\d+$/.test(chStr) || !/^\d+$/.test(vsStr)) {
           throw new Error("Invalid reference.");
         }
 
+        // Use canonical name in the API route
         const verseRes = await request(
-          `/browse/verse/${encodeURIComponent(bookSlug)}/${chStr}/${vsStr}`
+          `/browse/verse/${encodeURIComponent(apiBookParam)}/${chStr}/${vsStr}`
         );
         const data = verseRes?.data || verseRes;
         if (!alive) return;
 
-        if (!data) {
-          throw new Error("No curated content for this verse yet.");
-        }
+        if (!data) throw new Error("No curated content for this verse yet.");
         setCurated(data);
 
-        // Check saved status
+        // Try saved status; on 401 just ignore (don’t redirect)
         try {
           const savedRes = await request(`/saved-prayers`);
           const list = savedRes?.data || savedRes || [];
@@ -159,27 +142,28 @@ const VerseDetails = () => {
             list.some((it) => it.curatedPrayerId === data.id);
           if (!alive) return;
           setIsSaved(saved);
-        } catch {
-          // ignore saved list failure; user can still toggle
+        } catch (err) {
+          if (err?.status === 401) {
+            // user not logged; keep the page visible
+            setNeedsAuth(true);
+          }
         }
       } catch (err) {
         if (!alive) return;
-        if (err.status === 401) {
-          // not authenticated → go to login
-          navigate("/login", { replace: true });
-          return;
+        // DO NOT hard-redirect on 401; show CTA instead
+        if (err?.status === 401) {
+          setNeedsAuth(true);
+          setError("");
+        } else {
+          setError(err?.message || "Could not load verse content.");
         }
-        setError(err?.message || "Could not load verse content.");
       } finally {
         if (alive) setLoading(false);
       }
     })();
-    return () => {
-      alive = false;
-    };
-  }, [bookSlug, chapterNumber, verseNumber, navigate]);
+    return () => { alive = false; };
+  }, [apiBookParam, chapterNumber, verseNumber]);
 
-  // Page title + analytics (use display refs)
   const refLabel = useMemo(() => {
     const ch = Number.isFinite(displayChapter) ? displayChapter : "?";
     const vs = Number.isFinite(displayVerse) ? displayVerse : "?";
@@ -210,8 +194,6 @@ const VerseDetails = () => {
         await request(`/saved-prayers/${curated.id}`, { method: "POST" });
         setIsSaved(true);
         showToast("Saved ✅");
-
-        // Optional: log the first prayer point or a provided text
         if (pointTextForLog) {
           logPrayer("Prayer Point Saved", pointTextForLog, refLabel);
         } else if (Array.isArray(curated.prayerPoints) && curated.prayerPoints[0]) {
@@ -219,8 +201,12 @@ const VerseDetails = () => {
         }
       }
     } catch (err) {
-      if (err.status === 401) navigate("/login", { replace: true });
-      else showToast(err?.message || "Action failed");
+      if (err.status === 401) {
+        setNeedsAuth(true); // soft prompt
+        showToast("Please sign in to save.");
+      } else {
+        showToast(err?.message || "Action failed");
+      }
     } finally {
       setSaving(false);
     }
@@ -245,7 +231,7 @@ const VerseDetails = () => {
   }
 
   // Error / empty
-  if (error || !curated) {
+  if ((error && !needsAuth) || !curated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-20 lg:pl-[224px] pb-12">
         <div className="max-w-3xl mx-auto px-6">
@@ -256,17 +242,22 @@ const VerseDetails = () => {
             >
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
-            <div className="text-red-600 mb-2">{error || "No curated content for this verse yet."}</div>
-            <div className="text-sm text-gray-600">
-              Try another verse or check back later after it’s curated.
-            </div>
+            {error ? (
+              <>
+                <div className="text-red-600 mb-2">{error}</div>
+                <div className="text-sm text-gray-600">
+                  Try another verse or check back later after it’s curated.
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-gray-600">No content.</div>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-  // Use the computed display reference everywhere (banner & breadcrumb)
   const bannerBook = displayBook;
   const bannerChapter = Number.isFinite(displayChapter) ? displayChapter : "?";
   const bannerVerse = Number.isFinite(displayVerse) ? displayVerse : "?";
@@ -289,7 +280,6 @@ const VerseDetails = () => {
         </h1>
       </div>
 
-      {/* Content */}
       <div className="max-w-3xl mx-auto px-6 -mt-12 relative z-10">
         <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-100">
           {/* Back + breadcrumb */}
@@ -316,7 +306,14 @@ const VerseDetails = () => {
             </div>
           </div>
 
-          {/* Theme / Reference */}
+          {/* Auth prompt if needed (but keep content visible if we have it) */}
+          {needsAuth && (
+            <div className="mb-4 p-3 rounded border border-yellow-300 bg-yellow-50 text-sm text-yellow-900">
+              You’re not signed in. <Link to="/login" className="underline">Sign in</Link> to save prayer points and see your saved list.
+            </div>
+          )}
+
+          {/* Theme */}
           {curated.theme ? (
             <h2 className="text-xl font-bold text-[#0C2E8A] mb-2">{curated.theme}</h2>
           ) : null}
@@ -351,7 +348,6 @@ const VerseDetails = () => {
                 {curated.prayerPoints.map((point, i) => (
                   <li key={i} className="flex justify-between items-center">
                     <span>{point}</span>
-                    {/* Quick-save of a specific point also toggles the global saved state */}
                     <button
                       onClick={() => onToggleSave(point)}
                       title={isSaved ? "Unsave entry" : "Save entry"}
@@ -398,7 +394,6 @@ const VerseDetails = () => {
         </div>
       </div>
 
-      {/* Animations */}
       <style>{`
         @keyframes slide-in {
           from { transform: translateX(100%); opacity: 0; }

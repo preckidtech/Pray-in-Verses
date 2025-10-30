@@ -108,7 +108,7 @@ export default function PrayerStreakCard() {
       </div>
 
       <div className="text-center text-sm opacity-90 mt-2">
-        {isCountedToday ? "Already counted today—keep shining!" : "Mark today when you pray 🙏"}
+        {isCountedToday ? "Already counted today, Lets make it count!" : "Mark today when you pray 🙏"}
       </div>
 
       <div className="flex gap-2 mt-3">

@@ -1,3 +1,4 @@
+// src/AppRouter.jsx (or wherever this file lives)
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -52,13 +53,16 @@ import VerseDetails from "./pages/VerseDetails";
 // Admin (separate auth)
 // --------------------
 import AdminLayout from "./admin/AdminLayout";
-import AdminRequireAuth from "./admin/RequireAuth"; // aliased to avoid clash
+import AdminRequireAuth from "./admin/RequireAuth"; // role gate wrapper (kept for per-route roles)
 import AdminLogin from "./admin/pages/Login";
 import AdminDashboard from "./admin/pages/Dashboard";
 import CuratedList from "./admin/pages/CuratedList";
-import CuratedEdit from "./admin/pages/CuratedEdit"; // if your file is CuratedEdit.jsx, keep that name; shown aliased here to avoid collision below
+import CuratedEdit from "./admin/pages/CuratedEdit";
 import Invites from "./admin/pages/Invites";
 import AcceptInvite from "./admin/pages/AcceptInvite";
+import AdminRoute from "./admin/AdminRoute"; // global /admin gate (EDITOR/MODERATOR/SUPER_ADMIN)
+import AdminUsers from "./admin/pages/AdminUsers"; // NEW: list admins & change roles
+
 // Toaster
 import { Toaster } from "react-hot-toast";
 
@@ -66,12 +70,14 @@ function AppContent() {
   const { theme } = useUIStore();
   const location = useLocation();
 
-  // Public routes (no header / bottom nav)
-  const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/admin/login"];
+  // Public routes (no app header/footer)
+  // ADDED: /admin/accept so onboarding pages are truly “public layout”
+  const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/admin/login", "/admin/accept"];
 
-  const isAppLoggedInView = !publicPaths.includes(location.pathname)
+  const isAppLoggedInView =
+    !publicPaths.includes(location.pathname) &&
     // treat /admin/* as separate layout (no app header/footer)
-    && !location.pathname.startsWith("/admin");
+    !location.pathname.startsWith("/admin");
 
   return (
     <div className={theme === "dark" ? "dark" : ""}>
@@ -86,7 +92,7 @@ function AppContent() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />}/>
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Protected APP routes */}
             <Route element={<RequireAuth />}>
@@ -119,27 +125,34 @@ function AppContent() {
             {/* ------------------ */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/accept" element={<AcceptInvite />} />
-            
-            <Route
-              path="/admin"
-              element={
-                <AdminRequireAuth>
-                  <AdminLayout />
-                </AdminRequireAuth>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="curated" element={<CuratedList />} />
-              <Route path="curated/new" element={<CuratedEdit />} />
-              <Route path="curated/:id" element={<CuratedEdit />} />
-              <Route
-                path="invites"
-                element={
-                  <AdminRequireAuth roles={["SUPER_ADMIN"]}>
-                    <Invites />
-                  </AdminRequireAuth>
-                }
-              />
+
+            {/* Global /admin/** guard → only EDITOR/MODERATOR/SUPER_ADMIN may enter */}
+            <Route path="/admin" element={<AdminRoute />}>
+              {/* Admin layout wraps all admin pages */}
+              <Route element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="curated" element={<CuratedList />} />
+                <Route path="curated/new" element={<CuratedEdit />} />
+                <Route path="curated/:id" element={<CuratedEdit />} />
+
+                {/* Per-route stronger role gating where needed */}
+                <Route
+                  path="users"
+                  element={
+                    <AdminRequireAuth roles={["MODERATOR", "SUPER_ADMIN"]}>
+                      <AdminUsers />
+                    </AdminRequireAuth>
+                  }
+                />
+                <Route
+                  path="invites"
+                  element={
+                    <AdminRequireAuth roles={["SUPER_ADMIN"]}>
+                      <Invites />
+                    </AdminRequireAuth>
+                  }
+                />
+              </Route>
             </Route>
 
             {/* Redirect unknown routes */}

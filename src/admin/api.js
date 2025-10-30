@@ -192,4 +192,10 @@ export const api = {
     request(
       `/browse/books/${encodeURIComponent(book)}/chapters/${chapter}/verses`
     ),
+  
+  savePoint: (curatedPrayerId, index) =>
+    request(`/saved-prayers/${curatedPrayerId}/points/${index}`, {method: "POST" }),
+  unsavePoint: (curatedPrayerId, index) =>
+    request(`/saved-prayers/${curatedPrayerId}/points/${index}`, {method: "DELETE"}),
+  publishedPointsCount: () => request(`/browse/published-points-count`),
 };

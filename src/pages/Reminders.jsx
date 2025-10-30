@@ -1,3 +1,4 @@
+// src/pages/Reminders.jsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Plus,
@@ -15,17 +16,20 @@ import {
   X,
 } from "lucide-react";
 
+const STORAGE_KEY = "prayinv_reminders_v1";
+
 const Reminder = () => {
   const [reminders, setReminders] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingReminder, setEditingReminder] = useState(null);
   const [notificationPermission, setNotificationPermission] = useState(
-    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+    typeof Notification !== "undefined" ? Notification.permission : "denied"
   );
   const [toasts, setToasts] = useState([]);
+
   const checkIntervalRef = useRef(null);
   const lastCheckedMinuteRef = useRef(null);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     time: "",
@@ -61,151 +65,187 @@ const Reminder = () => {
     "Saturday",
   ];
 
-  // Toast system
-  const showToast = useCallback((message, type = 'success') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
+  // ---------- Toasts ----------
+  const showToast = useCallback((message, type = "success") => {
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
   }, []);
 
-  // Request notification permission on mount
+  // ---------- Persistence ----------
   useEffect(() => {
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      Notification.requestPermission().then((permission) => {
-        setNotificationPermission(permission);
-        if (permission === 'granted') {
-          showToast('Notifications enabled!');
+    // load from localStorage
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setReminders(parsed);
         }
-      });
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    // save to localStorage on change
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(reminders));
+    } catch {}
+  }, [reminders]);
+
+  // ---------- Notifications ----------
+  const requestNotifications = useCallback(async () => {
+    if (typeof Notification === "undefined") {
+      showToast("Notifications not supported on this browser", "error");
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+      if (permission === "granted") showToast("Notifications enabled!");
+      else showToast("Notifications not enabled", "error");
+    } catch {
+      showToast("Could not request notifications", "error");
     }
   }, [showToast]);
 
-  // Play sound function using Web Audio API
+  // ---------- Web Audio sound ----------
   const playSound = useCallback((soundType) => {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       const audioContext = new AudioContext();
-      
-      const soundConfig = soundOptions.find(s => s.value === soundType);
+
+      const soundConfig = soundOptions.find((s) => s.value === soundType);
       const frequency = soundConfig?.frequency || 800;
-      
-      // Create oscillator for the tone
+
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
-      
-      // Fade in and out for smooth sound
+      oscillator.type = "sine";
+
       const now = audioContext.currentTime;
       gainNode.gain.setValueAtTime(0, now);
       gainNode.gain.linearRampToValueAtTime(0.3, now + 0.1);
       gainNode.gain.linearRampToValueAtTime(0.3, now + 0.4);
       gainNode.gain.linearRampToValueAtTime(0, now + 0.7);
-      
+
       oscillator.start(now);
       oscillator.stop(now + 0.7);
-      
-      // Add second tone for harmony
+
       setTimeout(() => {
         const oscillator2 = audioContext.createOscillator();
         const gainNode2 = audioContext.createGain();
-        
         oscillator2.connect(gainNode2);
         gainNode2.connect(audioContext.destination);
-        
         oscillator2.frequency.value = frequency * 1.5;
-        oscillator2.type = 'sine';
-        
+        oscillator2.type = "sine";
+
         const now2 = audioContext.currentTime;
         gainNode2.gain.setValueAtTime(0, now2);
         gainNode2.gain.linearRampToValueAtTime(0.2, now2 + 0.1);
         gainNode2.gain.linearRampToValueAtTime(0, now2 + 0.5);
-        
+
         oscillator2.start(now2);
         oscillator2.stop(now2 + 0.5);
       }, 200);
-      
     } catch (error) {
-      console.error('Error playing sound:', error);
+      // Most browsers require user gesture before audio; ignore errors.
+      console.error("Error playing sound:", error);
     }
   }, []);
 
-  // Check for due reminders
+  // ---------- Reminder checker ----------
   const checkReminders = useCallback(() => {
     const now = new Date();
     const currentDay = daysOfWeek[now.getDay()];
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const currentMinute = `${currentDay}-${currentTime}`;
+    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(
+      now.getMinutes()
+    ).padStart(2, "0")}`;
+    const currentMinuteKey = `${currentDay}-${currentTime}`;
 
-    // Prevent duplicate notifications in the same minute
-    if (lastCheckedMinuteRef.current === currentMinute) {
-      return;
-    }
-    lastCheckedMinuteRef.current = currentMinute;
+    // prevent duplicate fires inside same minute (even if interval ticks multiple times)
+    if (lastCheckedMinuteRef.current === currentMinuteKey) return;
+    lastCheckedMinuteRef.current = currentMinuteKey;
 
     reminders.forEach((reminder) => {
       if (
         reminder.isActive &&
         reminder.time === currentTime &&
+        Array.isArray(reminder.days) &&
         reminder.days.includes(currentDay)
       ) {
-        // Play sound
+        // sound
         playSound(reminder.sound);
 
-        // Show notification
-        if (notificationPermission === 'granted') {
-          new Notification(reminder.title, {
-            body: reminder.prayer || 'Time for prayer',
-            icon: '🙏',
-            tag: `reminder-${reminder.id}`,
-          });
+        // system notification
+        if (notificationPermission === "granted") {
+          try {
+            new Notification(reminder.title, {
+              body: reminder.prayer || "Time for prayer",
+              tag: `reminder-${reminder.id}`,
+            });
+          } catch {}
         }
 
-        // Show custom toast
-        const toastId = Date.now();
-        setToasts(prev => [...prev, {
-          id: toastId,
-          type: 'reminder',
-          title: reminder.title,
-          prayer: reminder.prayer
-        }]);
-        
+        // in-app toast (longer)
+        const toastId = Date.now() + Math.random();
+        setToasts((prev) => [
+          ...prev,
+          {
+            id: toastId,
+            type: "reminder",
+            title: reminder.title,
+            prayer: reminder.prayer,
+          },
+        ]);
         setTimeout(() => {
-          setToasts(prev => prev.filter(t => t.id !== toastId));
+          setToasts((prev) => prev.filter((t) => t.id !== toastId));
         }, 10000);
       }
     });
-  }, [reminders, playSound, notificationPermission]);
+  }, [reminders, playSound, notificationPermission, daysOfWeek]);
 
-  // Set up reminder checking interval
+  // Set up/tear down interval cleanly (and when tab changes visibility)
   useEffect(() => {
-    // Check every 10 seconds for active reminders
-    if (reminders.some(r => r.isActive)) {
-      checkIntervalRef.current = setInterval(checkReminders, 10000);
-      // Also check immediately
+    // clear any existing interval before creating a new one
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+
+    if (reminders.some((r) => r.isActive)) {
+      // run once immediately
       checkReminders();
+      // then every 10s
+      checkIntervalRef.current = setInterval(checkReminders, 10000);
     }
 
     return () => {
       if (checkIntervalRef.current) {
         clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
       }
     };
   }, [reminders, checkReminders]);
 
-  const getIconComponent = (iconName) => {
-    const iconMap = {
-      sun: Sun,
-      sunrise: Sun,
-      sunset: Sunset,
-      moon: Moon,
+  // If user switches tabs and comes back, allow a fresh check
+  useEffect(() => {
+    const onVis = () => {
+      lastCheckedMinuteRef.current = null;
+      checkReminders();
     };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [checkReminders]);
+
+  // ---------- Helpers ----------
+  const getIconComponent = (iconName) => {
+    const iconMap = { sun: Sun, sunrise: Sun, sunset: Sunset, moon: Moon };
     return iconMap[iconName] || Sun;
   };
 
@@ -221,28 +261,19 @@ const Reminder = () => {
   const getDaysText = (days) => {
     if (!days || days.length === 0) return "";
     if (days.length === 7) return "Daily";
-    if (
-      days.length === 5 &&
-      !days.includes("Saturday") &&
-      !days.includes("Sunday")
-    )
+    if (days.length === 5 && !days.includes("Saturday") && !days.includes("Sunday"))
       return "Weekdays";
-    if (
-      days.length === 2 &&
-      days.includes("Saturday") &&
-      days.includes("Sunday")
-    )
+    if (days.length === 2 && days.includes("Saturday") && days.includes("Sunday"))
       return "Weekends";
     if (days.length <= 3) return days.join(", ");
     return `${days.length} days`;
   };
 
+  // ---------- CRUD ----------
   const toggleReminder = (id) => {
     setReminders((prev) =>
       prev.map((reminder) =>
-        reminder.id === id
-          ? { ...reminder, isActive: !reminder.isActive }
-          : reminder
+        reminder.id === id ? { ...reminder, isActive: !reminder.isActive } : reminder
       )
     );
     showToast("Reminder toggled");
@@ -260,19 +291,19 @@ const Reminder = () => {
     setEditingReminder(null);
   };
 
+  const isValidTime = (t) => /^\d{2}:\d{2}$/.test(t);
+
   const handleSubmit = () => {
     if (!formData.title.trim()) {
-      showToast("Please enter a title", 'error');
+      showToast("Please enter a title", "error");
       return;
     }
-    
-    if (!formData.time) {
-      showToast("Please select a time", 'error');
+    if (!formData.time || !isValidTime(formData.time)) {
+      showToast("Please select a valid time (HH:MM)", "error");
       return;
     }
-    
     if (formData.days.length === 0) {
-      showToast("Please select at least one day", 'error');
+      showToast("Please select at least one day", "error");
       return;
     }
 
@@ -285,16 +316,12 @@ const Reminder = () => {
       sound: formData.sound,
       prayer: formData.prayer.trim(),
       icon: formData.icon,
-      createdAt: editingReminder
-        ? editingReminder.createdAt
-        : new Date().toISOString(),
+      createdAt: editingReminder ? editingReminder.createdAt : new Date().toISOString(),
     };
 
     if (editingReminder) {
       setReminders((prev) =>
-        prev.map((reminder) =>
-          reminder.id === editingReminder.id ? newReminder : reminder
-        )
+        prev.map((reminder) => (reminder.id === editingReminder.id ? newReminder : reminder))
       );
       showToast("Reminder updated successfully!");
     } else {
@@ -302,7 +329,6 @@ const Reminder = () => {
       showToast("Reminder created successfully!");
     }
 
-    // Close modal and reset form
     setShowModal(false);
     resetForm();
   };
@@ -321,28 +347,29 @@ const Reminder = () => {
   };
 
   const handleDelete = (id) => {
-    const confirmId = Date.now();
-    setToasts(prev => [...prev, {
-      id: confirmId,
-      type: 'confirm',
-      message: 'Delete this reminder?',
-      onConfirm: () => {
-        setReminders((prev) => prev.filter((r) => r.id !== id));
-        setToasts(prev => prev.filter(t => t.id !== confirmId));
-        showToast("Reminder deleted");
+    const confirmId = Date.now() + Math.random();
+    setToasts((prev) => [
+      ...prev,
+      {
+        id: confirmId,
+        type: "confirm",
+        message: "Delete this reminder?",
+        onConfirm: () => {
+          setReminders((prev) => prev.filter((r) => r.id !== id));
+          setToasts((prev) => prev.filter((t) => t.id !== confirmId));
+          showToast("Reminder deleted");
+        },
+        onCancel: () => {
+          setToasts((prev) => prev.filter((t) => t.id !== confirmId));
+        },
       },
-      onCancel: () => {
-        setToasts(prev => prev.filter(t => t.id !== confirmId));
-      }
-    }]);
+    ]);
   };
 
   const handleDayToggle = (day) => {
     setFormData((prev) => ({
       ...prev,
-      days: prev.days.includes(day)
-        ? prev.days.filter((d) => d !== day)
-        : [...prev.days, day],
+      days: prev.days.includes(day) ? prev.days.filter((d) => d !== day) : [...prev.days, day],
     }));
   };
 
@@ -361,19 +388,20 @@ const Reminder = () => {
       {/* Toast Container */}
       <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
         {toasts.map((toast) => {
-          if (toast.type === 'reminder') {
+          if (toast.type === "reminder") {
             return (
-              <div key={toast.id} className="bg-white rounded-lg shadow-lg p-4 border-l-4 border-blue-500 animate-slide-in">
+              <div
+                key={toast.id}
+                className="bg-white rounded-lg shadow-lg p-4 border-l-4 border-blue-500 animate-slide-in"
+              >
                 <div className="flex items-start gap-3">
                   <Bell className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" />
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">{toast.title}</h3>
-                    {toast.prayer && (
-                      <p className="text-sm text-gray-600 mt-1">{toast.prayer}</p>
-                    )}
+                    {toast.prayer && <p className="text-sm text-gray-600 mt-1">{toast.prayer}</p>}
                   </div>
                   <button
-                    onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+                    onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
                     className="text-gray-400 hover:text-gray-600"
                   >
                     <X className="w-5 h-5" />
@@ -382,8 +410,8 @@ const Reminder = () => {
               </div>
             );
           }
-          
-          if (toast.type === 'confirm') {
+
+          if (toast.type === "confirm") {
             return (
               <div key={toast.id} className="bg-white rounded-lg shadow-lg p-4 animate-slide-in">
                 <div className="text-sm font-medium mb-3">{toast.message}</div>
@@ -404,12 +432,12 @@ const Reminder = () => {
               </div>
             );
           }
-          
+
           return (
             <div
               key={toast.id}
               className={`px-4 py-3 rounded-lg shadow-lg text-white animate-slide-in ${
-                toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'
+                toast.type === "error" ? "bg-red-500" : "bg-green-500"
               }`}
             >
               {toast.message}
@@ -417,45 +445,41 @@ const Reminder = () => {
           );
         })}
       </div>
-      
+
       <main className="max-w-6xl mx-auto py-8">
         <div className="px-3 sm:px-4 md:px-6">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
             <div className="text-center md:text-left">
-              <h1 className="text-base font-semibold text-blue-900 mb-1">
-                Prayer Reminders
-              </h1>
+              <h1 className="text-base font-semibold text-blue-900 mb-1">Prayer Reminders</h1>
               <p className="text-sm text-blue-700">
                 Set regular reminders for Scripture-based prayer time
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                resetForm();
-                setShowModal(true);
-              }}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-all shadow-md hover:shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              <span>New Reminder</span>
-            </button>
-          </div>
-
-          {/* Notification Permission Alert */}
-          {notificationPermission !== 'granted' && (
-            <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-yellow-600" />
-                <div className="flex-1">
-                  <p className="text-sm text-yellow-800">
-                    Enable notifications to receive prayer reminders even when this tab is in the background.
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              {notificationPermission !== "granted" && (
+                <button
+                  onClick={requestNotifications}
+                  className="flex items-center gap-2 px-4 py-3 bg-yellow-400 text-blue-900 rounded-lg hover:bg-yellow-500 transition-all shadow-sm"
+                  title="Enable notifications"
+                >
+                  <Bell className="w-5 h-5" />
+                  Enable Notifications
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  resetForm();
+                  setShowModal(true);
+                }}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-all shadow-md hover:shadow-lg"
+              >
+                <Plus className="w-5 h-5" />
+                <span>New Reminder</span>
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -465,9 +489,7 @@ const Reminder = () => {
                   <Bell className="w-6 h-6 text-blue-900" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-900">
-                    {activeReminders}
-                  </div>
+                  <div className="text-2xl font-bold text-blue-900">{activeReminders}</div>
                   <div className="text-sm text-gray-600">Active Reminders</div>
                 </div>
               </div>
@@ -479,9 +501,7 @@ const Reminder = () => {
                   <Clock className="w-6 h-6 text-blue-900" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-900">
-                    {reminders.length}
-                  </div>
+                  <div className="text-2xl font-bold text-blue-900">{reminders.length}</div>
                   <div className="text-sm text-gray-600">Total Reminders</div>
                 </div>
               </div>
@@ -507,9 +527,7 @@ const Reminder = () => {
             {reminders.length === 0 ? (
               <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
                 <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  No reminders yet
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No reminders yet</h3>
                 <p className="text-gray-500 mb-6">
                   Create your first prayer reminder to get started
                 </p>
@@ -555,9 +573,7 @@ const Reminder = () => {
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
                               <div className="flex items-center gap-1.5">
                                 <Clock className="w-4 h-4" />
-                                <span className="font-medium">
-                                  {formatTime(reminder.time)}
-                                </span>
+                                <span className="font-medium">{formatTime(reminder.time)}</span>
                               </div>
 
                               <div className="flex items-center gap-1.5">
@@ -604,11 +620,7 @@ const Reminder = () => {
                             }`}
                             title={reminder.isActive ? "Pause" : "Activate"}
                           >
-                            {reminder.isActive ? (
-                              <Pause className="w-5 h-5" />
-                            ) : (
-                              <Play className="w-5 h-5" />
-                            )}
+                            {reminder.isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                           </button>
 
                           <button
@@ -664,9 +676,7 @@ const Reminder = () => {
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="e.g., Morning Prayer"
                   maxLength={50}
@@ -680,9 +690,7 @@ const Reminder = () => {
                 <input
                   type="time"
                   value={formData.time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, time: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
@@ -716,9 +724,7 @@ const Reminder = () => {
                 <div className="flex gap-2">
                   <select
                     value={formData.sound}
-                    onChange={(e) =>
-                      setFormData({ ...formData, sound: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, sound: e.target.value })}
                     className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
                     {soundOptions.map((s) => (
@@ -744,9 +750,7 @@ const Reminder = () => {
                 </label>
                 <textarea
                   value={formData.prayer}
-                  onChange={(e) =>
-                    setFormData({ ...formData, prayer: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, prayer: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                   placeholder="Enter a prayer or scripture verse..."
                   rows="4"
@@ -760,9 +764,7 @@ const Reminder = () => {
                 </label>
                 <select
                   value={formData.icon}
-                  onChange={(e) =>
-                    setFormData({ ...formData, icon: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 >
                   {iconOptions.map((option) => (
@@ -796,22 +798,13 @@ const Reminder = () => {
           </div>
         </div>
       )}
-      
+
       <style>{`
         @keyframes slide-in {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
         }
-        
-        .animate-slide-in {
-          animation: slide-in 0.3s ease-out;
-        }
+        .animate-slide-in { animation: slide-in 0.3s ease-out; }
       `}</style>
     </div>
   );

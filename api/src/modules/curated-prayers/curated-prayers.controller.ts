@@ -89,4 +89,16 @@ export class CuratedPrayersController {
     const data = await this.service.search(q || '');
     return { data };
   }
+
+  @Get('published-points-count')
+  async publishedPointsCount(){ 
+    const count = await this.service.publishedPointsCount();
+    return {count};
+  }
+
+  @Get('prayer-points-count')
+  async prayerPointsCount() {
+    const count = await this.service.totalPrayerPoints();
+    return { count };
+  }
 }

@@ -50,6 +50,7 @@ model SavedPrayer {
   id              String   @id @default(cuid())
   userId          String
   curatedPrayerId String
+  pointIndex      Int?
   createdAt       DateTime @default(now())
 
   // relations

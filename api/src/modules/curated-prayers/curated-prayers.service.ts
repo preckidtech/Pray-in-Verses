@@ -58,14 +58,24 @@ export class CuratedPrayersService {
 
     if (!item) throw new NotFoundException('Verse content not found');
 
-    const saved = await this.prisma.savedPrayer.findUnique({
-      where: { userId_curatedPrayerId: { userId, curatedPrayerId: item.id } },
+    // whole-verse (legacy) saved?
+    const whole = await this.prisma.savedPrayer.findFirst({
+      where: { userId, curatedPrayerId: item.id, pointIndex: null },
       select: { id: true },
     });
 
+    // per-point saves
+    const pointRows = await this.prisma.savedPrayer.findMany({
+      where: { userId, curatedPrayerId: item.id, NOT: { pointIndex: null } },
+      select: { pointIndex: true },
+    });
+    const savedPointIndexes = pointRows
+      .map((r) => r.pointIndex)
+      .filter((n): n is number => typeof n === 'number' && n >= 0);
+
     return {
       id: item.id,
-      book: item.book, // keep this so the UI can show the proper title
+      book: item.book,
       reference: `${item.book} ${item.chapter}:${item.verse}`,
       theme: item.theme,
       scriptureText: item.scriptureText,
@@ -74,7 +84,9 @@ export class CuratedPrayersService {
       closing: item.closing,
       chapter: item.chapter,
       verse: item.verse,
-      isSaved: !!saved,
+      isSaved: !!whole,                 // whole entry saved?
+      savedPointIndexes,                // indices of saved points
+      savedPointsCount: savedPointIndexes.length,
     };
   }
 
@@ -183,5 +195,25 @@ export class CuratedPrayersService {
       ...r,
       prayerPointsCount: Array.isArray(r.prayerPoints) ? r.prayerPoints.length : 0,
     }));
+  }
+
+  async publishedPointsCount(){
+    const rows = await this.prisma.curatedPrayer.findMany({
+      where: { state: PublishState.PUBLISHED },
+      select: { prayerPoints: true },
+    });
+    let total = 0;
+    for (const r of rows) {
+      total += Array.isArray(r.prayerPoints) ? r.prayerPoints.length: 0;
+    }
+    return total;
+  }
+
+  async totalPrayerPoints() {
+    const rows = await this.prisma.curatedPrayer.findMany({
+      where: {state: PublishState.PUBLISHED },
+      select: { prayerPoints : true},
+    });
+    return rows.reduce((sum, r) => sum + (Array.isArray(r.prayerPoints) ? r.prayerPoints.length : 0), 0);
   }
 }
